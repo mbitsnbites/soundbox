@@ -1562,12 +1562,24 @@ var CGUI = function()
     var form = document.createElement("form");
     o = document.createElement("input");
     o.type = "submit";
+    o.value = "Save binary";
+    o.title = "Save the song as a binary file.";
+    o.onclick = function () {
+      var dataURI = "data:application/octet-stream;base64," + btoa(songToBin(mSong));
+      window.open(dataURI);
+      hideDialog();
+      return false;
+    };
+    form.appendChild(o);
+    o = document.createElement("input");
+    o.type = "submit";
     o.value = "Close";
     o.onclick = function () {
       hideDialog();
       return false;
     };
     form.appendChild(o);
+
     parent.appendChild(form);
 
     showDialog();
