@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+*
+* Copyright (c) 2011-2012 Marcus Geelnard
+*
+* This file is part of SoundBox Lite.
+*
+* SoundBox Lite is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* SoundBox Lite is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with SoundBox Lite.  If not, see <http://www.gnu.org/licenses/>.
+*
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>SoundBox Lite</title>
+  <meta name="viewport" content="width=device-width" />
+  <meta name="robots" content="noindex" />
+  <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
+  <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="gui.js"></script>
+  <link rel="stylesheet" type="text/css" href="screen.css" />
+  <link rel="shortcut icon" href="favicon.ico" />
+</head>
+<body onload="gui_init()">
+<div id="content">
+<div id="cover"><div id="dialog"></div></div>
+<table id="guiMaster" class="ui"><tr>
+
+<!-- Song -->
+<td id="UItable">
+<!-- Logo -->
+<div class="sboxLogo">
+<img id="logo" src="gui/logo.png" width="130" height="50" alt="SoundBox" title="About SoundBox Lite" />
+</div>
+
+<div id="newSong" class="button" title="New song"><img src="gui/new.png" width="32" height="32" alt="" />&nbsp;New</div>
+<div id="openSong" class="button" title="Open demo song"><img src="gui/open.png" width="32" height="32" alt="" />&nbsp;Open</div>
+<div id="saveSong" class="button" title="Save song"><img src="gui/save.png" width="32" height="32" alt="" />&nbsp;Save</div>
+<div id="exportJS" class="button" title="Export song as JavaScript"><img src="gui/export-js.png" width="32" height="32" alt="" />&nbsp;JavaScript</div>
+<div id="exportWAV" class="button" title="Export song as WAV"><img src="gui/export-wav.png" width="32" height="32" alt="" />&nbsp;Export WAV</div>
+<br />
+<div id="playSong" class="button" title="Play song"><img src="gui/play.png" width="32" height="32" alt="" />&nbsp;Song</div>
+<div id="playRange" class="button" title="Play selected range (SPACE)"><img src="gui/play-range.png" width="32" height="32" alt="" />&nbsp;Range</div>
+<div id="stopPlaying" class="button" title="Stop playing"><img src="gui/stop.png" width="32" height="32" alt="" />&nbsp;Stop</div>
+<br />
+<div id="about" class="button" title="About"><img src="gui/help.png" width="32" height="32" alt="" />&nbsp;About</div>
+<br />
+<div style="text-align: center">
+<input id="bpm" type="text" size="3" value="" title="Beats per minute (song speed)" />&nbsp;BPM
+</div>
+
+</td>
+
+<!-- Sequencer -->
+<td>
+<div><canvas id="playGfxCanvas" width="220" height="65" /></div>
+<div id="sequencer" title="Enter pattern numbers, 0-9">
+<table class="tracks">
+<tr class="beat"><th id="spr0">0</th><td id="sc0r0"> </td><td id="sc1r0"> </td><td id="sc2r0"> </td><td id="sc3r0"> </td><td id="sc4r0"> </td><td id="sc5r0"> </td><td id="sc6r0"> </td><td id="sc7r0"> </td></tr>
+<tr><th id="spr1">1</th><td id="sc0r1"> </td><td id="sc1r1"> </td><td id="sc2r1"> </td><td id="sc3r1"> </td><td id="sc4r1"> </td><td id="sc5r1"> </td><td id="sc6r1"> </td><td id="sc7r1"> </td></tr>
+<tr><th id="spr2">2</th><td id="sc0r2"> </td><td id="sc1r2"> </td><td id="sc2r2"> </td><td id="sc3r2"> </td><td id="sc4r2"> </td><td id="sc5r2"> </td><td id="sc6r2"> </td><td id="sc7r2"> </td></tr>
+<tr><th id="spr3">3</th><td id="sc0r3"> </td><td id="sc1r3"> </td><td id="sc2r3"> </td><td id="sc3r3"> </td><td id="sc4r3"> </td><td id="sc5r3"> </td><td id="sc6r3"> </td><td id="sc7r3"> </td></tr>
+<tr class="beat"><th id="spr4">4</th><td id="sc0r4"> </td><td id="sc1r4"> </td><td id="sc2r4"> </td><td id="sc3r4"> </td><td id="sc4r4"> </td><td id="sc5r4"> </td><td id="sc6r4"> </td><td id="sc7r4"> </td></tr>
+<tr><th id="spr5">5</th><td id="sc0r5"> </td><td id="sc1r5"> </td><td id="sc2r5"> </td><td id="sc3r5"> </td><td id="sc4r5"> </td><td id="sc5r5"> </td><td id="sc6r5"> </td><td id="sc7r5"> </td></tr>
+<tr><th id="spr6">6</th><td id="sc0r6"> </td><td id="sc1r6"> </td><td id="sc2r6"> </td><td id="sc3r6"> </td><td id="sc4r6"> </td><td id="sc5r6"> </td><td id="sc6r6"> </td><td id="sc7r6"> </td></tr>
+<tr><th id="spr7">7</th><td id="sc0r7"> </td><td id="sc1r7"> </td><td id="sc2r7"> </td><td id="sc3r7"> </td><td id="sc4r7"> </td><td id="sc5r7"> </td><td id="sc6r7"> </td><td id="sc7r7"> </td></tr>
+<tr class="beat"><th id="spr8">8</th><td id="sc0r8"> </td><td id="sc1r8"> </td><td id="sc2r8"> </td><td id="sc3r8"> </td><td id="sc4r8"> </td><td id="sc5r8"> </td><td id="sc6r8"> </td><td id="sc7r8"> </td></tr>
+<tr><th id="spr9">9</th><td id="sc0r9"> </td><td id="sc1r9"> </td><td id="sc2r9"> </td><td id="sc3r9"> </td><td id="sc4r9"> </td><td id="sc5r9"> </td><td id="sc6r9"> </td><td id="sc7r9"> </td></tr>
+<tr><th id="spr10">10</th><td id="sc0r10"> </td><td id="sc1r10"> </td><td id="sc2r10"> </td><td id="sc3r10"> </td><td id="sc4r10"> </td><td id="sc5r10"> </td><td id="sc6r10"> </td><td id="sc7r10"> </td></tr>
+<tr><th id="spr11">11</th><td id="sc0r11"> </td><td id="sc1r11"> </td><td id="sc2r11"> </td><td id="sc3r11"> </td><td id="sc4r11"> </td><td id="sc5r11"> </td><td id="sc6r11"> </td><td id="sc7r11"> </td></tr>
+<tr class="beat"><th id="spr12">12</th><td id="sc0r12"> </td><td id="sc1r12"> </td><td id="sc2r12"> </td><td id="sc3r12"> </td><td id="sc4r12"> </td><td id="sc5r12"> </td><td id="sc6r12"> </td><td id="sc7r12"> </td></tr>
+<tr><th id="spr13">13</th><td id="sc0r13"> </td><td id="sc1r13"> </td><td id="sc2r13"> </td><td id="sc3r13"> </td><td id="sc4r13"> </td><td id="sc5r13"> </td><td id="sc6r13"> </td><td id="sc7r13"> </td></tr>
+<tr><th id="spr14">14</th><td id="sc0r14"> </td><td id="sc1r14"> </td><td id="sc2r14"> </td><td id="sc3r14"> </td><td id="sc4r14"> </td><td id="sc5r14"> </td><td id="sc6r14"> </td><td id="sc7r14"> </td></tr>
+<tr><th id="spr15">15</th><td id="sc0r15"> </td><td id="sc1r15"> </td><td id="sc2r15"> </td><td id="sc3r15"> </td><td id="sc4r15"> </td><td id="sc5r15"> </td><td id="sc6r15"> </td><td id="sc7r15"> </td></tr>
+<tr class="beat"><th id="spr16">16</th><td id="sc0r16"> </td><td id="sc1r16"> </td><td id="sc2r16"> </td><td id="sc3r16"> </td><td id="sc4r16"> </td><td id="sc5r16"> </td><td id="sc6r16"> </td><td id="sc7r16"> </td></tr>
+<tr><th id="spr17">17</th><td id="sc0r17"> </td><td id="sc1r17"> </td><td id="sc2r17"> </td><td id="sc3r17"> </td><td id="sc4r17"> </td><td id="sc5r17"> </td><td id="sc6r17"> </td><td id="sc7r17"> </td></tr>
+<tr><th id="spr18">18</th><td id="sc0r18"> </td><td id="sc1r18"> </td><td id="sc2r18"> </td><td id="sc3r18"> </td><td id="sc4r18"> </td><td id="sc5r18"> </td><td id="sc6r18"> </td><td id="sc7r18"> </td></tr>
+<tr><th id="spr19">19</th><td id="sc0r19"> </td><td id="sc1r19"> </td><td id="sc2r19"> </td><td id="sc3r19"> </td><td id="sc4r19"> </td><td id="sc5r19"> </td><td id="sc6r19"> </td><td id="sc7r19"> </td></tr>
+<tr class="beat"><th id="spr20">20</th><td id="sc0r20"> </td><td id="sc1r20"> </td><td id="sc2r20"> </td><td id="sc3r20"> </td><td id="sc4r20"> </td><td id="sc5r20"> </td><td id="sc6r20"> </td><td id="sc7r20"> </td></tr>
+<tr><th id="spr21">21</th><td id="sc0r21"> </td><td id="sc1r21"> </td><td id="sc2r21"> </td><td id="sc3r21"> </td><td id="sc4r21"> </td><td id="sc5r21"> </td><td id="sc6r21"> </td><td id="sc7r21"> </td></tr>
+<tr><th id="spr22">22</th><td id="sc0r22"> </td><td id="sc1r22"> </td><td id="sc2r22"> </td><td id="sc3r22"> </td><td id="sc4r22"> </td><td id="sc5r22"> </td><td id="sc6r22"> </td><td id="sc7r22"> </td></tr>
+<tr><th id="spr23">23</th><td id="sc0r23"> </td><td id="sc1r23"> </td><td id="sc2r23"> </td><td id="sc3r23"> </td><td id="sc4r23"> </td><td id="sc5r23"> </td><td id="sc6r23"> </td><td id="sc7r23"> </td></tr>
+<tr class="beat"><th id="spr24">24</th><td id="sc0r24"> </td><td id="sc1r24"> </td><td id="sc2r24"> </td><td id="sc3r24"> </td><td id="sc4r24"> </td><td id="sc5r24"> </td><td id="sc6r24"> </td><td id="sc7r24"> </td></tr>
+<tr><th id="spr25">25</th><td id="sc0r25"> </td><td id="sc1r25"> </td><td id="sc2r25"> </td><td id="sc3r25"> </td><td id="sc4r25"> </td><td id="sc5r25"> </td><td id="sc6r25"> </td><td id="sc7r25"> </td></tr>
+<tr><th id="spr26">26</th><td id="sc0r26"> </td><td id="sc1r26"> </td><td id="sc2r26"> </td><td id="sc3r26"> </td><td id="sc4r26"> </td><td id="sc5r26"> </td><td id="sc6r26"> </td><td id="sc7r26"> </td></tr>
+<tr><th id="spr27">27</th><td id="sc0r27"> </td><td id="sc1r27"> </td><td id="sc2r27"> </td><td id="sc3r27"> </td><td id="sc4r27"> </td><td id="sc5r27"> </td><td id="sc6r27"> </td><td id="sc7r27"> </td></tr>
+<tr class="beat"><th id="spr28">28</th><td id="sc0r28"> </td><td id="sc1r28"> </td><td id="sc2r28"> </td><td id="sc3r28"> </td><td id="sc4r28"> </td><td id="sc5r28"> </td><td id="sc6r28"> </td><td id="sc7r28"> </td></tr>
+<tr><th id="spr29">29</th><td id="sc0r29"> </td><td id="sc1r29"> </td><td id="sc2r29"> </td><td id="sc3r29"> </td><td id="sc4r29"> </td><td id="sc5r29"> </td><td id="sc6r29"> </td><td id="sc7r29"> </td></tr>
+<tr><th id="spr30">30</th><td id="sc0r30"> </td><td id="sc1r30"> </td><td id="sc2r30"> </td><td id="sc3r30"> </td><td id="sc4r30"> </td><td id="sc5r30"> </td><td id="sc6r30"> </td><td id="sc7r30"> </td></tr>
+<tr><th id="spr31">31</th><td id="sc0r31"> </td><td id="sc1r31"> </td><td id="sc2r31"> </td><td id="sc3r31"> </td><td id="sc4r31"> </td><td id="sc5r31"> </td><td id="sc6r31"> </td><td id="sc7r31"> </td></tr>
+<tr class="beat"><th id="spr32">32</th><td id="sc0r32"> </td><td id="sc1r32"> </td><td id="sc2r32"> </td><td id="sc3r32"> </td><td id="sc4r32"> </td><td id="sc5r32"> </td><td id="sc6r32"> </td><td id="sc7r32"> </td></tr>
+<tr><th id="spr33">33</th><td id="sc0r33"> </td><td id="sc1r33"> </td><td id="sc2r33"> </td><td id="sc3r33"> </td><td id="sc4r33"> </td><td id="sc5r33"> </td><td id="sc6r33"> </td><td id="sc7r33"> </td></tr>
+<tr><th id="spr34">34</th><td id="sc0r34"> </td><td id="sc1r34"> </td><td id="sc2r34"> </td><td id="sc3r34"> </td><td id="sc4r34"> </td><td id="sc5r34"> </td><td id="sc6r34"> </td><td id="sc7r34"> </td></tr>
+<tr><th id="spr35">35</th><td id="sc0r35"> </td><td id="sc1r35"> </td><td id="sc2r35"> </td><td id="sc3r35"> </td><td id="sc4r35"> </td><td id="sc5r35"> </td><td id="sc6r35"> </td><td id="sc7r35"> </td></tr>
+<tr class="beat"><th id="spr36">36</th><td id="sc0r36"> </td><td id="sc1r36"> </td><td id="sc2r36"> </td><td id="sc3r36"> </td><td id="sc4r36"> </td><td id="sc5r36"> </td><td id="sc6r36"> </td><td id="sc7r36"> </td></tr>
+<tr><th id="spr37">37</th><td id="sc0r37"> </td><td id="sc1r37"> </td><td id="sc2r37"> </td><td id="sc3r37"> </td><td id="sc4r37"> </td><td id="sc5r37"> </td><td id="sc6r37"> </td><td id="sc7r37"> </td></tr>
+<tr><th id="spr38">38</th><td id="sc0r38"> </td><td id="sc1r38"> </td><td id="sc2r38"> </td><td id="sc3r38"> </td><td id="sc4r38"> </td><td id="sc5r38"> </td><td id="sc6r38"> </td><td id="sc7r38"> </td></tr>
+<tr><th id="spr39">39</th><td id="sc0r39"> </td><td id="sc1r39"> </td><td id="sc2r39"> </td><td id="sc3r39"> </td><td id="sc4r39"> </td><td id="sc5r39"> </td><td id="sc6r39"> </td><td id="sc7r39"> </td></tr>
+<tr class="beat"><th id="spr40">40</th><td id="sc0r40"> </td><td id="sc1r40"> </td><td id="sc2r40"> </td><td id="sc3r40"> </td><td id="sc4r40"> </td><td id="sc5r40"> </td><td id="sc6r40"> </td><td id="sc7r40"> </td></tr>
+<tr><th id="spr41">41</th><td id="sc0r41"> </td><td id="sc1r41"> </td><td id="sc2r41"> </td><td id="sc3r41"> </td><td id="sc4r41"> </td><td id="sc5r41"> </td><td id="sc6r41"> </td><td id="sc7r41"> </td></tr>
+<tr><th id="spr42">42</th><td id="sc0r42"> </td><td id="sc1r42"> </td><td id="sc2r42"> </td><td id="sc3r42"> </td><td id="sc4r42"> </td><td id="sc5r42"> </td><td id="sc6r42"> </td><td id="sc7r42"> </td></tr>
+<tr><th id="spr43">43</th><td id="sc0r43"> </td><td id="sc1r43"> </td><td id="sc2r43"> </td><td id="sc3r43"> </td><td id="sc4r43"> </td><td id="sc5r43"> </td><td id="sc6r43"> </td><td id="sc7r43"> </td></tr>
+<tr class="beat"><th id="spr44">44</th><td id="sc0r44"> </td><td id="sc1r44"> </td><td id="sc2r44"> </td><td id="sc3r44"> </td><td id="sc4r44"> </td><td id="sc5r44"> </td><td id="sc6r44"> </td><td id="sc7r44"> </td></tr>
+<tr><th id="spr45">45</th><td id="sc0r45"> </td><td id="sc1r45"> </td><td id="sc2r45"> </td><td id="sc3r45"> </td><td id="sc4r45"> </td><td id="sc5r45"> </td><td id="sc6r45"> </td><td id="sc7r45"> </td></tr>
+<tr><th id="spr46">46</th><td id="sc0r46"> </td><td id="sc1r46"> </td><td id="sc2r46"> </td><td id="sc3r46"> </td><td id="sc4r46"> </td><td id="sc5r46"> </td><td id="sc6r46"> </td><td id="sc7r46"> </td></tr>
+<tr><th id="spr47">47</th><td id="sc0r47"> </td><td id="sc1r47"> </td><td id="sc2r47"> </td><td id="sc3r47"> </td><td id="sc4r47"> </td><td id="sc5r47"> </td><td id="sc6r47"> </td><td id="sc7r47"> </td></tr>
+</table>
+</div>
+<div style="height: 32px"><img id="sequencerCopy" class="smallButton" title="Copy" src="gui/edit-copy.png" width="24" height="24" alt="Copy" /><img id="sequencerPaste" class="smallButton" title="Paste" src="gui/edit-paste.png" width="24" height="24" alt="Paste" /><img id="sequencerPatDown" class="smallButton" title="Pattern down" src="gui/minus-one.png" width="24" height="24" alt="-1" /><img id="sequencerPatUp" class="smallButton" title="Pattern up" src="gui/plus-one.png" width="24" height="24" alt="+1" /></div>
+</td>
+
+<!-- Pattern -->
+<td>
+<div id="pattern">
+<table class="tracks" title="Use the piano or keyboard to enter notes">
+<tr class="beat"><th id="ppr0">0</th><td id="pc0r0"> </td><td id="pc1r0"> </td><td id="pc2r0"> </td><td id="pc3r0"> </td></tr>
+<tr><th id="ppr1">1</th><td id="pc0r1"> </td><td id="pc1r1"> </td><td id="pc2r1"> </td><td id="pc3r1"> </td></tr>
+<tr><th id="ppr2">2</th><td id="pc0r2"> </td><td id="pc1r2"> </td><td id="pc2r2"> </td><td id="pc3r2"> </td></tr>
+<tr><th id="ppr3">3</th><td id="pc0r3"> </td><td id="pc1r3"> </td><td id="pc2r3"> </td><td id="pc3r3"> </td></tr>
+<tr class="beat"><th id="ppr4">4</th><td id="pc0r4"> </td><td id="pc1r4"> </td><td id="pc2r4"> </td><td id="pc3r4"> </td></tr>
+<tr><th id="ppr5">5</th><td id="pc0r5"> </td><td id="pc1r5"> </td><td id="pc2r5"> </td><td id="pc3r5"> </td></tr>
+<tr><th id="ppr6">6</th><td id="pc0r6"> </td><td id="pc1r6"> </td><td id="pc2r6"> </td><td id="pc3r6"> </td></tr>
+<tr><th id="ppr7">7</th><td id="pc0r7"> </td><td id="pc1r7"> </td><td id="pc2r7"> </td><td id="pc3r7"> </td></tr>
+<tr class="beat"><th id="ppr8">8</th><td id="pc0r8"> </td><td id="pc1r8"> </td><td id="pc2r8"> </td><td id="pc3r8"> </td></tr>
+<tr><th id="ppr9">9</th><td id="pc0r9"> </td><td id="pc1r9"> </td><td id="pc2r9"> </td><td id="pc3r9"> </td></tr>
+<tr><th id="ppr10">10</th><td id="pc0r10"> </td><td id="pc1r10"> </td><td id="pc2r10"> </td><td id="pc3r10"> </td></tr>
+<tr><th id="ppr11">11</th><td id="pc0r11"> </td><td id="pc1r11"> </td><td id="pc2r11"> </td><td id="pc3r11"> </td></tr>
+<tr class="beat"><th id="ppr12">12</th><td id="pc0r12"> </td><td id="pc1r12"> </td><td id="pc2r12"> </td><td id="pc3r12"> </td></tr>
+<tr><th id="ppr13">13</th><td id="pc0r13"> </td><td id="pc1r13"> </td><td id="pc2r13"> </td><td id="pc3r13"> </td></tr>
+<tr><th id="ppr14">14</th><td id="pc0r14"> </td><td id="pc1r14"> </td><td id="pc2r14"> </td><td id="pc3r14"> </td></tr>
+<tr><th id="ppr15">15</th><td id="pc0r15"> </td><td id="pc1r15"> </td><td id="pc2r15"> </td><td id="pc3r15"> </td></tr>
+<tr class="beat"><th id="ppr16">16</th><td id="pc0r16"> </td><td id="pc1r16"> </td><td id="pc2r16"> </td><td id="pc3r16"> </td></tr>
+<tr><th id="ppr17">17</th><td id="pc0r17"> </td><td id="pc1r17"> </td><td id="pc2r17"> </td><td id="pc3r17"> </td></tr>
+<tr><th id="ppr18">18</th><td id="pc0r18"> </td><td id="pc1r18"> </td><td id="pc2r18"> </td><td id="pc3r18"> </td></tr>
+<tr><th id="ppr19">19</th><td id="pc0r19"> </td><td id="pc1r19"> </td><td id="pc2r19"> </td><td id="pc3r19"> </td></tr>
+<tr class="beat"><th id="ppr20">20</th><td id="pc0r20"> </td><td id="pc1r20"> </td><td id="pc2r20"> </td><td id="pc3r20"> </td></tr>
+<tr><th id="ppr21">21</th><td id="pc0r21"> </td><td id="pc1r21"> </td><td id="pc2r21"> </td><td id="pc3r21"> </td></tr>
+<tr><th id="ppr22">22</th><td id="pc0r22"> </td><td id="pc1r22"> </td><td id="pc2r22"> </td><td id="pc3r22"> </td></tr>
+<tr><th id="ppr23">23</th><td id="pc0r23"> </td><td id="pc1r23"> </td><td id="pc2r23"> </td><td id="pc3r23"> </td></tr>
+<tr class="beat"><th id="ppr24">24</th><td id="pc0r24"> </td><td id="pc1r24"> </td><td id="pc2r24"> </td><td id="pc3r24"> </td></tr>
+<tr><th id="ppr25">25</th><td id="pc0r25"> </td><td id="pc1r25"> </td><td id="pc2r25"> </td><td id="pc3r25"> </td></tr>
+<tr><th id="ppr26">26</th><td id="pc0r26"> </td><td id="pc1r26"> </td><td id="pc2r26"> </td><td id="pc3r26"> </td></tr>
+<tr><th id="ppr27">27</th><td id="pc0r27"> </td><td id="pc1r27"> </td><td id="pc2r27"> </td><td id="pc3r27"> </td></tr>
+<tr class="beat"><th id="ppr28">28</th><td id="pc0r28"> </td><td id="pc1r28"> </td><td id="pc2r28"> </td><td id="pc3r28"> </td></tr>
+<tr><th id="ppr29">29</th><td id="pc0r29"> </td><td id="pc1r29"> </td><td id="pc2r29"> </td><td id="pc3r29"> </td></tr>
+<tr><th id="ppr30">30</th><td id="pc0r30"> </td><td id="pc1r30"> </td><td id="pc2r30"> </td><td id="pc3r30"> </td></tr>
+<tr><th id="ppr31">31</th><td id="pc0r31"> </td><td id="pc1r31"> </td><td id="pc2r31"> </td><td id="pc3r31"> </td></tr>
+</table>
+</div>
+<div style="height: 32px"><img id="patternCopy" class="smallButton" title="Copy" src="gui/edit-copy.png" width="24" height="24" alt="Copy" /><img id="patternPaste" class="smallButton" title="Paste" src="gui/edit-paste.png" width="24" height="24" alt="Paste" /></div>
+<div style="height: 32px"><img id="patternNoteDown" class="smallButton" title="Note down" src="gui/minus-one.png" width="24" height="24" alt="-1" /><img id="patternNoteUp" class="smallButton" title="Note up" src="gui/plus-one.png" width="24" height="24" alt="+1" /><img id="patternOctaveDown" class="smallButton" title="Octave down" src="gui/minus-twelve.png" width="24" height="24" alt="-12" /><img id="patternOctaveUp" class="smallButton" title="Octave up" src="gui/plus-twelve.png" width="24" height="24" alt="+12" /></div>
+
+<!-- Status (debug etc) -->
+<div id="statusText"></div>
+
+</td>
+
+<!-- Effects track -->
+<td>
+<div id="fxtrack">
+<table class="tracks" title="Use instrument and effect controls to edit">
+<tr class="beat"><td id="fxr0">&nbsp;</td></tr>
+<tr><td id="fxr1">&nbsp;</td></tr>
+<tr><td id="fxr2">&nbsp;</td></tr>
+<tr><td id="fxr3">&nbsp;</td></tr>
+<tr class="beat"><td id="fxr4">&nbsp;</td></tr>
+<tr><td id="fxr5">&nbsp;</td></tr>
+<tr><td id="fxr6">&nbsp;</td></tr>
+<tr><td id="fxr7">&nbsp;</td></tr>
+<tr class="beat"><td id="fxr8">&nbsp;</td></tr>
+<tr><td id="fxr9">&nbsp;</td></tr>
+<tr><td id="fxr10">&nbsp;</td></tr>
+<tr><td id="fxr11">&nbsp;</td></tr>
+<tr class="beat"><td id="fxr12">&nbsp;</td></tr>
+<tr><td id="fxr13">&nbsp;</td></tr>
+<tr><td id="fxr14">&nbsp;</td></tr>
+<tr><td id="fxr15">&nbsp;</td></tr>
+<tr class="beat"><td id="fxr16">&nbsp;</td></tr>
+<tr><td id="fxr17">&nbsp;</td></tr>
+<tr><td id="fxr18">&nbsp;</td></tr>
+<tr><td id="fxr19">&nbsp;</td></tr>
+<tr class="beat"><td id="fxr20">&nbsp;</td></tr>
+<tr><td id="fxr21">&nbsp;</td></tr>
+<tr><td id="fxr22">&nbsp;</td></tr>
+<tr><td id="fxr23">&nbsp;</td></tr>
+<tr class="beat"><td id="fxr24">&nbsp;</td></tr>
+<tr><td id="fxr25">&nbsp;</td></tr>
+<tr><td id="fxr26">&nbsp;</td></tr>
+<tr><td id="fxr27">&nbsp;</td></tr>
+<tr class="beat"><td id="fxr28">&nbsp;</td></tr>
+<tr><td id="fxr29">&nbsp;</td></tr>
+<tr><td id="fxr30">&nbsp;</td></tr>
+<tr><td id="fxr31">&nbsp;</td></tr>
+</table>
+</div>
+</td>
+
+
+<!-- Instrument control -->
+<td>
+<select id="instrPreset" title="Select an instrument preset">
+<option value="">(select a preset)</option>
+</select>
+
+
+<table class="ui">
+
+<!-- Oscillator 1 -->
+<tr>
+<td>
+<h3>Oscillator 1</h3>
+<table class="subui">
+<tr><td>Wave</td><td>
+  <img id="osc1_wave_sin" title="Sine" src="gui/wave-sin.png" alt="Sin" style="margin-right: 10px" />
+  <img id="osc1_wave_tri" title="Triangle" src="gui/wave-tri.png" alt="Tri" style="margin-right: 10px" />
+  <img id="osc1_wave_saw" title="Saw" src="gui/wave-saw.png" alt="Saw" style="margin-right: 10px" />
+  <img id="osc1_wave_sqr" title="Square" src="gui/wave-sqr.png" alt="Sqr" />
+</td></tr>
+<tr><td>Vol</td><td title="Volume"><div class="slider"><img id="osc1_vol" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>Semi</td><td title="Semitune"><div class="slider"><img id="osc1_semi" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>X-Env</td><td title="Envelope modulates frequency"><img id="osc1_xenv" class="box" src="gui/box-uncheck.png" width="10" height="12" alt="" /></td></tr>
+</table>
+</td>
+
+<!-- Oscillator 2 -->
+<td>
+<h3>Oscillator 2</h3>
+<table class="subui">
+<tr><td>Wave</td><td>
+  <img id="osc2_wave_sin" title="Sine" src="gui/wave-sin.png" alt="Sin" style="margin-right: 10px" />
+  <img id="osc2_wave_tri" title="Triangle" src="gui/wave-tri.png" alt="Tri" style="margin-right: 10px" />
+  <img id="osc2_wave_saw" title="Saw" src="gui/wave-saw.png" alt="Saw" style="margin-right: 10px" />
+  <img id="osc2_wave_sqr" title="Square" src="gui/wave-sqr.png" alt="Sqr" />
+</td></tr>
+<tr><td>Vol</td><td title="Volume"><div class="slider"><img id="osc2_vol" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>Semi</td><td title="Semitune"><div class="slider"><img id="osc2_semi" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>Det</td><td title="Detune"><div class="slider"><img id="osc2_det" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>X-Env</td><td title="Envelope modulates frequency"><img id="osc2_xenv" class="box" src="gui/box-uncheck.png" width="10" height="12" alt="" /></td></tr>
+</table>
+</td>
+</tr>
+
+<!-- Noise -->
+<tr>
+<td>
+<h3>Noise</h3>
+<table class="subui">
+<tr><td>Vol</td><td title="Volume"><div class="slider"><img id="noise_vol" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+</table>
+</td>
+
+<!-- Envelope -->
+<td>
+<h3>Envelope</h3>
+<table class="subui">
+<tr><td>Att</td><td title="Attack"><div class="slider"><img id="env_att" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>Sust</td><td title="Sustain"><div class="slider"><img id="env_sust" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>Rel</td><td title="Release"><div class="slider"><img id="env_rel" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+</table>
+</td>
+</tr>
+
+<!-- LFO -->
+<tr>
+<td>
+<h3>LFO</h3>
+<table class="subui">
+<tr><td>Wave</td><td>
+  <img id="lfo_wave_sin" title="Sine" src="gui/wave-sin.png" alt="Sin" style="margin-right: 10px" />
+  <img id="lfo_wave_tri" title="Triangle" src="gui/wave-tri.png" alt="Tri" style="margin-right: 10px" />
+  <img id="lfo_wave_saw" title="Saw" src="gui/wave-saw.png" alt="Saw" style="margin-right: 10px" />
+  <img id="lfo_wave_sqr" title="Square" src="gui/wave-sqr.png" alt="Sqr" />
+</td></tr>
+<tr><td>Amt</td><td title="Amount"><div class="slider"><img id="lfo_amt" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>Freq</td><td title="Frequency"><div class="slider"><img id="lfo_freq" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>FXFreq</td><td title="FX frequency modulation"><img id="lfo_fxfreq" class="box" src="gui/box-uncheck.png" width="10" height="12" alt="" /></td></tr>
+</table>
+</td>
+
+<!-- FX -->
+<td>
+<h3>FX</h3>
+<table class="subui">
+<tr><td>Filt</td><td>
+  <img id="fx_filt_lp" title="Low pass" src="gui/filt-lp.png" alt="LP" style="margin-right: 10px" />
+  <img id="fx_filt_hp" title="High pass" src="gui/filt-hp.png" alt="HP" style="margin-right: 10px" />
+  <img id="fx_filt_bp" title="Band pass" src="gui/filt-bp.png" alt="BP" style="margin-right: 10px" />
+</td></tr>
+<tr><td>Freq</td><td title="Filter frequency"><div class="slider"><img id="fx_freq" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>&nbsp;Res</td><td title="Filter resonance"><div class="slider"><img id="fx_res" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>Dist</td><td title="Distortion"><div class="slider"><img id="fx_dist" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>Drive</td><td title="Volume drive"><div class="slider"><img id="fx_drive" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>Pan</td><td title="Pan amount"><div class="slider"><img id="fx_pan_amt" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>&nbsp;Freq</td><td title="Pan frequency"><div class="slider"><img id="fx_pan_freq" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>Delay</td><td title="Delay amount"><div class="slider"><img id="fx_dly_amt" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+<tr><td>&nbsp;Time</td><td title="Delay time"><div class="slider"><img id="fx_dly_time" src="gui/slider.png" width="10" height="12" alt="" /></div></td></tr>
+</table>
+</td>
+</tr>
+
+</table>
+
+<!-- Keyboard -->
+<div class="keyboard">
+<div class="octaveSelector">
+Octave: <span id="keyboardOctave" title="Octave">5</span>
+</div>
+<img id="octaveDown" title="Octave down" alt="&lt;" src="gui/button-prev.png" width="23" height="20" />&nbsp;<img id="keyboard" src="gui/keyboard.jpg" width="421" height="112" alt="Keyboard" />&nbsp;<img id="octaveUp" title="Octave up" alt="&gt;" src="gui/button-next.png" width="23" height="20" />
+</div>
+
+</td>
+</tr>
+
+</table>
+</div>
+</body>
+</html>
+

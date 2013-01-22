@@ -1,0 +1,349 @@
+/* -*- mode: css; tab-width: 2; indent-tabs-mode: nil; -*-
+*
+* Copyright (c) 2011-2012 Marcus Geelnard
+*
+* This file is part of SoundBox Lite.
+*
+* SoundBox Lite is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* SoundBox Lite is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with SoundBox Lite.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
+
+body {
+  font-family: sans-serif, arial;
+  padding: 0;
+  margin: 0;
+}
+
+#content {
+  position: relative;
+  width: 1120px;
+  margin-top: 0;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0;
+}
+
+#guiMaster {
+  width: 100%;
+}
+
+#progressBarParent {
+  width: 200px;
+  height: 21px;
+  margin-top: 5px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid #222;
+  border-radius: 4px;
+  background-color: #eee;
+}
+
+#progressBar {
+  width: 1px;
+  height: 21px;
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: auto;
+  margin-bottom: 0;
+  border: 0;
+  background: #446 url("gui/progressbar.png") repeat-x;
+}
+
+img {
+  border: none;
+}
+
+p img {
+  vertical-align: middle;
+}
+
+a {
+  color: #006;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #448;
+}
+
+h1 {
+  margin: 0;
+  text-align: center;
+  background: #eee;
+}
+
+table.ui, table.ui td {
+  vertical-align: top;
+  border: 1px solid #333;
+  border-collapse: collapse;
+  padding: 4px 4px 8px 8px;
+  font-family: "DejaVu Sans Mono",monospace;
+  font-size: 10px;
+}
+
+table.ui h3 {
+  padding: 0;
+  margin: 0 0 4px 0;
+  color: #fff;
+  font-size: 14px;
+/*  text-shadow: #000 1px 1px 4px; */
+}
+
+table.subui, table.subui td {
+  border-collapse: collapse;
+  padding: 1px;
+  border: 0;
+}
+
+#playGfxCanvas {
+  border: 2px solid #555;
+  margin-bottom: 3px;
+}
+
+#sequencer, #pattern, #fxtrack {
+  border: 2px solid #aaa;
+  margin-bottom: 4px;
+}
+
+#sequencer.edit, #pattern.edit, #fxtrack.edit {
+  border-color: #f44;
+}
+
+#sequencer {
+  width: 221px;
+  height: 433px;
+  overflow: auto;
+}
+
+#pattern {
+  width: 140px;
+}
+
+#fxtrack {
+  width: 40px;
+}
+
+#statusText {
+  color: #469;
+  margin-top: 10px;
+  font-size: 9px;
+  text-align: center;
+}
+
+table.tracks, table.tracks td, table.tracks th {
+  border: 1px solid #333;
+  border-collapse: collapse;
+  padding: 0px 2px;
+  font-family: "DejaVu Sans Mono",monospace;
+  font-size: 10px;
+  text-align: center;
+  cursor: default;
+}
+
+table.tracks th {
+  width: 18px;
+  color: #ffe;
+  background: #112;
+}
+
+table.tracks td {
+  color: #dda;
+  background: #447;
+}
+
+table.tracks tr.beat td {
+  background: #559;
+}
+
+table.tracks th.playpos {
+  background: #667;
+  color: #fff;
+}
+
+table.tracks td:hover, table.tracks tr.beat td:hover {
+  color: #ddd;
+  background: #77d;
+}
+
+table.tracks td.selected, table.tracks tr.beat td.selected {
+  color: #fff;
+  background: #88f;
+}
+
+#sequencer table.tracks td {
+  width: 18px;
+}
+
+#pattern table.tracks td {
+  width: 24px;
+}
+
+#fxtrack table.tracks td {
+  width: 34px;
+}
+
+.slider {
+  width: 201px;
+  height: 12px;
+  background: url("gui/slider-bg.png") no-repeat;
+  padding: 0;
+  margin: 0;
+}
+
+.slider img {
+  cursor: pointer;
+}
+
+#osc1_wave_sin,#osc1_wave_saw,#osc1_wave_sqr,#osc1_wave_tri,
+#osc2_wave_sin,#osc2_wave_saw,#osc2_wave_sqr,#osc2_wave_tri,
+#lfo_wave_sin,#lfo_wave_saw,#lfo_wave_sqr,#lfo_wave_tri,
+#fx_filt_lp,#fx_filt_hp,#fx_filt_bp,#fx_filt_n {
+  cursor: pointer;
+}
+
+.button {
+  width: 120px;
+  height: 32px;
+  padding: 4px 0px 4px 8px;
+  margin: 2px 1px;
+  border: 1px solid #888;
+  border-radius: 7px;
+  background: #d8d8d8 url("gui/button-bg.gif") repeat-x;
+/*  box-shadow: 0 1px 3px #555; */
+}
+
+.smallButton {
+  width: 24px;
+  height: 24px;
+  padding: 3px;
+  margin: 1px;
+  border-radius: 3px;
+  background: #d8d8d8 url("gui/smallButton-bg.gif") repeat-x;
+}
+
+.button, .smallButton {
+  font-family: arial,sans;
+  font-size: 11px;
+  color: #000;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.button:hover {
+  background: #f6f6f0;
+  color: #444;
+  border-color: #aa8;
+}
+
+.smallButton:hover {
+  background: #d8d8d8 url("gui/smallButton-bg-over.gif") repeat-x;
+}
+
+.button img, .smallButton img {
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.box {
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.keyboard {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.keyboard img {
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.octaveSelector {
+  padding-bottom: 6px;
+}
+
+#octaveDown, #octaveUp, #patternCopy, #patternPaste {
+  cursor: pointer;
+}
+
+.sboxLogo {
+  margin-top: 8px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+#logo {
+  cursor: pointer;
+}
+
+#cover {
+  visibility: hidden;
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 99;
+}
+
+#cover #dialog {
+  visibility: hidden;
+  width: 600px;
+  margin: 100px auto auto auto;
+  padding: 30px 10px;
+  background: #fff;
+  border: 1px solid #555;
+  text-align: center;
+  border-radius: 6px;
+/*  box-shadow: 0 0 20px #555; */
+}
+
+#cover #dialog img {
+  vertical-align: middle;
+  margin-right: 20px;
+}
+
+#cover #dialog {
+  font-size: 14px;
+}
+
+#cover #dialog h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+
+
+/*** Theme: Metal blue ********************************************************/
+
+#guiMaster {
+ background: #9ab;
+}
+
+table.ui td > table.ui td {
+  background: #79b;
+}
+
+body {
+  background: rgb(29,37,45);
+}
+
+#cover {
+  background: rgba(29,37,45,0.6);
+}
+

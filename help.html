@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+*
+* Copyright (c) 2011-2012 Marcus Geelnard
+*
+* This file is part of SoundBox Lite.
+*
+* SoundBox Lite is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* SoundBox Lite is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with SoundBox Lite.  If not, see <http://www.gnu.org/licenses/>.
+*
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>SoundBox Lite - Help</title>
+  <meta name="viewport" content="width=device-width" />
+  <meta name="robots" content="noindex" />
+  <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
+  <link rel="stylesheet" type="text/css" href="help.css" />
+  <link rel="shortcut icon" href="favicon.ico" />
+</head>
+<body>
+<div id="content"><div></div>
+<h1>SoundBox Lite</h1>
+
+<h2>Introduction</h2>
+<p>SoundBox Lite is a tool for composing synthetic music, in your browser. Its
+design is basically that of a <a href="http://en.wikipedia.org/wiki/Music_tracker">music tracker</a>,
+which essentially means that the music is organized in <em>tracks</em> and <em>patterns</em>.</p>
+
+
+<h2>Quick start</h2>
+<p>Perhaps the quickest way to get started is to open one of the demo songs and
+start playing with it.</p>
+
+<p>Start by pressing the <img src="gui/open.png" alt="Open" /> button, and select
+one of the songs. Once it has been opened, press the <img src="gui/play.png" alt="Play" />
+button to start the song.</p>
+
+<p class="note">Note: The entire song has to be generated (i.e. synthesized in software)
+before it can be played. This can take some time, but on a fast computer it should
+not take more than ten seconds or so for normal song.</p>
+
+
+<h2>The editor</h2>
+
+<p>A song is made up of <strong>8 channels</strong>, where each channel has its
+own <strong>instrument</strong>. Each channel has <strong>10 note patterns</strong>
+(0-9), and each note pattern has <strong>4 note tracks</strong> and
+<strong>1 FX track</strong>.</p>
+
+<div class="centered"><img src="help/ui-overview.png" width=900 height=451 alt="Overview"></img></div>
+
+<h3>1. Import/Export &amp; Playback</h3>
+
+<p>In this section you can import (open) and export (save) songs. Here you can
+also play the song (or just a section of the song).</p>
+
+<h3>2. Sequencer</h3>
+
+<p>Each column in the sequencer represents one channel. Selecting a column will
+show the instrument settings for the selected channel in the instrument
+editor (4).</p>
+
+<p>For each channel, there are 10 available note patterns. By typing a number
+(0-9) in a sequencer cell (or by using the <img class="smallButton" src="gui/plus-one.png" alt="+1" />/<img class="smallButton" src="gui/minus-one.png" alt="-1" /> buttons below the sequencer), the corresponding note pattern will be visible and
+editable in the pattern editor (3).</p>
+
+<p>It is possible to select a range in the sequencer (by click+dragging), and
+then copy the selected range with the <img class="smallButton" src="gui/edit-copy.png" alt="Copy" /> button,
+and the copied range can then be pasted to any other position with the
+<img class="smallButton" src="gui/edit-paste.png" alt="Paste" /> button.</p>
+
+<h3>3. Pattern editor</h3>
+
+<p>The pattern editor consists of four columns, which enables four notes to be
+played simultaneously. There is also an effect track (FX track), that can be
+used to dynamically control all aspects of an instrument during playback.</p>
+
+<p>To enter notes in the pattern editor, <em>a valid pattern (0-9) must have been
+selected in the sequencer</em>. Notes are entered with the piano (5).</p>
+
+<p>Just as with the sequencer, it is possible to copy and paste note data with
+the <img class="smallButton" src="gui/edit-copy.png" alt="Copy" /> &amp;
+<img class="smallButton" src="gui/edit-paste.png" alt="Paste" /> buttons.
+It is also possible to transpose a selected range of notes with the
+<img class="smallButton" src="gui/plus-one.png" alt="+1" />,
+<img class="smallButton" src="gui/minus-one.png" alt="-1" />,
+<img class="smallButton" src="gui/plus-twelve.png" alt="+12" /> and
+<img class="smallButton" src="gui/minus-twelve.png" alt="-12" /> buttons.</p>
+
+<h3>4. Instrument editor</h3>
+
+<p>An instrument is synthetically generated using a few simple building blocks,
+according to the chart below:</p>
+
+<div class="centered"><img src="help/instrument-graph.png" width=790 height=360 alt="Overview"></img></div>
+
+<p>Each part of the instrument chain is controlled by the instrument settings,
+and with careful tuning you can produce many different kinds of sounds.</p>
+
+<p>An easy way to get started with an instrument is to select one of the presets
+from the drop-down box, and then change some settings until you get the sound
+you are looking for.</p>
+
+
+<h3>5. Piano</h3>
+
+<p>The piano is used for entering notes into the selected note pattern. Pressing
+keys on the piano will produce notes in the pattern.</p>
+
+<p>A more efficient way to enter notes is to use the computer keyboard (if you
+have one). The mapping of keyboard keys to piano keys are as follows:</p>
+
+<div class="centered"><img src="help/keyboard-layout.png" width=626 height=204 alt="Keyboard layout"></img></div>
+
+<p>Both the piano and the keyboard only covers two octaves. To reach more
+octaves, use the <img class="smallButton" src="gui/button-prev.png" alt="Octave down" /> and
+<img class="smallButton" src="gui/button-next.png" alt="Octave up" /> keys
+next to the piano to change the base octave for the piano/keyboard.</p>
+
+
+<h2>Playing music</h2>
+
+<p>A tip: Playing the entire song over and over when editing music can be quite
+tiresome. Use the <img src="gui/play-range.png" alt="Play range" /> button to
+just play the selected range (e.g. a single pattern). You can also use the
+keyboard short-cut: <strong>space</strong>.</p>
+
+
+<h2>Loading and saving</h2>
+
+<p>Songs are saved as data URLs that you can deal with in pretty much any way
+you want. For instance, you can mail the song to a friend, bookmark it in your
+browser, put it through an URL shortener and tweet it, or you can copy &amp;
+paste it to a local text file if you wish to save it for later.</p>
+
+<p class="note">Note: The entire song is stored in the URL. Nothing is stored in
+a file or on a server.</p>
+
+
+<h2>License</h2>
+<p>SoundBox Lite (including the GUI, the instrument presets and demo songs), is
+released under the GNU General Public License v3.</p>
+
+<p>The player routine (<a href="player.js">player.js</a>), however, is released
+under the zlib/libpng license, making it easy to use and adapt the player
+routine for your own products (e.g. demos). You'll find that the "Export JS"
+function comes in handy if you want to use a song in your own product.</p>
+
+<p>Also, many thanks to Jake Taylor (a.k.a Ferris / Youth Uprising) for the
+original C language synth that was the starting point and inspiration for this
+tool.</p>
+
+</div>
+</body>
+</html>
+
