@@ -282,11 +282,19 @@ var CGUI = function()
     var songData = undefined;
     if (dataParam) {
       var str = dataParam, str2 = "";
-      for (var i = 0; i < str.length; ++i) {
-        var chr = str[i];
-        if (chr === "-") chr = "+";
-        if (chr === "_") chr = "/";
-        str2 += chr;
+      if (str.indexOf("data:") == 0) {
+        // This is a data: URI (e.g. data:application/x-extension-sbx;base64,....)
+        var idx = str.indexOf("base64,");
+        if (idx > 0)
+          str2 = str.substr(idx + 7);
+      } else {
+        // This is GET data from an http URL
+        for (var i = 0; i < str.length; ++i) {
+          var chr = str[i];
+          if (chr === "-") chr = "+";
+          if (chr === "_") chr = "/";
+          str2 += chr;
+        }
       }
       try {
         songData = atob(str2);
@@ -869,7 +877,7 @@ var CGUI = function()
     // If we couldn't parse the song, just make a clean new song
     if (!song) {
       alert("Song format not recognized.");
-      song = makeNewSong();
+      return undefined;
     }
 
     return song;
@@ -1405,6 +1413,19 @@ var CGUI = function()
     showDialog();
   };
 
+  var loadSongFromData = function (songData) {
+    var song = binToSong(songData);
+    if (song) {
+      stopAudio();
+      mSong = song;
+      updateSongInfo();
+      updateSequencer();
+      updatePattern();
+      updateFxTrack();
+      updateInstrument(true);
+    }
+  };
+
   var showOpenDialog = function () {
     var parent = document.getElementById("dialog");
     parent.innerHTML = "";
@@ -1495,18 +1516,8 @@ var CGUI = function()
       }
 
       // Load the song
-      if (songData) {
-        var song = binToSong(songData);
-        if (song) {
-          stopAudio();
-          mSong = song;
-          updateSongInfo();
-          updateSequencer();
-          updatePattern();
-          updateFxTrack();
-          updateInstrument(true);
-        }
-      }
+      if (songData)
+        loadSongFromData(songData);
       hideDialog();
     };
     form.appendChild(o);
@@ -3006,6 +3017,26 @@ var CGUI = function()
     return true;
   };
 
+  var onFileDrop = function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // Get the dropped file
+    var files = e.dataTransfer.files;
+    if (files.length != 1) {
+      alert("Only open one file at a time.");
+      return;
+    }
+    var file = files[0];
+
+    // Load the file into the editor
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      loadSongFromData(getURLSongData(e.target.result));
+    };
+    reader.readAsDataURL(file);
+  };
+
   var activateMasterEvents = function ()
   {
     // Set up the master mouse event handlers
@@ -3017,6 +3048,12 @@ var CGUI = function()
 
     // Set up the master key event handler
     document.onkeydown = keyDown;
+
+    // Set up the drag'n'drop handler
+    var dropElement = document.getElementById("content");
+    dropElement.addEventListener("dragenter", function dragenter(e) { e.stopPropagation(); e.preventDefault(); }, false);
+    dropElement.addEventListener("dragover", function dragenter(e) { e.stopPropagation(); e.preventDefault(); }, false);
+    dropElement.addEventListener("drop", onFileDrop, false);
   };
 
   var deactivateMasterEvents = function ()
