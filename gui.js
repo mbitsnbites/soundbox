@@ -1481,7 +1481,11 @@ var CGUI = function()
     listDiv.appendChild(customURLElement);
 
     form.appendChild(listDiv);
-    form.appendChild(document.createElement("br"));
+
+    o = document.createElement("p");
+    o.appendChild(document.createTextNode("Hint: You can also drag'n'drop binary files into the editor."));
+    form.appendChild(o);
+
     form.appendChild(document.createElement("br"));
 
     o = document.createElement("input");
