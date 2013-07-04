@@ -204,7 +204,7 @@ var CGUI = function()
       EDIT_FXTRACK = 3;
 
   // Edit/gui state
-  var mEditMode = EDIT_SEQUENCE,
+  var mEditMode = EDIT_PATTERN,
       mKeyboardOctave = 5,
       mPatternCol = 0,
       mPatternRow = 0,
@@ -1654,7 +1654,7 @@ var CGUI = function()
     updateInstrument();
 
     // Initialize the song
-    setEditMode(EDIT_SEQUENCE);
+    setEditMode(EDIT_PATTERN);
     setSelectedPatternCell(0, 0);
     setSelectedSequencerCell(0, 0);
     setSelectedFxTrackRow(0);
@@ -3066,7 +3066,7 @@ var CGUI = function()
     document.onkeydown = keyDown;
 
     // Set up the drag'n'drop handler
-    var dropElement = document.getElementById("content");
+    var dropElement = document.body;
     dropElement.addEventListener("dragenter", function dragenter(e) { e.stopPropagation(); e.preventDefault(); }, false);
     dropElement.addEventListener("dragover", function dragenter(e) { e.stopPropagation(); e.preventDefault(); }, false);
     dropElement.addEventListener("drop", onFileDrop, false);
@@ -3175,7 +3175,7 @@ var CGUI = function()
     updateInstrument(true);
 
     // Initialize the song
-    setEditMode(EDIT_SEQUENCE);
+    setEditMode(EDIT_PATTERN);
     setSelectedSequencerCell(0, 0);
     setSelectedPatternCell(0, 0);
 
