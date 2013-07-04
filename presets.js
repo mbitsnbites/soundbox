@@ -714,6 +714,37 @@ gInstrumentPresets = [
           25, // FX_DELAY_AMT
           1 // FX_DELAY_TIME
     ]
+  },
+  {
+    name: "Siren",
+    i: [
+          1, // OSC1_WAVEFORM
+          0, // OSC1_VOL
+          128, // OSC1_SEMI
+          0, // OSC1_XENV
+          1, // OSC2_WAVEFORM
+          0, // OSC2_VOL
+          128, // OSC2_SEMI
+          0, // OSC2_DETUNE
+          0, // OSC2_XENV
+          255, // NOISE_VOL
+          158, // ENV_ATTACK
+          100, // ENV_SUSTAIN
+          158, // ENV_RELEASE
+          3, // LFO_WAVEFORM
+          67, // LFO_AMT
+          4, // LFO_FREQ
+          1, // LFO_FX_FREQ
+          3, // FX_FILTER
+          57, // FX_FREQ
+          254, // FX_RESONANCE
+          85, // FX_DIST
+          171, // FX_DRIVE
+          88, // FX_PAN_AMT
+          1, // FX_PAN_FREQ
+          157, // FX_DELAY_AMT
+          2 // FX_DELAY_TIME
+    ]
   }
 ];
 
