@@ -215,10 +215,13 @@ var CGUI = function()
       mSeqCol2 = 0,
       mSeqRow2 = 0,
       mFxTrackRow = 0,
+      mFxTrackRow2 = 0,
       mSelectingSeqRange = false,
       mSelectingPatternRange = false,
+      mSelectingFxRange = false,
       mSeqCopyBuffer = [],
-      mPatCopyBuffer = [];
+      mPatCopyBuffer = [],
+      mFxCopyBuffer = [];
 
   // Parsed URL data
   var mBaseURL;
@@ -1194,7 +1197,7 @@ var CGUI = function()
         if (o.innerHTML != fxTxt)
           o.innerHTML = fxTxt;
       }
-      if (i == mFxTrackRow)
+      if (i >= mFxTrackRow && i <= mFxTrackRow2)
         o.className ="selected";
       else
         o.className = "";
@@ -1248,10 +1251,23 @@ var CGUI = function()
 
   var setSelectedFxTrackRow = function (row) {
     mFxTrackRow = row;
+    mFxTrackRow2 = row;
     for (var i = 0; i < 32; ++i)
     {
       var o = document.getElementById("fxr" + i);
-      if (i == row)
+      if (i >= mFxTrackRow && i <= mFxTrackRow2)
+        o.className ="selected";
+      else
+        o.className = "";
+    }
+  };
+
+  var setSelectedFxTrackRow2 = function (row) {
+    mFxTrackRow2 = row >= mFxTrackRow ? row : mFxTrackRow;
+    for (var i = 0; i < 32; ++i)
+    {
+      var o = document.getElementById("fxr" + i);
+      if (i >= mFxTrackRow && i <= mFxTrackRow2)
         o.className ="selected";
       else
         o.className = "";
@@ -1927,6 +1943,7 @@ var CGUI = function()
       mPatternRow2 = 0;
       updatePattern();
       mFxTrackRow = 0;
+      mFxTrackRow2 = 0;
       updateFxTrack();
 
       return;
@@ -1961,6 +1978,7 @@ var CGUI = function()
         mPatternRow2 = patPos;
         updatePattern(!newSeqPos);
         mFxTrackRow = patPos;
+        mFxTrackRow2 = patPos;
         updateFxTrack(!newSeqPos);
       }
       for (var i = 0; i < 32; ++i) {
@@ -2158,7 +2176,6 @@ var CGUI = function()
     if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
       var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
       if (pat >= 0) {
-
         mPatCopyBuffer = [];
         for (var row = mPatternRow; row <= mPatternRow2; ++row)
         {
@@ -2351,6 +2368,43 @@ var CGUI = function()
     updateFxTrack();
   };
 
+  var fxCopyMouseDown = function (e)
+  {
+    if (!e) var e = window.event;
+    e.preventDefault();
+
+    if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
+      var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
+      if (pat >= 0) {
+        mFxCopyBuffer = [];
+        for (var row = mFxTrackRow; row <= mFxTrackRow2; ++row) {
+          var arr = [];
+          arr.push(mSong.songData[mSeqCol].c[pat].fx[row]);
+          arr.push(mSong.songData[mSeqCol].c[pat].fx[row + 32]);
+          mFxCopyBuffer.push(arr);
+        }
+      }
+    }
+  };
+
+  var fxPasteMouseDown = function (e)
+  {
+    if (!e) var e = window.event;
+    e.preventDefault();
+
+    if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
+      var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
+      if (pat >= 0) {
+        for (var row = mFxTrackRow, i = 0; row < 32 && i < mFxCopyBuffer.length; ++row, ++i) {
+          var arr = mFxCopyBuffer[i];
+          mSong.songData[mSeqCol].c[pat].fx[row] = arr[0];
+          mSong.songData[mSeqCol].c[pat].fx[row + 32] = arr[1];
+        }
+        updateFxTrack();
+      }
+    }
+  };
+
   var boxMouseDown = function (e)
   {
     if (!e) var e = window.event;
@@ -2375,7 +2429,8 @@ var CGUI = function()
       }
 
       // Edit the fx track
-      if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 && fxCmd) {
+      if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 &&
+          mFxTrackRow == mFxTrackRow2 && fxCmd) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
           mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = fxCmd + 1;
@@ -2400,7 +2455,8 @@ var CGUI = function()
       else if (o.id === "osc1_wave_sqr") wave = 1;
       else if (o.id === "osc1_wave_saw") wave = 2;
       else if (o.id === "osc1_wave_tri") wave = 3;
-      if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2) {
+      if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 &&
+          mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
           mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = OSC1_WAVEFORM + 1;
@@ -2426,7 +2482,8 @@ var CGUI = function()
       else if (o.id === "osc2_wave_sqr") wave = 1;
       else if (o.id === "osc2_wave_saw") wave = 2;
       else if (o.id === "osc2_wave_tri") wave = 3;
-      if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2) {
+      if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 &&
+          mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
           mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = OSC2_WAVEFORM + 1;
@@ -2452,7 +2509,8 @@ var CGUI = function()
       else if (o.id === "lfo_wave_sqr") wave = 1;
       else if (o.id === "lfo_wave_saw") wave = 2;
       else if (o.id === "lfo_wave_tri") wave = 3;
-      if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2) {
+      if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 &&
+          mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
           mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = LFO_WAVEFORM + 1;
@@ -2477,7 +2535,8 @@ var CGUI = function()
       if (o.id === "fx_filt_hp") filt = 1;
       else if (o.id === "fx_filt_lp") filt = 2;
       else if (o.id === "fx_filt_bp") filt = 3;
-      if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2) {
+      if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 &&
+          mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
           mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = FX_FILTER + 1
@@ -2582,8 +2641,34 @@ var CGUI = function()
       var o = getEventElement(e);
       var row = parseInt(o.id.slice(3));
       setSelectedFxTrackRow(row);
+      mSelectingFxRange = true;
     }
     setEditMode(EDIT_FXTRACK);
+  };
+
+  var fxTrackMouseOver = function (e)
+  {
+    if (mSelectingFxRange)
+    {
+      if (!e) var e = window.event;
+      var o = getEventElement(e);
+      var row = parseInt(o.id.slice(3));
+      setSelectedFxTrackRow2(row);
+      e.preventDefault();
+    }
+  };
+
+  var fxTrackMouseUp = function (e)
+  {
+    if (mSelectingFxRange)
+    {
+      if (!e) var e = window.event;
+      var o = getEventElement(e);
+      var row = parseInt(o.id.slice(3));
+      setSelectedFxTrackRow2(row);
+      mSelectingFxRange = false;
+      e.preventDefault();
+    }
   };
 
   var patternMouseDown = function (e)
@@ -2742,10 +2827,9 @@ var CGUI = function()
       else if (mActiveSlider.id == "fx_dly_time") cmdNo = FX_DELAY_TIME;
 
       var instr = mSong.songData[mSeqCol];
-      if (mEditMode == EDIT_FXTRACK) {
+      if (mEditMode == EDIT_FXTRACK && mFxTrackRow == mFxTrackRow2) {
         // Update the effect command in the FX track
-        if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2)
-        {
+        if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
           var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
           if (pat >= 0) {
             mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = cmdNo + 1;
@@ -3011,13 +3095,16 @@ var CGUI = function()
         }
         else if (mEditMode == EDIT_FXTRACK)
         {
-          if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2)
-          {
+          if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
             var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
             if (pat >= 0) {
-              mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = 0;
-              mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow+32] = 0;
-              setSelectedFxTrackRow((mFxTrackRow + 1) % 32);
+              for (row = mFxTrackRow; row <= mFxTrackRow2; ++row) {
+                mSong.songData[mSeqCol].c[pat].fx[row] = 0;
+                mSong.songData[mSeqCol].c[pat].fx[row + 32] = 0;
+              }
+              if (mFxTrackRow == mFxTrackRow2) {
+                setSelectedFxTrackRow((mFxTrackRow + 1) % 32);
+              }
               updateFxTrack();
             }
             return false;
@@ -3207,6 +3294,8 @@ var CGUI = function()
     {
       o = document.getElementById("fxr" + i);
       o.addEventListener("mousedown", fxTrackMouseDown, false);
+      o.addEventListener("mouseover", fxTrackMouseOver, false);
+      o.addEventListener("mouseup", fxTrackMouseUp, false);
     }
 
     // Misc event handlers
@@ -3233,6 +3322,9 @@ var CGUI = function()
     document.getElementById("patternNoteDown").onmousedown = patternNoteDownMouseDown;
     document.getElementById("patternOctaveUp").onmousedown = patternOctaveUpMouseDown;
     document.getElementById("patternOctaveDown").onmousedown = patternOctaveDownMouseDown;
+
+    document.getElementById("fxCopy").onmousedown = fxCopyMouseDown;
+    document.getElementById("fxPaste").onmousedown = fxPasteMouseDown;
 
     document.getElementById("instrPreset").onfocus = instrPresetFocus;
     document.getElementById("instrPreset").onchange = selectPreset;
