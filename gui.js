@@ -1697,10 +1697,6 @@ var CGUI = function()
   {
     e.preventDefault();
 
-    // This can hog the browser for quite some time, so warn...
-    if (!confirm("This can take quite some time. Do you want to continue?"))
-      return;
-
     // Update song ranges
     updateSongRanges();
 

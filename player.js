@@ -288,7 +288,7 @@ var CPlayer = function()
         };
     };
 
-    // Create a WAVE formatted blob from the generated audio data
+    // Create a WAVE formatted Uint8Array from the generated audio data
     this.createWave = function()
     {
         // Turn critical object properties into local variables (performance)
