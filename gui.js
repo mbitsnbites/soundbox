@@ -3147,7 +3147,7 @@ var CGUI = function()
     document.onkeydown = keyDown;
 
     // Set up the drag'n'drop handler
-    var dropElement = document.body;
+    var dropElement = document.body.parentNode;
     dropElement.addEventListener("dragenter", function dragenter(e) { e.stopPropagation(); e.preventDefault(); }, false);
     dropElement.addEventListener("dragover", function dragenter(e) { e.stopPropagation(); e.preventDefault(); }, false);
     dropElement.addEventListener("drop", onFileDrop, false);
