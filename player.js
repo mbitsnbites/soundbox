@@ -288,12 +288,9 @@ var CPlayer = function()
         };
     };
 
-    // Create a WAVE formatted sting from the generated audio data
+    // Create a WAVE formatted blob from the generated audio data
     this.createWave = function()
     {
-        // Local variables
-        var b, k, x, wave, l1, l2, s, y;
-
         // Turn critical object properties into local variables (performance)
         var mixBuf = this.mixBufWork,
             waveWords = this.numWords;
@@ -301,30 +298,33 @@ var CPlayer = function()
         // We no longer need the channel working buffer
         this.chnBufWork = null;
 
-        // Convert to a WAVE file (in a binary string)
-        l1 = waveWords * 2 - 8;
-        l2 = l1 - 36;
-        wave = String.fromCharCode(82,73,70,70,
-                                   l1 & 255,(l1 >> 8) & 255,(l1 >> 16) & 255,(l1 >> 24) & 255,
-                                   87,65,86,69,102,109,116,32,16,0,0,0,1,0,2,0,
-                                   68,172,0,0,16,177,2,0,4,0,16,0,100,97,116,97,
-                                   l2 & 255,(l2 >> 8) & 255,(l2 >> 16) & 255,(l2 >> 24) & 255);
-        for (b = 0; b < waveWords;)
-        {
-            // This is a GC & speed trick: don't add one char at a time - batch up
-            // larger partial strings
-            x = "";
-            for (k = 0; k < 256 && b < waveWords; ++k, b++)
-            {
-                // Note: We clamp here
-                y = mixBuf[b];
-                y = y < -32767 ? -32767 : (y > 32767 ? 32767 : y);
-                x += String.fromCharCode(y & 255, (y >> 8) & 255);
-            }
-            wave += x;
+        // Create WAVE header
+        var l1 = waveWords * 2 - 8;
+        var l2 = l1 - 36;
+        var header = new Uint8Array(
+            [82,73,70,70,
+             l1 & 255,(l1 >> 8) & 255,(l1 >> 16) & 255,(l1 >> 24) & 255,
+             87,65,86,69,102,109,116,32,16,0,0,0,1,0,2,0,
+             68,172,0,0,16,177,2,0,4,0,16,0,100,97,116,97,
+             l2 & 255,(l2 >> 8) & 255,(l2 >> 16) & 255,(l2 >> 24) & 255]
+        );
+        var headerLen = header.length;
+
+        // Create full file array
+        var wave = new Uint8Array(headerLen + waveWords * 2);
+        for (var i = 0; i < headerLen; ++i) {
+            wave[i] = header[i];
+        }
+        var idx = headerLen;
+        for (i = 0; i < waveWords; ++i) {
+            // Note: We clamp here
+            var y = mixBuf[i];
+            y = y < -32767 ? -32767 : (y > 32767 ? 32767 : y);
+            wave[idx++] = y & 255;
+            wave[idx++] = (y >> 8) & 255;
         }
 
-        // Return the wave formatted string
+        // Return the wave
         return wave;
     };
 

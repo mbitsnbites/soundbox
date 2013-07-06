@@ -29,6 +29,8 @@ include("player.js");
 include("deflate.js");
 include("inflate.js");
 include("rle.js");
+include("Blob.js");
+include("FileSaver.js");
 
 
 "use strict";
@@ -1705,8 +1707,8 @@ var CGUI = function()
     // Generate audio data
     var doneFun = function (wave)
     {
-      var uri = "data:application/octet-stream;base64," + btoa(wave);
-      window.open(uri);
+      var blob = new Blob([wave], {type: "application/octet-stream"});
+      saveAs(blob, "SoundBox-music.wav");
     };
     generateAudio(doneFun);
   };
@@ -2067,14 +2069,12 @@ var CGUI = function()
 
       try
       {
-        var uri = "data:audio/wav;base64," + btoa(wave);
-
         // Start the follower
         startFollower();
 
-        // Load the data into the audio element (it will start playing as soon as
-        // the data has been loaded)
-        mAudio.src = uri;
+        // Load the data into the audio element (it will start playing as soon
+        // as the data has been loaded)
+        mAudio.src = URL.createObjectURL(new Blob([wave], {type: "audio/wav"}));
 
         // Hack
         mAudioTimer.reset();
@@ -2122,14 +2122,12 @@ var CGUI = function()
 
       try
       {
-        var uri = "data:audio/wav;base64," + btoa(wave);
-
         // Restart the follower
         startFollower();
 
-        // Load the data into the audio element (it will start playing as soon as
-        // the data has been loaded)
-        mAudio.src = uri;
+        // Load the data into the audio element (it will start playing as soon
+        // as the data has been loaded)
+        mAudio.src = URL.createObjectURL(new Blob([wave], {type: "audio/wav"}));
 
         // Hack
         mAudio.play();
