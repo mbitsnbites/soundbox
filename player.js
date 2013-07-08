@@ -25,46 +25,40 @@
 
 "use strict";
 
-var CPlayer = function()
-{
+var CPlayer = function() {
+
     //--------------------------------------------------------------------------
     // Private methods
     //--------------------------------------------------------------------------
 
     // Oscillators
-    var osc_sin = function (value)
-    {
+    var osc_sin = function (value) {
         return Math.sin(value * 6.283184);
     };
 
-    var osc_saw = function (value)
-    {
+    var osc_saw = function (value) {
         return 2 * (value % 1) - 1;
     };
 
-    var osc_square = function (value)
-    {
+    var osc_square = function (value) {
         return (value % 1) < 0.5 ? 1 : -1;
     };
 
-    var osc_tri = function (value)
-    {
+    var osc_tri = function (value) {
         var v2 = (value % 1) * 4;
         if(v2 < 2) return v2 - 1;
         return 3 - v2;
     };
 
     // Array of oscillator functions
-    var mOscillators =
-    [
+    var mOscillators = [
         osc_sin,
         osc_square,
         osc_saw,
         osc_tri
     ];
 
-    var getnotefreq = function (n)
-    {
+    var getnotefreq = function (n) {
         // 174.61.. / 44100 = 0.003959503758 (F)
         return 0.003959503758 * Math.pow(2, (n-128)/12);
     };
@@ -75,15 +69,13 @@ var CPlayer = function()
     //--------------------------------------------------------------------------
 
     // Initialize buffers etc.
-    this.init = function (song, opts)
-    {
+    this.init = function (song, opts) {
         // Handle optional arguments
         this.firstRow = 0;
         this.lastRow = song.endPattern - 2;
         this.firstCol = 0;
         this.lastCol = 7;
-        if (opts)
-        {
+        if (opts) {
             this.firstRow = opts.firstRow;
             this.lastRow = opts.lastRow;
             this.firstCol = opts.firstCol;
@@ -104,8 +96,7 @@ var CPlayer = function()
     };
 
     // Generate audio data for a single track
-    this.generate = function ()
-    {
+    this.generate = function () {
         // Local variables
         var i, j, b, p, row, col, n, cp,
             k, t, lfor, e, x, rsample, rowStartSample, f, da;
@@ -119,8 +110,7 @@ var CPlayer = function()
             rowLen = this.song.rowLen;
 
         // Clear channel buffer
-        for (b = 0; b < waveWords; b ++)
-        {
+        for (b = 0; b < waveWords; b ++) {
             chnBuf[b] = 0;
         }
 
@@ -128,15 +118,17 @@ var CPlayer = function()
         var low = 0, band = 0, high;
         var lsample, filterActive = false;
 
-        for (p = this.firstRow; p <= this.lastRow; ++p) // Patterns
-        {
+         // Patterns
+         for (p = this.firstRow; p <= this.lastRow; ++p) {
             cp = instr.p[p];
-            for (row = 0; row < 32; ++row) // Pattern rows
-            {
+
+            // Pattern rows
+            for (row = 0; row < 32; ++row) {
                 // Execute effect command.
                 var cmdNo = cp ? instr.c[cp - 1].fx[row] : 0;
-                if (cmdNo)
-                    instr.i[cmdNo-1] = instr.c[cp - 1].fx[row+32] || 0;
+                if (cmdNo) {
+                    instr.i[cmdNo - 1] = instr.c[cp - 1].fx[row + 32] || 0;
+                }
 
                 // Put performance critical instrument properties in local variables
                 var osc1 = mOscillators[instr.i[0]],
@@ -149,6 +141,7 @@ var CPlayer = function()
                     attack = instr.i[10] * instr.i[10] * 4,
                     sustain = instr.i[11] * instr.i[11] * 4,
                     release = instr.i[12] * instr.i[12] * 4,
+                    releaseInv = 1 / release,
                     oscLFO = mOscillators[instr.i[13]],
                     lfoAmt = instr.i[14] / 512,
                     lfoFreq = Math.pow(2, instr.i[15] - 9) / rowLen,
@@ -168,7 +161,7 @@ var CPlayer = function()
 
                 // Generate notes for this pattern row
                 for (col = 0; col < 4; ++col) {
-                    n = cp ? instr.c[cp - 1].n[row+col*32] : 0;
+                    n = cp ? instr.c[cp - 1].n[row + col * 32] : 0;
                     if (n) {
                         // Calculate note frequencies for the oscillators
                         var o1t = getnotefreq(n + instr.i[2] - 128);
@@ -181,28 +174,32 @@ var CPlayer = function()
                         for (j = 0; j < attack + sustain + release; j++) {
                             // Envelope
                             e = 1;
-                            if (j < attack)
+                            if (j < attack) {
                                 e = j / attack;
-                            else if (j >= attack + sustain)
-                                e -= (j - attack - sustain) / release;
+                            } else if (j >= attack + sustain) {
+                                e -= (j - attack - sustain) * releaseInv;
+                            }
 
                             // Oscillator 1
                             t = o1t;
-                            if (o1xenv)
+                            if (o1xenv) {
                                 t *= e * e;
+                            }
                             c1 += t;
                             rsample = osc1(c1) * o1vol;
 
                             // Oscillator 2
                             t = o2t;
-                            if (o2xenv)
+                            if (o2xenv) {
                                 t *= e * e;
+                            }
                             c2 += t;
                             rsample += osc2(c2) * o2vol;
 
                             // Noise oscillator
-                            if (noiseVol)
+                            if (noiseVol) {
                                 rsample += (2 * Math.random() - 1) * noiseVol;
+                            }
 
                             // Add to (mono) channel buffer
                             chnBuf[(rowStartSample + j) * 2] += (80 * rsample * e) | 0;
@@ -220,8 +217,9 @@ var CPlayer = function()
                     if (rsample || filterActive) {
                         // State variable filter
                         f = fxFreq;
-                        if (fxLFO)
+                        if (fxLFO) {
                             f *= oscLFO(lfoFreq * k) * lfoAmt + 0.5;
+                        }
                         f = 1.5 * Math.sin(f);
                         low += f * band;
                         high = q * (rsample - band) - low;
@@ -245,8 +243,9 @@ var CPlayer = function()
                         t = Math.sin(panFreq * k) * panAmt + 0.5;
                         lsample = rsample * (1 - t);
                         rsample *= t;
-                    } else
+                    } else {
                         lsample = 0;
+                    }
 
                     // Delay is always done, since it does not need sound input
                     if (k >= dly) {
@@ -278,8 +277,7 @@ var CPlayer = function()
     };
 
     // Create a WAVE formatted Uint8Array from the generated audio data
-    this.createWave = function()
-    {
+    this.createWave = function() {
         // Turn critical object properties into local variables (performance)
         var mixBuf = this.mixBufWork,
             waveWords = this.numWords;
@@ -318,13 +316,11 @@ var CPlayer = function()
     };
 
     // Get n samples of wave data at time t [s]. Wave data in range [-2,2].
-    this.getData = function(t, n)
-    {
+    this.getData = function(t, n) {
         var i = 2 * Math.floor(t * 44100);
         var d = new Array(n);
         var b = this.mixBufWork;
-        for (var j = 0; j < 2*n; j += 1)
-        {
+        for (var j = 0; j < 2*n; j += 1) {
             var k = i + j;
             d[j] = t > 0 && k < b.length ? b[k] / 32768 : 0;
         }
