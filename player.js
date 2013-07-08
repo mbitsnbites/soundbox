@@ -101,7 +101,6 @@ var CPlayer = function()
 
         // Init iteration state variables
         this.currentCol = this.firstCol;
-        this.currentRow = this.firstRow;
     };
 
     // Generate audio data for a single track
@@ -119,22 +118,17 @@ var CPlayer = function()
             instr = this.song.songData[this.currentCol],
             rowLen = this.song.rowLen;
 
-        if (this.currentRow == this.firstRow)
+        // Clear channel buffer
+        for (b = 0; b < waveWords; b ++)
         {
-            // Clear channel buffer
-            for (b = 0; b < waveWords; b ++)
-            {
-                chnBuf[b] = 0;
-            }
+            chnBuf[b] = 0;
         }
 
         // Clear effect state
         var low = 0, band = 0, high;
         var lsample, filterActive = false;
 
-        var loopEnd = this.currentRow + 8;
-        loopEnd = loopEnd > this.lastRow ? this.lastRow : loopEnd;
-        for (p = this.currentRow; p <= loopEnd; ++p) // Patterns
+        for (p = this.firstRow; p <= this.lastRow; ++p) // Patterns
         {
             cp = instr.p[p];
             for (row = 0; row < 32; ++row) // Pattern rows
@@ -272,19 +266,14 @@ var CPlayer = function()
                     mixBuf[k+1] += rsample | 0;
                 }
             }
-            this.currentRow++;
         }
 
-        if (this.currentRow > this.lastRow) {
-            // Step to the next column
-            this.currentRow = this.firstRow;
-            this.currentCol++;
-        }
+        this.currentCol++;
 
         // Next iteration
         return {
           done: this.currentCol > this.lastCol,
-          progress: (this.currentCol - this.firstCol + ((this.currentRow - this.firstRow) / (this.lastRow - this.firstRow + 1))) / (this.lastCol - this.firstCol + 1)
+          progress: (this.currentCol - this.firstCol) / (this.lastCol - this.firstCol + 1)
         };
     };
 
