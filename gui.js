@@ -437,9 +437,9 @@ var CGUI = function()
         col.n = [];
         for (k = 0; k < 32 * 4; k++)
           col.n[k] = 0;
-        col.fx = [];
+        col.f = [];
         for (k = 0; k < 32 * 2; k++)
-          col.fx[k] = 0;
+          col.f[k] = 0;
         instr.c[j] = col;
       }
 
@@ -514,7 +514,7 @@ var CGUI = function()
         for (k = 0; k < 32 * 4; k++)
           bin.putUBYTE(col.n[k]);
         for (k = 0; k < 32 * 2; k++)
-          bin.putUBYTE(col.fx[k]);
+          bin.putUBYTE(col.f[k]);
       }
     }
 
@@ -719,14 +719,14 @@ var CGUI = function()
           for (k = 0; k < 32 * 4; k++)
             col.n[k] = bin.getUBYTE();
         }
-        col.fx = [];
+        col.f = [];
         if (version < 4) {
           for (k = 0; k < 32 * 2; k++)
-            col.fx[k] = 0;
+            col.f[k] = 0;
         }
         else {
           for (k = 0; k < 32 * 2; k++)
-            col.fx[k] = bin.getUBYTE();
+            col.f[k] = bin.getUBYTE();
         }
         instr.c[j] = col;
       }
@@ -834,9 +834,9 @@ var CGUI = function()
           col.n[k+64] = 0;
           col.n[k+96] = 0;
         }
-        col.fx = [];
+        col.f = [];
         for (k = 0; k < 32 * 2; k++)
-          col.fx[k] = 0;
+          col.f[k] = 0;
         instr.c[j] = col;
       }
 
@@ -967,14 +967,14 @@ var CGUI = function()
             jsData += ",";
         }
         jsData += "],\n";
-        jsData += "             fx: [";
+        jsData += "             f: [";
         lastNonZero = 0;
         for (k = 0; k < 32 * 2; k++) {
-          if (instr.c[j].fx[k])
+          if (instr.c[j].f[k])
             lastNonZero = k;
         }
         for (k = 0; k <= lastNonZero; k++) {
-          var fx = instr.c[j].fx[k];
+          var fx = instr.c[j].f[k];
           if (fx)
             jsData += fx;
           if (k < lastNonZero)
@@ -1190,9 +1190,9 @@ var CGUI = function()
       if (!selectionOnly) {
         var fxTxt = ":";
         if (pat >= 0) {
-          var fxCmd = mSong.songData[mSeqCol].c[pat].fx[i];
+          var fxCmd = mSong.songData[mSeqCol].c[pat].f[i];
           if (fxCmd) {
-            var fxVal = mSong.songData[mSeqCol].c[pat].fx[i+32];
+            var fxVal = mSong.songData[mSeqCol].c[pat].f[i+32];
             fxTxt = toHex(fxCmd,2) + ":" + toHex(fxVal,2);
           }
         }
@@ -2373,8 +2373,8 @@ var CGUI = function()
         mFxCopyBuffer = [];
         for (var row = mFxTrackRow; row <= mFxTrackRow2; ++row) {
           var arr = [];
-          arr.push(mSong.songData[mSeqCol].c[pat].fx[row]);
-          arr.push(mSong.songData[mSeqCol].c[pat].fx[row + 32]);
+          arr.push(mSong.songData[mSeqCol].c[pat].f[row]);
+          arr.push(mSong.songData[mSeqCol].c[pat].f[row + 32]);
           mFxCopyBuffer.push(arr);
         }
       }
@@ -2391,8 +2391,8 @@ var CGUI = function()
       if (pat >= 0) {
         for (var row = mFxTrackRow, i = 0; row < 32 && i < mFxCopyBuffer.length; ++row, ++i) {
           var arr = mFxCopyBuffer[i];
-          mSong.songData[mSeqCol].c[pat].fx[row] = arr[0];
-          mSong.songData[mSeqCol].c[pat].fx[row + 32] = arr[1];
+          mSong.songData[mSeqCol].c[pat].f[row] = arr[0];
+          mSong.songData[mSeqCol].c[pat].f[row + 32] = arr[1];
         }
         updateFxTrack();
       }
@@ -2427,8 +2427,8 @@ var CGUI = function()
           mFxTrackRow == mFxTrackRow2 && fxCmd) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
-          mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = fxCmd + 1;
-          mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow+32] = fxValue;
+          mSong.songData[mSeqCol].c[pat].f[mFxTrackRow] = fxCmd + 1;
+          mSong.songData[mSeqCol].c[pat].f[mFxTrackRow+32] = fxValue;
           updateFxTrack();
         }
       }
@@ -2453,8 +2453,8 @@ var CGUI = function()
           mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
-          mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = OSC1_WAVEFORM + 1;
-          mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow+32] = wave;
+          mSong.songData[mSeqCol].c[pat].f[mFxTrackRow] = OSC1_WAVEFORM + 1;
+          mSong.songData[mSeqCol].c[pat].f[mFxTrackRow+32] = wave;
           updateFxTrack();
         }
       }
@@ -2480,8 +2480,8 @@ var CGUI = function()
           mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
-          mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = OSC2_WAVEFORM + 1;
-          mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow+32] = wave;
+          mSong.songData[mSeqCol].c[pat].f[mFxTrackRow] = OSC2_WAVEFORM + 1;
+          mSong.songData[mSeqCol].c[pat].f[mFxTrackRow+32] = wave;
           updateFxTrack();
         }
       }
@@ -2507,8 +2507,8 @@ var CGUI = function()
           mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
-          mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = LFO_WAVEFORM + 1;
-          mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow+32] = wave;
+          mSong.songData[mSeqCol].c[pat].f[mFxTrackRow] = LFO_WAVEFORM + 1;
+          mSong.songData[mSeqCol].c[pat].f[mFxTrackRow+32] = wave;
           updateFxTrack();
         }
       }
@@ -2533,8 +2533,8 @@ var CGUI = function()
           mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
-          mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = FX_FILTER + 1
-          mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow+32] = filt;
+          mSong.songData[mSeqCol].c[pat].f[mFxTrackRow] = FX_FILTER + 1
+          mSong.songData[mSeqCol].c[pat].f[mFxTrackRow+32] = filt;
           updateFxTrack();
         }
       }
@@ -2826,8 +2826,8 @@ var CGUI = function()
         if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
           var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
           if (pat >= 0) {
-            mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow] = cmdNo + 1;
-            mSong.songData[mSeqCol].c[pat].fx[mFxTrackRow+32] = x;
+            mSong.songData[mSeqCol].c[pat].f[mFxTrackRow] = cmdNo + 1;
+            mSong.songData[mSeqCol].c[pat].f[mFxTrackRow+32] = x;
             updateFxTrack();
           }
         }
@@ -3093,8 +3093,8 @@ var CGUI = function()
             var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
             if (pat >= 0) {
               for (row = mFxTrackRow; row <= mFxTrackRow2; ++row) {
-                mSong.songData[mSeqCol].c[pat].fx[row] = 0;
-                mSong.songData[mSeqCol].c[pat].fx[row + 32] = 0;
+                mSong.songData[mSeqCol].c[pat].f[row] = 0;
+                mSong.songData[mSeqCol].c[pat].f[row + 32] = 0;
               }
               if (mFxTrackRow == mFxTrackRow2) {
                 setSelectedFxTrackRow((mFxTrackRow + 1) % 32);
