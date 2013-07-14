@@ -55,6 +55,69 @@ var CPlayer = function() {
         return 0.003959503758 * Math.pow(2, (n-128)/12);
     };
 
+    var createNote = function (instr, n) {
+        var osc1 = mOscillators[instr.i[0]],
+            o1vol = instr.i[1],
+            o1xenv = instr.i[3],
+            osc2 = mOscillators[instr.i[4]],
+            o2vol = instr.i[5],
+            o2xenv = instr.i[8],
+            noiseVol = instr.i[9],
+            attack = instr.i[10] * instr.i[10] * 4,
+            sustain = instr.i[11] * instr.i[11] * 4,
+            release = instr.i[12] * instr.i[12] * 4,
+            releaseInv = 1 / release;
+
+        var noteBuf = new Int32Array(attack + sustain + release);
+
+        // Calculate note frequencies for the oscillators
+        var o1t = getnotefreq(n + instr.i[2] - 128);
+        var o2t = getnotefreq(n + instr.i[6] - 128) * (1 + 0.0008 * instr.i[7]);
+
+        // Re-trig oscillators
+        var c1 = 0, c2 = 0;
+
+        // Local variables.
+        var j, e, t, rsample;
+
+        // Generate one note (attack + sustain + release)
+        for (j = 0; j < attack + sustain + release; j++) {
+            // Envelope
+            e = 1;
+            if (j < attack) {
+                e = j / attack;
+            } else if (j >= attack + sustain) {
+                e -= (j - attack - sustain) * releaseInv;
+            }
+
+            // Oscillator 1
+            t = o1t;
+            if (o1xenv) {
+                t *= e * e;
+            }
+            c1 += t;
+            rsample = osc1(c1) * o1vol;
+
+            // Oscillator 2
+            t = o2t;
+            if (o2xenv) {
+                t *= e * e;
+            }
+            c2 += t;
+            rsample += osc2(c2) * o2vol;
+
+            // Noise oscillator
+            if (noiseVol) {
+                rsample += (2 * Math.random() - 1) * noiseVol;
+            }
+
+            // Add to (mono) channel buffer
+            noteBuf[j] = (80 * rsample * e) | 0;
+        }
+
+        return noteBuf;
+    };
+
 
     //--------------------------------------------------------------------------
     // Private members
@@ -111,6 +174,9 @@ var CPlayer = function() {
         var low = 0, band = 0, high;
         var lsample, filterActive = false;
 
+        // Clear note cache.
+        var noteCache = [];
+
          // Patterns
          for (p = 0; p <= mLastRow; ++p) {
             cp = instr.p[p];
@@ -121,21 +187,15 @@ var CPlayer = function() {
                 var cmdNo = cp ? instr.c[cp - 1].f[row] : 0;
                 if (cmdNo) {
                     instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + 32] || 0;
+
+                    // Clear the note cache since the instrument has changed.
+                    if (cmdNo < 14) {
+                        noteCache = [];
+                    }
                 }
 
                 // Put performance critical instrument properties in local variables
-                var osc1 = mOscillators[instr.i[0]],
-                    o1vol = instr.i[1],
-                    o1xenv = instr.i[3],
-                    osc2 = mOscillators[instr.i[4]],
-                    o2vol = instr.i[5],
-                    o2xenv = instr.i[8],
-                    noiseVol = instr.i[9],
-                    attack = instr.i[10] * instr.i[10] * 4,
-                    sustain = instr.i[11] * instr.i[11] * 4,
-                    release = instr.i[12] * instr.i[12] * 4,
-                    releaseInv = 1 / release,
-                    oscLFO = mOscillators[instr.i[13]],
+                var oscLFO = mOscillators[instr.i[13]],
                     lfoAmt = instr.i[14] / 512,
                     lfoFreq = Math.pow(2, instr.i[15] - 9) / rowLen,
                     fxLFO = instr.i[16],
@@ -156,46 +216,14 @@ var CPlayer = function() {
                 for (col = 0; col < 4; ++col) {
                     n = cp ? instr.c[cp - 1].n[row + col * 32] : 0;
                     if (n) {
-                        // Calculate note frequencies for the oscillators
-                        var o1t = getnotefreq(n + instr.i[2] - 128);
-                        var o2t = getnotefreq(n + instr.i[6] - 128) * (1 + 0.0008 * instr.i[7]);
+                        if (!noteCache[n]) {
+                            noteCache[n] = createNote(instr, n);
+                        }
 
-                        // Re-trig oscillators
-                        var c1 = 0, c2 = 0;
-
-                        // Generate one note (attack + sustain + release)
-                        for (j = 0; j < attack + sustain + release; j++) {
-                            // Envelope
-                            e = 1;
-                            if (j < attack) {
-                                e = j / attack;
-                            } else if (j >= attack + sustain) {
-                                e -= (j - attack - sustain) * releaseInv;
-                            }
-
-                            // Oscillator 1
-                            t = o1t;
-                            if (o1xenv) {
-                                t *= e * e;
-                            }
-                            c1 += t;
-                            rsample = osc1(c1) * o1vol;
-
-                            // Oscillator 2
-                            t = o2t;
-                            if (o2xenv) {
-                                t *= e * e;
-                            }
-                            c2 += t;
-                            rsample += osc2(c2) * o2vol;
-
-                            // Noise oscillator
-                            if (noiseVol) {
-                                rsample += (2 * Math.random() - 1) * noiseVol;
-                            }
-
-                            // Add to (mono) channel buffer
-                            chnBuf[(rowStartSample + j) * 2] += (80 * rsample * e) | 0;
+                        // Copy note from the note cache
+                        var noteBuf = noteCache[n];
+                        for (j = 0, i = rowStartSample * 2; j < noteBuf.length; j++, i += 2) {
+                          chnBuf[i] += noteBuf[j];
                         }
                     }
                 }
