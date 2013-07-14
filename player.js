@@ -190,7 +190,7 @@ var CPlayer = function() {
                     instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + 32] || 0;
 
                     // Clear the note cache since the instrument has changed.
-                    if (cmdNo < 13) {
+                    if (cmdNo < 14) {
                         noteCache = [];
                     }
                 }
