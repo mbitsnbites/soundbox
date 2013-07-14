@@ -288,22 +288,18 @@ var CPlayer = function() {
         // Create WAVE header
         var l1 = waveWords * 2 - 8;
         var l2 = l1 - 36;
-        var header = new Uint8Array(
+        var headerLen = 44;
+        var wave = new Uint8Array(headerLen + waveWords * 2);
+        wave.set(
             [82,73,70,70,
              l1 & 255,(l1 >> 8) & 255,(l1 >> 16) & 255,(l1 >> 24) & 255,
              87,65,86,69,102,109,116,32,16,0,0,0,1,0,2,0,
              68,172,0,0,16,177,2,0,4,0,16,0,100,97,116,97,
              l2 & 255,(l2 >> 8) & 255,(l2 >> 16) & 255,(l2 >> 24) & 255]
         );
-        var headerLen = header.length;
 
-        // Create full file array
-        var wave = new Uint8Array(headerLen + waveWords * 2);
-        for (var i = 0; i < headerLen; ++i) {
-            wave[i] = header[i];
-        }
-        var idx = headerLen;
-        for (i = 0; i < waveWords; ++i) {
+        // Append actual wave data
+        for (var i = 0, idx = headerLen; i < waveWords; ++i) {
             // Note: We clamp here
             var y = mixBuf[i];
             y = y < -32767 ? -32767 : (y > 32767 ? 32767 : y);
@@ -311,7 +307,7 @@ var CPlayer = function() {
             wave[idx++] = (y >> 8) & 255;
         }
 
-        // Return the wave
+        // Return the WAVE formatted typed array
         return wave;
     };
 
