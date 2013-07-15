@@ -26,6 +26,7 @@
 include("demo-songs.js");
 include("presets.js");
 include("player.js");
+include("jammer.js");
 include("deflate.js");
 include("inflate.js");
 include("rle.js");
