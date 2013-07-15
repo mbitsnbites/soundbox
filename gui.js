@@ -1622,7 +1622,8 @@ var CGUI = function()
     parent.appendChild(o);
 
     o = document.createElement("p");
-    o.innerHTML = "Licensed under the <a href=\"gpl.txt\">GPL v3</a> license.";
+    o.innerHTML = "Licensed under the <a href=\"gpl.txt\">GPL v3</a> license " +
+                  "(get the <a href=\"http://gitorious.org/soundbox/soundbox\">source</a>).";
     o.style.fontStyle = "italic";
     parent.appendChild(o);
 
