@@ -238,6 +238,7 @@ var CGUI = function()
   var mPlayGfxVUImg = new Image();
   var mPlayGfxLedOffImg = new Image();
   var mPlayGfxLedOnImg = new Image();
+  var mJammer = new CJammer();
 
   // Constant look-up-tables
   var mNoteNames = [
@@ -1101,6 +1102,7 @@ var CGUI = function()
     if (mEditMode != EDIT_NONE)
     {
       unfocusHTMLInputElements();
+      updateSongSpeed();
     }
   };
 
@@ -1286,7 +1288,9 @@ var CGUI = function()
       var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
       if (pat >= 0)
       {
-        mSong.songData[mSeqCol].c[pat].n[mPatternRow + mPatternCol*32] = n + 87;
+        var note = n + 87;
+        mJammer.addNote(note);
+        mSong.songData[mSeqCol].c[pat].n[mPatternRow + mPatternCol*32] = note;
         setSelectedPatternCell(mPatternCol, (mPatternRow + 1) % 32);
         updatePattern();
         return true;
@@ -1370,6 +1374,18 @@ var CGUI = function()
     // Clear the preset selection?
     if (resetPreset)
       clearPresetSelection();
+
+    // Update the jammer instrument
+    mJammer.updateInstr(instr.i);
+  };
+
+  var updateSongSpeed = function () {
+    // Determine song speed
+    var bpm = parseInt(document.getElementById("bpm").value);
+    if (bpm && (bpm > 40) && (bpm < 300)) {
+      mSong.rowLen = calcSamplesPerRow(bpm);
+      mJammer.updateRowLen(mSong.rowLen);
+    }
   };
 
   var updateSongRanges = function () {
@@ -1389,10 +1405,8 @@ var CGUI = function()
       mSong.endPattern--;
     }
 
-    // Determine song speed
-    var bpm = parseInt(document.getElementById("bpm").value);
-    if (bpm && (bpm > 40) && (bpm < 300))
-      mSong.rowLen = calcSamplesPerRow(bpm);
+    // Update the song speed
+    updateSongSpeed();
   };
 
   var showDialog = function () {
@@ -2839,6 +2853,9 @@ var CGUI = function()
       if (cmdNo >= 0)
         instr.i[cmdNo] = x;
 
+      // Update the jammer instrument
+      mJammer.updateInstr(instr.i);
+
       // Update the slider position
       updateSlider(mActiveSlider, x);
       clearPresetSelection();
@@ -3251,11 +3268,16 @@ var CGUI = function()
     var songData = getURLSongData(mGETParams && mGETParams.data && mGETParams.data[0]);
     var song = songData ? binToSong(songData) : null;
     mSong = song ? song : makeNewSong();
+
+    // Update UI according to the loaded song
     updateSongInfo();
     updateSequencer();
     updatePattern();
     updateFxTrack();
     updateInstrument(true);
+
+    // Update the jammer according to the loaded song
+    mJammer.updateRowLen(mSong.rowLen);
 
     // Initialize the song
     setEditMode(EDIT_PATTERN);
@@ -3411,6 +3433,9 @@ var CGUI = function()
     // Show the about dialog (if no song was loaded)
     if (!songData)
       showAboutDialog();
+
+    // Start the jammer
+    mJammer.start();
   };
 
 };

@@ -21,14 +21,14 @@
 
 "use strict";
 
-var CJammer = function() {
+var CJammer = function () {
 
   //--------------------------------------------------------------------------
   // Private members
   //--------------------------------------------------------------------------
 
   // Currently playing notes.
-  var MAX_POLYPHONY = 12;
+  var MAX_POLYPHONY = 8;
   var mPlayingNotes = [];
 
   // Current instrument.
@@ -40,110 +40,14 @@ var CJammer = function() {
   // Effect state.
   var mFXState;
 
+  // Delay buffers.
+  var MAX_DELAY = 131072;   // Must be a power of 2.
+  var mDlyLeft, mDlyRight;
 
-  //--------------------------------------------------------------------------
-  // Public interface.
-  //--------------------------------------------------------------------------
-
-  this.updateInstr = function (instr) {
-    // Copy instrument description.
-    mInstr = [];
-    for (var i = 0; i < instr.length; ++i) {
-      mInstr.push(instr[i];
-    }
-  };
-
-  this.updateRowLen = function (rowLen) {
-    mRowLen = rowLen;
-  };
-
-  this.addNote = function (n) {
-    var t = (new Date()).getTime();
-
-    // Create a new note object.
-    var note = {
-      startT: t;
-      env: 0,
-      o1t: 0,
-      o2t: 0,
-      o1f: getnotefreq(n + mInstr[2] - 128),
-      o2f: getnotefreq(n + mInstr[6] - 128) * (1 + 0.0008 * mInstr[7]),
-      instr: new Array(13)
-    };
-
-    // Copy (snapshot) the oscillator/env part of the current instrument.
-    for (var i = 0; i < 13; ++i) {
-      note.instr.push(mInstr[i]);
-    }
-
-    // Find an empty channel, or replace the oldest note.
-    var oldestIdx = 0;
-    var oldestDt = -100;
-    for (var i = 0; i < MAX_POLYPHONY; ++i) {
-      // If the channel is currently free - use it.
-      if (mPlayingNotes[i] != undefined) {
-        mPlayingNotes[i] = note;
-        return;
-      }
-
-      // Check if this channel has the oldest playing note.
-      var dt = t - mPlayingNotes[i].startT;
-      if (dt > oldestDt) {
-        oldestIdx = i;
-        oldestDt = dt;
-      }
-    }
-
-    // All channels are playing - replace the oldest one.
-    mPlayingNotes[oldestIdx] = note;
-  };
-
-  this.start = function () {
-    // Clear state.
-    mInstr = [
-      2, // OSC1_WAVEFORM
-      100, // OSC1_VOL
-      128, // OSC1_SEMI
-      0, // OSC1_XENV
-      3, // OSC2_WAVEFORM
-      201, // OSC2_VOL
-      128, // OSC2_SEMI
-      0, // OSC2_DETUNE
-      0, // OSC2_XENV
-      0, // NOISE_VOL
-      5, // ENV_ATTACK
-      6, // ENV_SUSTAIN
-      58, // ENV_RELEASE
-
-      0, // LFO_WAVEFORM
-      195, // LFO_AMT
-      6, // LFO_FREQ
-      1, // LFO_FX_FREQ
-      2, // FX_FILTER
-      135, // FX_FREQ
-      0, // FX_RESONANCE
-      0, // FX_DIST
-      32, // FX_DRIVE
-      147, // FX_PAN_AMT
-      6, // FX_PAN_FREQ
-      121, // FX_DELAY_AMT
-      6 // FX_DELAY_TIME
-    ];
-
-    mRowLen = 551;  // 120 BPM
-
-    mFXState = {
-      low: 0,
-      band: 0,
-      filterActive: false
-    };
-
-    // TODO(m): Implement me!
-  };
-
-  this.stop = function () {
-    // TODO(m): Implement me!
-  };
+  // Web Audio context.
+  var mAudioContext;
+  var mSampleRate;
+  var mRateScale;
 
 
   //--------------------------------------------------------------------------
@@ -170,8 +74,7 @@ var CJammer = function() {
   };
 
   var getnotefreq = function (n) {
-    // 174.61.. / 44100 = 0.003959503758 (F)
-    return 0.003959503758 * Math.pow(2, (n-128)/12);
+    return (174.614115728 / mSampleRate) * Math.pow(2, (n-128)/12);
   };
 
   // Array of oscillator functions.
@@ -184,16 +87,17 @@ var CJammer = function() {
 
   // Fill the buffer with more audio, and advance state accordingly.
   var generateTimeSlice = function (leftBuf, rightBuf) {
-    var numSamples = rightBuf.length >> 1;
+    var numSamples = rightBuf.length;
 
     // Local variables
     var i, j, k, b, p, row, col, n, cp,
         t, lfor, e, x, rsample, rowStartSample, f, da;
 
-    // Put performance critical items in local variables
-    var chnBuf = new Int32Array(mNumWords),
-        instr = mSong.songData[mCurrentCol],
-        rowLen = mSong.rowLen;
+    // Clear buffers
+    for (k = 0; k < numSamples; ++k) {
+      leftBuf[k] = 0;
+      rightBuf[k] = 0;
+    }
 
     // Generate active notes.
     for (i = 0; i < MAX_POLYPHONY; ++i) {
@@ -206,9 +110,9 @@ var CJammer = function() {
             o2vol = note.instr[5],
             o2xenv = note.instr[8],
             noiseVol = note.instr[9],
-            attack = note.instr[10] * note.instr[10] * 4,
-            sustain = note.instr[11] * note.instr[11] * 4,
-            release = note.instr[12] * note.instr[12] * 4,
+            attack = Math.round(note.instr[10] * note.instr[10] * 4 * mRateScale),
+            sustain = Math.round(note.instr[11] * note.instr[11] * 4 * mRateScale),
+            release = Math.round(note.instr[12] * note.instr[12] * 4 * mRateScale),
             releaseInv = 1 / release;
 
         // Note frequencies for the oscillators.
@@ -217,14 +121,15 @@ var CJammer = function() {
         // Current oscillator state.
         var o1t = note.o1t, o2t = note.o2t;
 
-        // Generate one note (attack + sustain + release)
-        for (j = note.env, k = 0; k < numSamples; j++, k++) {
-          if (j >= attack + sustain + release) {
-            // End of note.
-            mPlayingNotes[i] = undefined;
-            break;
-          }
-
+        // Generate note.
+        var samplesLeft = attack + sustain + release - note.env;
+        if (samplesLeft <= numSamples) {
+          // End of note.
+          mPlayingNotes[i] = undefined;
+        } else {
+          samplesLeft = numSamples;
+        }
+        for (j = note.env, k = 0; k < samplesLeft; j++, k++) {
           // Envelope
           e = 1;
           if (j < attack) {
@@ -258,15 +163,20 @@ var CJammer = function() {
           rightBuf[k] += 0.002441481 * rsample * e;
         }
 
-        // Save envelope position state.
+        // Save state.
         note.env = j;
+        note.o1t = o1t;
+        note.o2t = o2t;
       }
     }
 
     // And the effects...
-    var low = mFXState.low, band = mFXState.band,
-        filterActive = mFXState.filterActive;
-    var lsample, high;
+    var pos = mFXState.pos,
+        low = mFXState.low,
+        band = mFXState.band,
+        filterActive = mFXState.filterActive,
+        dlyPos = mFXState.dlyPos;
+    var lsample, high, dlyRead, dlyMask = MAX_DELAY - 1;
 
     // Put performance critical instrument properties in local variables
     var oscLFO = mOscillators[mInstr[13]],
@@ -274,17 +184,24 @@ var CJammer = function() {
         lfoFreq = Math.pow(2, mInstr[15] - 9) / mRowLen,
         fxLFO = mInstr[16],
         fxFilter = mInstr[17],
-        fxFreq = mInstr[18] * 43.23529 * 3.141592 / 44100,
+        fxFreq = mInstr[18] * 43.23529 * 3.141592 / mSampleRate,
         q = 1 - mInstr[19] / 255,
-        dist = mInstr[20] * 1e-5,
+        dist = mInstr[20] * 1e-5 * 32767,
         drive = mInstr[21] / 32,
         panAmt = mInstr[22] / 512,
         panFreq = 6.283184 * Math.pow(2, mInstr[23] - 9) / mRowLen,
         dlyAmt = mInstr[24] / 255,
-        dly = mInstr[25] * mRowLen;
+        dly = (mInstr[25] * mRowLen) >> 1;
+
+    // Limit the delay to the delay buffer size.
+    if (dly >= MAX_DELAY) {
+      dly = MAX_DELAY - 1;
+    }
 
     // Perform effects for this time slice
     for (j = 0; j < numSamples; j++) {
+      k = (pos + j) * 2;
+
       // Dry mono-sample.
       rsample = rightBuf[j];
 
@@ -322,27 +239,137 @@ var CJammer = function() {
         lsample = 0;
       }
 
-      // TODO(m): We need to add a delay (ring) buffer for the delay effect.
-/*
       // Delay is always done, since it does not need sound input.
-      if (k >= dly) {
-        // Left channel = left + right[-p] * t
-        lsample += rightBuf[k-dly+1] * dlyAmt;
-
-        // Right channel = right + left[-p] * t
-        rsample += rightBuf[k-dly] * dlyAmt;
-      }
-*/
+      dlyRead = (dlyPos - dly) & dlyMask;
+      lsample += mDlyRight[dlyRead] * dlyAmt;
+      rsample += mDlyLeft[dlyRead] * dlyAmt;
+      mDlyLeft[dlyPos] = lsample;
+      mDlyRight[dlyPos] = rsample;
+      dlyPos = (dlyPos + 1) & dlyMask;
 
       // Store wet stereo sample.
       leftBuf[j] = lsample;
       rightBuf[j] = rsample;
     }
 
+    // Update effect sample position.
+    pos += numSamples;
+
+    // Prevent rounding problems...
+    while (pos > mRowLen * 2048) {
+      pos -= mRowLen * 2048;
+    }
+
     // Store filter state.
+    mFXState.pos = pos;
     mFXState.low = low;
     mFXState.band = band;
     mFXState.filterActive = filterActive;
+    mFXState.dlyPos = dlyPos;
   };
+
+
+  //--------------------------------------------------------------------------
+  // Public interface.
+  //--------------------------------------------------------------------------
+
+  this.start = function () {
+    // Create an audio context.
+    if (window.AudioContext) {
+      mAudioContext = new AudioContext();
+    } else if (window.webkitAudioContext) {
+      mAudioContext = new webkitAudioContext();
+      mAudioContext.createScriptProcessor = mAudioContext.createJavaScriptNode;
+    } else {
+      mAudioContext = undefined;
+      return;
+    }
+
+    // Get actual sample rate (SoundBox is hard-coded to 44100 samples/s).
+    mSampleRate = mAudioContext.sampleRate;
+    mRateScale = mSampleRate / 44100;
+
+    // Clear state.
+    mFXState = {
+      pos: 0,
+      low: 0,
+      band: 0,
+      filterActive: false,
+      dlyPos: 0
+    };
+
+    // Create delay buffers (lengths must be equal and a power of 2).
+    mDlyLeft = new Float32Array(MAX_DELAY);
+    mDlyRight = new Float32Array(MAX_DELAY);
+
+    // Create a script processor node.
+    var node = mAudioContext.createScriptProcessor(2048);
+    node.onaudioprocess = function (event) {
+      var leftBuf = event.outputBuffer.getChannelData(0);
+      var rightBuf = event.outputBuffer.getChannelData(1);
+      generateTimeSlice(leftBuf, rightBuf);
+    };
+
+    // Connect the script node to the output.
+    node.connect(mAudioContext.destination);
+  };
+
+  this.stop = function () {
+    // TODO(m): Implement me!
+  };
+
+  this.updateInstr = function (instr) {
+    // Copy instrument description.
+    mInstr = [];
+    for (var i = 0; i < instr.length; ++i) {
+      mInstr.push(instr[i]);
+    }
+  };
+
+  this.updateRowLen = function (rowLen) {
+    mRowLen = Math.round(rowLen * mRateScale);
+  };
+
+  this.addNote = function (n) {
+    var t = (new Date()).getTime();
+
+    // Create a new note object.
+    var note = {
+      startT: t,
+      env: 0,
+      o1t: 0,
+      o2t: 0,
+      o1f: getnotefreq(n + mInstr[2] - 128),
+      o2f: getnotefreq(n + mInstr[6] - 128) * (1 + 0.0008 * mInstr[7]),
+      instr: new Array(13)
+    };
+
+    // Copy (snapshot) the oscillator/env part of the current instrument.
+    for (var i = 0; i < 13; ++i) {
+      note.instr[i] = mInstr[i];
+    }
+
+    // Find an empty channel, or replace the oldest note.
+    var oldestIdx = 0;
+    var oldestDt = -100;
+    for (var i = 0; i < MAX_POLYPHONY; ++i) {
+      // If the channel is currently free - use it.
+      if (mPlayingNotes[i] == undefined) {
+        mPlayingNotes[i] = note;
+        return;
+      }
+
+      // Check if this channel has the oldest playing note.
+      var dt = t - mPlayingNotes[i].startT;
+      if (dt > oldestDt) {
+        oldestIdx = i;
+        oldestDt = dt;
+      }
+    }
+
+    // All channels are playing - replace the oldest one.
+    mPlayingNotes[oldestIdx] = note;
+  };
+
 };
 
