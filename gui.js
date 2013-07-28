@@ -1750,25 +1750,14 @@ var CGUI = function()
     // Start time measurement
     var d1 = new Date();
 
-    // Generate audio data
-    // NOTE: We'd love to do this in a Web Worker instead! Currently we do it
-    // in a setInterval() timer loop instead in order not to block the main UI.
+    // Generate audio data in a worker.
     mPlayer = new CPlayer();
-    mPlayer.init(mSong, opts);
-    var generateIterate = function () {
-      // Generate another extra piece of sound...
-      var status = mPlayer.generate();
-
+    mPlayer.generate(mSong, opts, function (progress) {
       // Update progress bar
       var o = document.getElementById("progressBar");
-      o.style.width = Math.floor(200 * status.progress) + "px";
+      o.style.width = Math.floor(200 * progress) + "px";
 
-      // Done?
-      if (status.done)
-      {
-        // Stop the interval timer
-        clearInterval(intervalID);
-
+      if (progress >= 1) {
         // Create the wave file
         var wave = mPlayer.createWave();
 
@@ -1782,8 +1771,7 @@ var CGUI = function()
         // Call the callback function
         doneFun(wave);
       }
-    };
-    var intervalID = setInterval(generateIterate, 1);
+    });
   };
 
   var stopAudio = function () {
