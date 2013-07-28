@@ -23,304 +23,302 @@
 
 var CPlayerWorker = function() {
 
-    //--------------------------------------------------------------------------
-    // Private methods
-    //--------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  // Private methods
+  //----------------------------------------------------------------------------
 
-    // Oscillators
-    var osc_sin = function (value) {
-        return Math.sin(value * 6.283184);
-    };
+  // Oscillators
+  var osc_sin = function (value) {
+    return Math.sin(value * 6.283184);
+  };
 
-    var osc_saw = function (value) {
-        return 2 * (value % 1) - 1;
-    };
+  var osc_saw = function (value) {
+    return 2 * (value % 1) - 1;
+  };
 
-    var osc_square = function (value) {
-        return (value % 1) < 0.5 ? 1 : -1;
-    };
+  var osc_square = function (value) {
+    return (value % 1) < 0.5 ? 1 : -1;
+  };
 
-    var osc_tri = function (value) {
-        var v2 = (value % 1) * 4;
-        if(v2 < 2) return v2 - 1;
-        return 3 - v2;
-    };
+  var osc_tri = function (value) {
+    var v2 = (value % 1) * 4;
+    if(v2 < 2) return v2 - 1;
+    return 3 - v2;
+  };
 
-    // Array of oscillator functions
-    var mOscillators = [
-        osc_sin,
-        osc_square,
-        osc_saw,
-        osc_tri
-    ];
+  // Array of oscillator functions
+  var mOscillators = [
+    osc_sin,
+    osc_square,
+    osc_saw,
+    osc_tri
+  ];
 
-    var getnotefreq = function (n) {
-        // 174.61.. / 44100 = 0.003959503758 (F)
-        return 0.003959503758 * Math.pow(2, (n-128)/12);
-    };
+  var getnotefreq = function (n) {
+    // 174.61.. / 44100 = 0.003959503758 (F)
+    return 0.003959503758 * Math.pow(2, (n-128)/12);
+  };
 
 
-    //--------------------------------------------------------------------------
-    // Public methods
-    //--------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  // Public methods
+  //----------------------------------------------------------------------------
 
-    // Initialize buffers etc.
-    this.init = function (song, opts) {
-        // Handle optional arguments
-        this.firstRow = 0;
-        this.lastRow = song.endPattern - 2;
-        this.firstCol = 0;
-        this.lastCol = 7;
-        if (opts) {
-            this.firstRow = opts.firstRow;
-            this.lastRow = opts.lastRow;
-            this.firstCol = opts.firstCol;
-            this.lastCol = opts.lastCol;
-        }
+  // Initialize buffers etc.
+  this.init = function (song, opts) {
+    // Handle optional arguments
+    this.firstRow = 0;
+    this.lastRow = song.endPattern - 2;
+    this.firstCol = 0;
+    this.lastCol = 7;
+    if (opts) {
+      this.firstRow = opts.firstRow;
+      this.lastRow = opts.lastRow;
+      this.firstCol = opts.firstCol;
+      this.lastCol = opts.lastCol;
+    }
 
-        // Prepare song info
-        this.song = song;
-        this.numSamples = song.rowLen * 32 * (this.lastRow - this.firstRow + 1);
-        this.numWords = this.numSamples * 2;
+    // Prepare song info
+    this.song = song;
+    this.numSamples = song.rowLen * 32 * (this.lastRow - this.firstRow + 1);
+    this.numWords = this.numSamples * 2;
 
-        // Create work buffers (initially cleared)
-        this.mixBufWork = new Int32Array(this.numWords);
+    // Create work buffers (initially cleared)
+    this.mixBufWork = new Int32Array(this.numWords);
+  };
 
-        // Init iteration state variables
-        this.currentCol = this.firstCol;
-    };
+  var createNote = function (instr, n) {
+    var osc1 = mOscillators[instr.i[0]],
+        o1vol = instr.i[1],
+        o1xenv = instr.i[3],
+        osc2 = mOscillators[instr.i[4]],
+        o2vol = instr.i[5],
+        o2xenv = instr.i[8],
+        noiseVol = instr.i[9],
+        attack = instr.i[10] * instr.i[10] * 4,
+        sustain = instr.i[11] * instr.i[11] * 4,
+        release = instr.i[12] * instr.i[12] * 4,
+        releaseInv = 1 / release;
 
-    var createNote = function (instr, n) {
-        var osc1 = mOscillators[instr.i[0]],
-            o1vol = instr.i[1],
-            o1xenv = instr.i[3],
-            osc2 = mOscillators[instr.i[4]],
-            o2vol = instr.i[5],
-            o2xenv = instr.i[8],
-            noiseVol = instr.i[9],
-            attack = instr.i[10] * instr.i[10] * 4,
-            sustain = instr.i[11] * instr.i[11] * 4,
-            release = instr.i[12] * instr.i[12] * 4,
-            releaseInv = 1 / release;
+    var noteBuf = new Int32Array(attack + sustain + release);
 
-        var noteBuf = new Int32Array(attack + sustain + release);
+    // Calculate note frequencies for the oscillators
+    var o1t = getnotefreq(n + instr.i[2] - 128);
+    var o2t = getnotefreq(n + instr.i[6] - 128) * (1 + 0.0008 * instr.i[7]);
 
-        // Calculate note frequencies for the oscillators
-        var o1t = getnotefreq(n + instr.i[2] - 128);
-        var o2t = getnotefreq(n + instr.i[6] - 128) * (1 + 0.0008 * instr.i[7]);
+    // Re-trig oscillators
+    var c1 = 0, c2 = 0;
 
-        // Re-trig oscillators
-        var c1 = 0, c2 = 0;
+    // Local variables.
+    var j, e, t, rsample;
 
-        // Local variables.
-        var j, e, t, rsample;
+    // Generate one note (attack + sustain + release)
+    for (j = 0; j < attack + sustain + release; j++) {
+      // Envelope
+      e = 1;
+      if (j < attack) {
+        e = j / attack;
+      } else if (j >= attack + sustain) {
+        e -= (j - attack - sustain) * releaseInv;
+      }
 
-        // Generate one note (attack + sustain + release)
-        for (j = 0; j < attack + sustain + release; j++) {
-            // Envelope
-            e = 1;
-            if (j < attack) {
-                e = j / attack;
-            } else if (j >= attack + sustain) {
-                e -= (j - attack - sustain) * releaseInv;
+      // Oscillator 1
+      t = o1t;
+      if (o1xenv) {
+        t *= e * e;
+      }
+      c1 += t;
+      rsample = osc1(c1) * o1vol;
+
+      // Oscillator 2
+      t = o2t;
+      if (o2xenv) {
+        t *= e * e;
+      }
+      c2 += t;
+      rsample += osc2(c2) * o2vol;
+
+      // Noise oscillator
+      if (noiseVol) {
+        rsample += (2 * Math.random() - 1) * noiseVol;
+      }
+
+      // Add to (mono) channel buffer
+      noteBuf[j] = (80 * rsample * e) | 0;
+    }
+
+    return noteBuf;
+  };
+
+  // Generate audio data for a single track
+  this.generate = function () {
+    // Local variables
+    var i, j, b, p, row, col, currentCol, n, cp,
+        k, t, lfor, e, x, rsample, rowStartSample, f, da;
+
+    for (currentCol = this.firstCol; currentCol <= this.lastCol; currentCol++) {
+      // Put performance critical items in local variables
+      var chnBuf = new Int32Array(this.numWords),
+          mixBuf = this.mixBufWork,
+          waveSamples = this.numSamples,
+          waveWords = this.numWords,
+          instr = this.song.songData[currentCol],
+          rowLen = this.song.rowLen;
+
+      // Clear effect state
+      var low = 0, band = 0, high;
+      var lsample, filterActive = false;
+
+      // Clear note cache.
+      var noteCache = [];
+
+      // Patterns
+      for (p = this.firstRow; p <= this.lastRow; ++p) {
+        cp = instr.p[p];
+
+        // Pattern rows
+        for (row = 0; row < 32; ++row) {
+            // Execute effect command.
+            var cmdNo = cp ? instr.c[cp - 1].f[row] : 0;
+            if (cmdNo) {
+              instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + 32] || 0;
+
+              // Clear the note cache since the instrument has changed.
+              if (cmdNo < 14) {
+                noteCache = [];
+              }
             }
 
-            // Oscillator 1
-            t = o1t;
-            if (o1xenv) {
-                t *= e * e;
-            }
-            c1 += t;
-            rsample = osc1(c1) * o1vol;
+            // Put performance critical instrument properties in local variables
+            var oscLFO = mOscillators[instr.i[13]],
+                lfoAmt = instr.i[14] / 512,
+                lfoFreq = Math.pow(2, instr.i[15] - 9) / rowLen,
+                fxLFO = instr.i[16],
+                fxFilter = instr.i[17],
+                fxFreq = instr.i[18] * 43.23529 * 3.141592 / 44100,
+                q = 1 - instr.i[19] / 255,
+                dist = instr.i[20] * 1e-5,
+                drive = instr.i[21] / 32,
+                panAmt = instr.i[22] / 512,
+                panFreq = 6.283184 * Math.pow(2, instr.i[23] - 9) / rowLen,
+                dlyAmt = instr.i[24] / 255,
+                dly = instr.i[25] * rowLen;
 
-            // Oscillator 2
-            t = o2t;
-            if (o2xenv) {
-                t *= e * e;
-            }
-            c2 += t;
-            rsample += osc2(c2) * o2vol;
+            // Calculate start sample number for this row in the pattern
+            rowStartSample = ((p - this.firstRow) * 32 + row) * rowLen;
 
-            // Noise oscillator
-            if (noiseVol) {
-                rsample += (2 * Math.random() - 1) * noiseVol;
-            }
-
-            // Add to (mono) channel buffer
-            noteBuf[j] = (80 * rsample * e) | 0;
-        }
-
-        return noteBuf;
-    };
-
-    // Generate audio data for a single track
-    this.generate = function () {
-        // Local variables
-        var i, j, b, p, row, col, n, cp,
-            k, t, lfor, e, x, rsample, rowStartSample, f, da;
-
-        // Put performance critical items in local variables
-        var chnBuf = new Int32Array(this.numWords),
-            mixBuf = this.mixBufWork,
-            waveSamples = this.numSamples,
-            waveWords = this.numWords,
-            instr = this.song.songData[this.currentCol],
-            rowLen = this.song.rowLen;
-
-        // Clear effect state
-        var low = 0, band = 0, high;
-        var lsample, filterActive = false;
-
-        // Clear note cache.
-        var noteCache = [];
-
-         // Patterns
-         for (p = this.firstRow; p <= this.lastRow; ++p) {
-            cp = instr.p[p];
-
-            // Pattern rows
-            for (row = 0; row < 32; ++row) {
-                // Execute effect command.
-                var cmdNo = cp ? instr.c[cp - 1].f[row] : 0;
-                if (cmdNo) {
-                    instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + 32] || 0;
-
-                    // Clear the note cache since the instrument has changed.
-                    if (cmdNo < 14) {
-                        noteCache = [];
-                    }
+            // Generate notes for this pattern row
+            for (col = 0; col < 4; ++col) {
+              n = cp ? instr.c[cp - 1].n[row + col * 32] : 0;
+              if (n) {
+                if (!noteCache[n]) {
+                  noteCache[n] = createNote(instr, n);
                 }
 
-                // Put performance critical instrument properties in local variables
-                var oscLFO = mOscillators[instr.i[13]],
-                    lfoAmt = instr.i[14] / 512,
-                    lfoFreq = Math.pow(2, instr.i[15] - 9) / rowLen,
-                    fxLFO = instr.i[16],
-                    fxFilter = instr.i[17],
-                    fxFreq = instr.i[18] * 43.23529 * 3.141592 / 44100,
-                    q = 1 - instr.i[19] / 255,
-                    dist = instr.i[20] * 1e-5,
-                    drive = instr.i[21] / 32,
-                    panAmt = instr.i[22] / 512,
-                    panFreq = 6.283184 * Math.pow(2, instr.i[23] - 9) / rowLen,
-                    dlyAmt = instr.i[24] / 255,
-                    dly = instr.i[25] * rowLen;
-
-                // Calculate start sample number for this row in the pattern
-                rowStartSample = ((p - this.firstRow) * 32 + row) * rowLen;
-
-                // Generate notes for this pattern row
-                for (col = 0; col < 4; ++col) {
-                    n = cp ? instr.c[cp - 1].n[row + col * 32] : 0;
-                    if (n) {
-                        if (!noteCache[n]) {
-                            noteCache[n] = createNote(instr, n);
-                        }
-
-                        // Copy note from the note cache
-                        var noteBuf = noteCache[n];
-                        for (j = 0, i = rowStartSample * 2; j < noteBuf.length; j++, i += 2) {
-                          chnBuf[i] += noteBuf[j];
-                        }
-                    }
+                // Copy note from the note cache
+                var noteBuf = noteCache[n];
+                for (j = 0, i = rowStartSample * 2; j < noteBuf.length; j++, i += 2) {
+                  chnBuf[i] += noteBuf[j];
                 }
-
-                // Perform effects for this pattern row
-                for (j = 0; j < rowLen; j++) {
-                    // Dry mono-sample
-                    k = (rowStartSample + j) * 2;
-                    rsample = chnBuf[k];
-
-                    // We only do effects if we have some sound input
-                    if (rsample || filterActive) {
-                        // State variable filter
-                        f = fxFreq;
-                        if (fxLFO) {
-                            f *= oscLFO(lfoFreq * k) * lfoAmt + 0.5;
-                        }
-                        f = 1.5 * Math.sin(f);
-                        low += f * band;
-                        high = q * (rsample - band) - low;
-                        band += f * high;
-                        rsample = fxFilter == 3 ? band : fxFilter == 1 ? high : low;
-
-                        // Distortion
-                        if (dist) {
-                            rsample *= dist;
-                            rsample = rsample < 1 ? rsample > -1 ? osc_sin(rsample*.25) : -1 : 1;
-                            rsample /= dist;
-                        }
-
-                        // Drive
-                        rsample *= drive;
-
-                        // Is the filter active (i.e. still audiable)?
-                        filterActive = rsample * rsample > 1e-5;
-
-                        // Panning
-                        t = Math.sin(panFreq * k) * panAmt + 0.5;
-                        lsample = rsample * (1 - t);
-                        rsample *= t;
-                    } else {
-                        lsample = 0;
-                    }
-
-                    // Delay is always done, since it does not need sound input
-                    if (k >= dly) {
-                        // Left channel = left + right[-p] * t
-                        lsample += chnBuf[k-dly+1] * dlyAmt;
-
-                        // Right channel = right + left[-p] * t
-                        rsample += chnBuf[k-dly] * dlyAmt;
-                    }
-
-                    // Store in stereo channel buffer (needed for the delay effect)
-                    chnBuf[k] = lsample | 0;
-                    chnBuf[k+1] = rsample | 0;
-
-                    // ...and add to stereo mix buffer
-                    mixBuf[k] += lsample | 0;
-                    mixBuf[k+1] += rsample | 0;
-                }
+              }
             }
 
-            // TODO: Post progress...
+            // Perform effects for this pattern row
+            for (j = 0; j < rowLen; j++) {
+              // Dry mono-sample
+              k = (rowStartSample + j) * 2;
+              rsample = chnBuf[k];
+
+              // We only do effects if we have some sound input
+              if (rsample || filterActive) {
+                // State variable filter
+                f = fxFreq;
+                if (fxLFO) {
+                  f *= oscLFO(lfoFreq * k) * lfoAmt + 0.5;
+                }
+                f = 1.5 * Math.sin(f);
+                low += f * band;
+                high = q * (rsample - band) - low;
+                band += f * high;
+                rsample = fxFilter == 3 ? band : fxFilter == 1 ? high : low;
+
+                // Distortion
+                if (dist) {
+                  rsample *= dist;
+                  rsample = rsample < 1 ? rsample > -1 ? osc_sin(rsample*.25) : -1 : 1;
+                  rsample /= dist;
+                }
+
+                // Drive
+                rsample *= drive;
+
+                // Is the filter active (i.e. still audiable)?
+                filterActive = rsample * rsample > 1e-5;
+
+                // Panning
+                t = Math.sin(panFreq * k) * panAmt + 0.5;
+                lsample = rsample * (1 - t);
+                rsample *= t;
+              } else {
+                lsample = 0;
+              }
+
+              // Delay is always done, since it does not need sound input
+              if (k >= dly) {
+                // Left channel = left + right[-p] * t
+                lsample += chnBuf[k-dly+1] * dlyAmt;
+
+                // Right channel = right + left[-p] * t
+                rsample += chnBuf[k-dly] * dlyAmt;
+              }
+
+              // Store in stereo channel buffer (needed for the delay effect)
+              chnBuf[k] = lsample | 0;
+              chnBuf[k+1] = rsample | 0;
+
+              // ...and add to stereo mix buffer
+              mixBuf[k] += lsample | 0;
+              mixBuf[k+1] += rsample | 0;
+            }
         }
 
-        this.currentCol++;
+        // Post progress to the main thread...
+        var progress = (currentCol - this.firstCol + (p - this.firstRow) /
+                        (this.lastRow - this.firstRow + 1)) /
+                       (this.lastCol - this.firstCol + 1);
+        postMessage({
+          cmd: "progress",
+          progress: progress,
+          buffer: null
+        });
+      }
+    }
+  };
 
-        // Next iteration
-        return {
-          done: this.currentCol > this.lastCol,
-          progress: (this.currentCol - this.firstCol) / (this.lastCol - this.firstCol + 1)
-        };
-    };
+  // Get the final buffer (as generated by the generate() method).
+  this.getBuf = function () {
+    // We no longer need the channel working buffer
+    this.chnBufWork = null;
 
-    // Get the final buffer (as generated by the generate() method).
-    this.getBuf = function () {
-        // We no longer need the channel working buffer
-        this.chnBufWork = null;
-
-        return this.mixBufWork;
-    };
+    return this.mixBufWork;
+  };
 };
 
 var gPlayerWorker = new CPlayerWorker();
 
 onmessage = function (event) {
-    if (event.data.cmd === "generate") {
-        gPlayerWorker.init(event.data.song, event.data.opts);
-        while (true) {
-            var status = gPlayerWorker.generate();
-            postMessage({
-                cmd: "progress",
-                progress: status.progress,
-                buffer: status.done ? gPlayerWorker.getBuf() : null
-            });
-            if (status.done) {
-                break;
-            }
-        }
-    }
+  if (event.data.cmd === "generate") {
+    // Generate the sound data.
+    gPlayerWorker.init(event.data.song, event.data.opts);
+    gPlayerWorker.generate();
+
+    // Signal that we are done, and send the resulting buffer over to the main
+    // thread.
+    postMessage({
+      cmd: "progress",
+      progress: 1,
+      buffer: gPlayerWorker.getBuf()
+    });
+  }
 };
 
