@@ -46,6 +46,7 @@ var CJammer = function () {
 
   // Web Audio context.
   var mAudioContext;
+  var mScriptNode;
   var mSampleRate;
   var mRateScale;
 
@@ -303,15 +304,15 @@ var CJammer = function () {
     mDlyRight = new Float32Array(MAX_DELAY);
 
     // Create a script processor node with no inputs and one stereo output.
-    var node = mAudioContext.createScriptProcessor(2048, 0, 2);
-    node.onaudioprocess = function (event) {
+    mScriptNode = mAudioContext.createScriptProcessor(2048, 0, 2);
+    mScriptNode.onaudioprocess = function (event) {
       var leftBuf = event.outputBuffer.getChannelData(0);
       var rightBuf = event.outputBuffer.getChannelData(1);
       generateTimeSlice(leftBuf, rightBuf);
     };
 
     // Connect the script node to the output.
-    node.connect(mAudioContext.destination);
+    mScriptNode.connect(mAudioContext.destination);
   };
 
   this.stop = function () {
