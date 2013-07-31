@@ -894,6 +894,12 @@ var CGUI = function()
     var i, j, k;
     var jsData = "";
   
+    jsData += "    // This music has been exported by SoundBox. You can use it with\n";
+    jsData += "    // http://sb.bitsnbites.eu/player-small.js in your own product.\n\n";
+
+    jsData += "    // See http://sb.bitsnbites.eu/demo.html for an example of how to\n";
+    jsData += "    // use it in a demo.\n\n";
+
     jsData += "    // Song data\n";
     jsData += "    var song = {\n";
 
