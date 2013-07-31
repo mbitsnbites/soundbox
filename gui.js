@@ -3067,6 +3067,7 @@ var CGUI = function()
         }
         break;
 
+      case 8:   // BACKSPACE (Mac delete)
       case 46:  // DELETE
         if (mEditMode == EDIT_SEQUENCE)
         {
