@@ -302,8 +302,8 @@ var CJammer = function () {
     mDlyLeft = new Float32Array(MAX_DELAY);
     mDlyRight = new Float32Array(MAX_DELAY);
 
-    // Create a script processor node.
-    var node = mAudioContext.createScriptProcessor(2048);
+    // Create a script processor node with no inputs and one stereo output.
+    var node = mAudioContext.createScriptProcessor(2048, 0, 2);
     node.onaudioprocess = function (event) {
       var leftBuf = event.outputBuffer.getChannelData(0);
       var rightBuf = event.outputBuffer.getChannelData(1);
