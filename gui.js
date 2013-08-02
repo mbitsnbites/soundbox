@@ -30,9 +30,10 @@ include("jammer.js");
 include("deflate.js");
 include("inflate.js");
 include("rle.js");
-include("Blob.js");
-include("FileSaver.js");
 
+include("third_party/Blob.js");
+include("third_party/FileSaver.js");
+include("third_party/WebMIDIAPI.js");
 
 "use strict";
 
@@ -1009,6 +1010,86 @@ var CGUI = function()
   };
 
 
+  //----------------------------------------------------------------------------
+  // Midi interaction.
+  // Based on example code by Chris Wilson.
+  //----------------------------------------------------------------------------
+
+  var mSelectMIDI;
+  var mMIDIAccess;
+  var mMIDIIn;
+
+  var midiMessageReceived = function (ev) {
+    var cmd = ev.data[0] >> 4;
+    var channel = ev.data[0] & 0xf;
+    var noteNumber = ev.data[1];
+    var velocity = ev.data[2];
+
+    if (channel == 9) {
+      return;
+    }
+
+    if (cmd == 9 && velocity > 0) {
+      // Note on (note on with velocity zero is the same as note off).
+      // NOTE: Note no. 69 is A4 (440 Hz), which is note no. 144 in SoundBox.
+      addPatternNote(noteNumber + 75);
+    } else if (cmd == 14) {
+      // Pitch wheel
+      var pitch = ((velocity * 128.0 + noteNumber)-8192) / 8192.0;
+      // TODO(m): We could use this for controlling some instrument parameter...
+    }
+  };
+
+  var selectMIDIIn = function (ev) {
+    mMIDIIn = mMIDIAccess.inputs()[mSelectMIDI.selectedIndex];
+    mMIDIIn.onmidimessage = midiMessageReceived;
+  };
+
+  var onMIDIStarted = function (midi) {
+    mMIDIAccess = midi;
+
+    var list = mMIDIAccess.inputs();
+
+    // Detect preferred device.
+    var preferredIndex = 0;
+    for (var i = 0; i < list.length; i++) {
+      var str = list[i].name.toString().toLowerCase();
+      if ((str.indexOf("keyboard") != -1)) {
+        preferredIndex = i;
+        break;
+      }
+    }
+
+    // Populate the MIDI input selection drop down box.
+    mSelectMIDI.options.length = 0;
+    if (list.length) {
+      for (var i = 0; i < list.length; i++) {
+        mSelectMIDI.options[i] = new Option(list[i].name, list[i].fingerprint,
+            i == preferredIndex, i == preferredIndex);
+      }
+
+      mMIDIIn = list[preferredIndex];
+      mMIDIIn.onmidimessage = midiMessageReceived;
+
+      mSelectMIDI.onchange = selectMIDIIn;
+    } else {
+      mSelectMIDI.options[0] = new Option("(No MIDI device)", 0, false, false);
+    }
+
+    // Show the MIDI input selection box.
+    mSelectMIDI.style.display = "inline";
+  }
+
+  var onMIDISystemError = function (err) {
+    // TODO(m): Log an error message somehow (err.code)...
+  };
+
+  var initMIDI = function () {
+    mSelectMIDI = document.getElementById("midiInput");
+    navigator.requestMIDIAccess().then(onMIDIStarted, onMIDISystemError);
+  };
+
+
   //--------------------------------------------------------------------------
   // Helper functions
   //--------------------------------------------------------------------------
@@ -1286,7 +1367,11 @@ var CGUI = function()
   };
 
   var addPatternNote = function (n) {
-    // Edit pattern
+    // Calculate note number and trigger a new note in the jammer.
+    var note = n + 87;
+    mJammer.addNote(note);
+
+    // Edit pattern.
     if (mEditMode == EDIT_PATTERN &&
         mSeqCol == mSeqCol2 && mSeqRow == mSeqRow2 &&
         mPatternCol == mPatternCol2 && mPatternRow == mPatternRow2)
@@ -1294,8 +1379,6 @@ var CGUI = function()
       var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
       if (pat >= 0)
       {
-        var note = n + 87;
-        mJammer.addNote(note);
         mSong.songData[mSeqCol].c[pat].n[mPatternRow + mPatternCol*32] = note;
         setSelectedPatternCell(mPatternCol, (mPatternRow + 1) % 32);
         updatePattern();
@@ -2631,8 +2714,9 @@ var CGUI = function()
     }
 
     // Edit pattern
-    if (addPatternNote(n + mKeyboardOctave * 12))
+    if (addPatternNote(n + mKeyboardOctave * 12)) {
       e.preventDefault();
+    }
   };
 
   var fxTrackMouseDown = function (e)
@@ -3421,6 +3505,9 @@ var CGUI = function()
     document.getElementById("octaveUp").addEventListener("touchstart", octaveUp, false);
     document.getElementById("keyboard").addEventListener("mousedown", keyboardMouseDown, false);
     document.getElementById("keyboard").addEventListener("touchstart", keyboardMouseDown, false);
+
+    // Initialize the MIDI handler
+    initMIDI();
 
     // Set up master event handlers
     activateMasterEvents();

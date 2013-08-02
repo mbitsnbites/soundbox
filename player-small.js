@@ -51,8 +51,8 @@ var CPlayer = function() {
     };
 
     var getnotefreq = function (n) {
-        // 174.61.. / 44100 = 0.003959503758 (F)
-        return 0.003959503758 * Math.pow(2, (n-128)/12);
+        // 174.61.. / 44100 = 0.003959503758 (F3)
+        return 0.003959503758 * Math.pow(2, (n - 128) / 12);
     };
 
     var createNote = function (instr, n) {
