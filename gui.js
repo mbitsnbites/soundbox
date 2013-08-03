@@ -20,6 +20,13 @@
 */
 
 //------------------------------------------------------------------------------
+// Configuration
+//------------------------------------------------------------------------------
+
+var ENABLE_MIDI = false;
+
+
+//------------------------------------------------------------------------------
 // External dependencies
 //------------------------------------------------------------------------------
 
@@ -33,7 +40,9 @@ include("rle.js");
 
 include("third_party/Blob.js");
 include("third_party/FileSaver.js");
-include("third_party/WebMIDIAPI.js");
+if (ENABLE_MIDI) {
+  include("third_party/WebMIDIAPI.js");
+}
 
 "use strict";
 
@@ -1015,79 +1024,83 @@ var CGUI = function()
   // Based on example code by Chris Wilson.
   //----------------------------------------------------------------------------
 
-  var mSelectMIDI;
-  var mMIDIAccess;
-  var mMIDIIn;
+  if (ENABLE_MIDI) {
 
-  var midiMessageReceived = function (ev) {
-    var cmd = ev.data[0] >> 4;
-    var channel = ev.data[0] & 0xf;
-    var noteNumber = ev.data[1];
-    var velocity = ev.data[2];
+    var mSelectMIDI;
+    var mMIDIAccess;
+    var mMIDIIn;
 
-    if (channel == 9) {
-      return;
-    }
+    var midiMessageReceived = function (ev) {
+      var cmd = ev.data[0] >> 4;
+      var channel = ev.data[0] & 0xf;
+      var noteNumber = ev.data[1];
+      var velocity = ev.data[2];
 
-    if (cmd == 9 && velocity > 0) {
-      // Note on (note on with velocity zero is the same as note off).
-      // NOTE: Note no. 69 is A4 (440 Hz), which is note no. 144 in SoundBox.
-      addPatternNote(noteNumber + 75);
-    } else if (cmd == 14) {
-      // Pitch wheel
-      var pitch = ((velocity * 128.0 + noteNumber)-8192) / 8192.0;
-      // TODO(m): We could use this for controlling some instrument parameter...
-    }
-  };
-
-  var selectMIDIIn = function (ev) {
-    mMIDIIn = mMIDIAccess.inputs()[mSelectMIDI.selectedIndex];
-    mMIDIIn.onmidimessage = midiMessageReceived;
-  };
-
-  var onMIDIStarted = function (midi) {
-    mMIDIAccess = midi;
-
-    var list = mMIDIAccess.inputs();
-
-    // Detect preferred device.
-    var preferredIndex = 0;
-    for (var i = 0; i < list.length; i++) {
-      var str = list[i].name.toString().toLowerCase();
-      if ((str.indexOf("keyboard") != -1)) {
-        preferredIndex = i;
-        break;
-      }
-    }
-
-    // Populate the MIDI input selection drop down box.
-    mSelectMIDI.options.length = 0;
-    if (list.length) {
-      for (var i = 0; i < list.length; i++) {
-        mSelectMIDI.options[i] = new Option(list[i].name, list[i].fingerprint,
-            i == preferredIndex, i == preferredIndex);
+      if (channel == 9) {
+        return;
       }
 
-      mMIDIIn = list[preferredIndex];
+      if (cmd == 9 && velocity > 0) {
+        // Note on (note on with velocity zero is the same as note off).
+        // NOTE: Note no. 69 is A4 (440 Hz), which is note no. 57 in SoundBox.
+        playNote(noteNumber - 12);
+      } else if (cmd == 14) {
+        // Pitch wheel
+        var pitch = ((velocity * 128.0 + noteNumber)-8192) / 8192.0;
+        // TODO(m): We could use this for controlling some instrument parameter...
+      }
+    };
+
+    var selectMIDIIn = function (ev) {
+      mMIDIIn = mMIDIAccess.inputs()[mSelectMIDI.selectedIndex];
       mMIDIIn.onmidimessage = midiMessageReceived;
+    };
 
-      mSelectMIDI.onchange = selectMIDIIn;
-    } else {
-      mSelectMIDI.options[0] = new Option("(No MIDI device)", 0, false, false);
+    var onMIDIStarted = function (midi) {
+      mMIDIAccess = midi;
+
+      var list = mMIDIAccess.inputs();
+
+      // Detect preferred device.
+      var preferredIndex = 0;
+      for (var i = 0; i < list.length; i++) {
+        var str = list[i].name.toString().toLowerCase();
+        if ((str.indexOf("keyboard") != -1)) {
+          preferredIndex = i;
+          break;
+        }
+      }
+
+      // Populate the MIDI input selection drop down box.
+      mSelectMIDI.options.length = 0;
+      if (list.length) {
+        for (var i = 0; i < list.length; i++) {
+          mSelectMIDI.options[i] = new Option(list[i].name, list[i].fingerprint,
+              i == preferredIndex, i == preferredIndex);
+        }
+
+        mMIDIIn = list[preferredIndex];
+        mMIDIIn.onmidimessage = midiMessageReceived;
+
+        mSelectMIDI.onchange = selectMIDIIn;
+      } else {
+        mSelectMIDI.options[0] = new Option("(No MIDI device)", 0, false, false);
+      }
+
+      // Show the MIDI input selection box.
+      mSelectMIDI.style.display = "inline";
     }
 
-    // Show the MIDI input selection box.
-    mSelectMIDI.style.display = "inline";
-  }
+    var onMIDISystemError = function (err) {
+      // TODO(m): Log an error message somehow (err.code)...
+    };
 
-  var onMIDISystemError = function (err) {
-    // TODO(m): Log an error message somehow (err.code)...
-  };
+    var initMIDI = function () {
+      mSelectMIDI = document.getElementById("midiInput");
+      navigator.requestMIDIAccess().then(onMIDIStarted, onMIDISystemError);
+    };
 
-  var initMIDI = function () {
-    mSelectMIDI = document.getElementById("midiInput");
-    navigator.requestMIDIAccess().then(onMIDIStarted, onMIDISystemError);
-  };
+  } // ENABLE_MIDI
 
 
   //--------------------------------------------------------------------------
@@ -1366,12 +1379,12 @@ var CGUI = function()
     }
   };
 
-  var addPatternNote = function (n) {
+  var playNote = function (n) {
     // Calculate note number and trigger a new note in the jammer.
     var note = n + 87;
     mJammer.addNote(note);
 
-    // Edit pattern.
+    // Edit pattern if we're in pattern edit mode.
     if (mEditMode == EDIT_PATTERN &&
         mSeqCol == mSeqCol2 && mSeqRow == mSeqRow2 &&
         mPatternCol == mPatternCol2 && mPatternRow == mPatternRow2)
@@ -2713,8 +2726,8 @@ var CGUI = function()
       n -= comp;
     }
 
-    // Edit pattern
-    if (addPatternNote(n + mKeyboardOctave * 12)) {
+    // Play the note
+    if (playNote(n + mKeyboardOctave * 12)) {
       e.preventDefault();
     }
   };
@@ -2972,59 +2985,54 @@ var CGUI = function()
       }
     }
 
-    // Pattern editing (not sure how layout sensitive this is)
-    if (mEditMode == EDIT_PATTERN &&
-        mSeqCol == mSeqCol2 && mSeqRow == mSeqRow2 &&
-        mPatternCol == mPatternCol2 && mPatternRow == mPatternRow2)
+    // Emulate a piano through keyboard input.
+    n = -1;
+    switch (e.keyCode)
     {
-      n = -1;
-      switch (e.keyCode)
+      // First octave on the ZXCVB... row
+      case 90: n = 0; break;
+      case 83: n = 1; break;
+      case 88: n = 2; break;
+      case 68: n = 3; break;
+      case 67: n = 4; break;
+      case 86: n = 5; break;
+      case 71: n = 6; break;
+      case 66: n = 7; break;
+      case 72: n = 8; break;
+      case 78: n = 9; break;
+      case 74: n = 10; break;
+      case 77: n = 11; break;
+      // "Bonus keys" 1 (extensions of first octave into second octave)
+      case 188: n = 12; break;
+      case 76: n = 13; break;
+      case 190: n = 14; break;
+      case 186: n = 15; break;
+      case 191: n = 16; break;
+      // Second octave on the QWERTY... row
+      case 81: n = 12; break;
+      case 50: n = 13; break;
+      case 87: n = 14; break;
+      case 51: n = 15; break;
+      case 69: n = 16; break;
+      case 82: n = 17; break;
+      case 53: n = 18; break;
+      case 84: n = 19; break;
+      case 54: n = 20; break;
+      case 89: n = 21; break;
+      case 55: n = 22; break;
+      case 85: n = 23; break;
+      // "Bonus keys" 2 (extensions of second octave into third octave)
+      case 73: n = 24; break;
+      case 57: n = 25; break;
+      case 79: n = 26; break;
+      case 48: n = 27; break;
+      case 80: n = 28; break;
+    }
+    if (n >= 0)
+    {
+      if (playNote(n + mKeyboardOctave * 12))
       {
-        // First octave on the ZXCVB... row
-        case 90: n = 0; break;
-        case 83: n = 1; break;
-        case 88: n = 2; break;
-        case 68: n = 3; break;
-        case 67: n = 4; break;
-        case 86: n = 5; break;
-        case 71: n = 6; break;
-        case 66: n = 7; break;
-        case 72: n = 8; break;
-        case 78: n = 9; break;
-        case 74: n = 10; break;
-        case 77: n = 11; break;
-        // "Bonus keys" 1 (extensions of first octave into second octave)
-        case 188: n = 12; break;
-        case 76: n = 13; break;
-        case 190: n = 14; break;
-        case 186: n = 15; break;
-        case 191: n = 16; break;
-        // Second octave on the QWERTY... row
-        case 81: n = 12; break;
-        case 50: n = 13; break;
-        case 87: n = 14; break;
-        case 51: n = 15; break;
-        case 69: n = 16; break;
-        case 82: n = 17; break;
-        case 53: n = 18; break;
-        case 84: n = 19; break;
-        case 54: n = 20; break;
-        case 89: n = 21; break;
-        case 55: n = 22; break;
-        case 85: n = 23; break;
-        // "Bonus keys" 2 (extensions of second octave into third octave)
-        case 73: n = 24; break;
-        case 57: n = 25; break;
-        case 79: n = 26; break;
-        case 48: n = 27; break;
-        case 80: n = 28; break;
-      }
-      if (n >= 0)
-      {
-        if (addPatternNote(n + mKeyboardOctave * 12))
-        {
-          return false;
-        }
+        return false;
       }
     }
 
@@ -3507,7 +3515,9 @@ var CGUI = function()
     document.getElementById("keyboard").addEventListener("touchstart", keyboardMouseDown, false);
 
     // Initialize the MIDI handler
-    initMIDI();
+    if (ENABLE_MIDI) {
+      initMIDI();
+    }
 
     // Set up master event handlers
     activateMasterEvents();
