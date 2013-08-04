@@ -20,13 +20,6 @@
 */
 
 //------------------------------------------------------------------------------
-// Configuration
-//------------------------------------------------------------------------------
-
-var ENABLE_MIDI = false;
-
-
-//------------------------------------------------------------------------------
 // External dependencies
 //------------------------------------------------------------------------------
 
@@ -40,9 +33,7 @@ include("rle.js");
 
 include("third_party/Blob.js");
 include("third_party/FileSaver.js");
-if (ENABLE_MIDI) {
-  include("third_party/WebMIDIAPI.js");
-}
+include("third_party/WebMIDIAPI.js");
 
 "use strict";
 
@@ -1024,83 +1015,81 @@ var CGUI = function()
   // Based on example code by Chris Wilson.
   //----------------------------------------------------------------------------
 
-  if (ENABLE_MIDI) {
+  var mSelectMIDI;
+  var mMIDIAccess;
+  var mMIDIIn;
 
-    var mSelectMIDI;
-    var mMIDIAccess;
-    var mMIDIIn;
+  var midiMessageReceived = function (ev) {
+    var cmd = ev.data[0] >> 4;
+    var channel = ev.data[0] & 0xf;
+    var noteNumber = ev.data[1];
+    var velocity = ev.data[2];
 
-    var midiMessageReceived = function (ev) {
-      var cmd = ev.data[0] >> 4;
-      var channel = ev.data[0] & 0xf;
-      var noteNumber = ev.data[1];
-      var velocity = ev.data[2];
+    if (channel == 9) {
+      return;
+    }
 
-      if (channel == 9) {
-        return;
+    if (cmd == 9 && velocity > 0) {
+      // Note on (note on with velocity zero is the same as note off).
+      // NOTE: Note no. 69 is A4 (440 Hz), which is note no. 57 in SoundBox.
+      playNote(noteNumber - 12);
+    } else if (cmd == 14) {
+      // Pitch wheel
+      var pitch = ((velocity * 128.0 + noteNumber)-8192) / 8192.0;
+      // TODO(m): We could use this for controlling something. I think it would
+      // be neat to use the pitch wheel for moving up/down in the pattern
+      // editor.
+    }
+  };
+
+  var selectMIDIIn = function (ev) {
+    mMIDIIn = mMIDIAccess.inputs()[mSelectMIDI.selectedIndex];
+    mMIDIIn.onmidimessage = midiMessageReceived;
+  };
+
+  var onMIDIStarted = function (midi) {
+    mMIDIAccess = midi;
+
+    var list = mMIDIAccess.inputs();
+
+    // Detect preferred device.
+    var preferredIndex = 0;
+    for (var i = 0; i < list.length; i++) {
+      var str = list[i].name.toString().toLowerCase();
+      if ((str.indexOf("keyboard") != -1)) {
+        preferredIndex = i;
+        break;
       }
+    }
 
-      if (cmd == 9 && velocity > 0) {
-        // Note on (note on with velocity zero is the same as note off).
-        // NOTE: Note no. 69 is A4 (440 Hz), which is note no. 57 in SoundBox.
-        playNote(noteNumber - 12);
-      } else if (cmd == 14) {
-        // Pitch wheel
-        var pitch = ((velocity * 128.0 + noteNumber)-8192) / 8192.0;
-        // TODO(m): We could use this for controlling some instrument parameter...
-      }
-    };
-
-    var selectMIDIIn = function (ev) {
-      mMIDIIn = mMIDIAccess.inputs()[mSelectMIDI.selectedIndex];
-      mMIDIIn.onmidimessage = midiMessageReceived;
-    };
-
-    var onMIDIStarted = function (midi) {
-      mMIDIAccess = midi;
-
-      var list = mMIDIAccess.inputs();
-
-      // Detect preferred device.
-      var preferredIndex = 0;
+    // Populate the MIDI input selection drop down box.
+    mSelectMIDI.options.length = 0;
+    if (list.length) {
       for (var i = 0; i < list.length; i++) {
-        var str = list[i].name.toString().toLowerCase();
-        if ((str.indexOf("keyboard") != -1)) {
-          preferredIndex = i;
-          break;
-        }
+        mSelectMIDI.options[i] = new Option(list[i].name, list[i].fingerprint,
+            i == preferredIndex, i == preferredIndex);
       }
 
-      // Populate the MIDI input selection drop down box.
-      mSelectMIDI.options.length = 0;
-      if (list.length) {
-        for (var i = 0; i < list.length; i++) {
-          mSelectMIDI.options[i] = new Option(list[i].name, list[i].fingerprint,
-              i == preferredIndex, i == preferredIndex);
-        }
+      mMIDIIn = list[preferredIndex];
+      mMIDIIn.onmidimessage = midiMessageReceived;
 
-        mMIDIIn = list[preferredIndex];
-        mMIDIIn.onmidimessage = midiMessageReceived;
-
-        mSelectMIDI.onchange = selectMIDIIn;
-      } else {
-        mSelectMIDI.options[0] = new Option("(No MIDI device)", 0, false, false);
-      }
+      mSelectMIDI.onchange = selectMIDIIn;
 
       // Show the MIDI input selection box.
       mSelectMIDI.style.display = "inline";
     }
+  };
 
-    var onMIDISystemError = function (err) {
-      // TODO(m): Log an error message somehow (err.code)...
-    };
+  var onMIDISystemError = function (err) {
+    // TODO(m): Log an error message somehow (err.code)...
+  };
 
-    var initMIDI = function () {
+  var initMIDI = function () {
+    if (navigator.requestMIDIAccess) {
       mSelectMIDI = document.getElementById("midiInput");
       navigator.requestMIDIAccess().then(onMIDIStarted, onMIDISystemError);
-    };
-
-  } // ENABLE_MIDI
+    }
+  };
 
 
   //--------------------------------------------------------------------------
@@ -3515,9 +3504,7 @@ var CGUI = function()
     document.getElementById("keyboard").addEventListener("touchstart", keyboardMouseDown, false);
 
     // Initialize the MIDI handler
-    if (ENABLE_MIDI) {
-      initMIDI();
-    }
+    initMIDI();
 
     // Set up master event handlers
     activateMasterEvents();
