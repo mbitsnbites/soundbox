@@ -31,28 +31,27 @@
         }
     }
 
-    // Promise polyfill.
-    var Promise = window.Promies;
-    if (!window.Promise) {
-      Promise = function () {
 
-      }
+    // Custom Promise implementation.
+    var Promise = function () {
 
-      Promise.prototype.then = function(accept, reject) {
-          this.accept = accept;
-          this.reject = reject;
-      }
-
-      Promise.prototype.succeed = function(access) {
-          if (this.accept)
-              this.accept(access);
-      }
-
-      Promise.prototype.fail = function(error) {
-          if (this.reject)
-              this.reject(error);
-      }
     }
+
+    Promise.prototype.then = function(accept, reject) {
+        this.accept = accept;
+        this.reject = reject;
+    }
+
+    Promise.prototype.succeed = function(access) {
+        if (this.accept)
+            this.accept(access);
+    }
+
+    Promise.prototype.fail = function(error) {
+        if (this.reject)
+            this.reject(error);
+    }
+
 
     function _JazzInstance() {
         this.inputInUse = false;
