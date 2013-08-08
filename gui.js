@@ -3352,9 +3352,6 @@ var CGUI = function()
     updateFxTrack();
     updateInstrument(true);
 
-    // Update the jammer according to the loaded song
-    mJammer.updateRowLen(mSong.rowLen);
-
     // Initialize the song
     setEditMode(EDIT_PATTERN);
     setSelectedSequencerCell(0, 0);
@@ -3515,6 +3512,10 @@ var CGUI = function()
 
     // Start the jammer
     mJammer.start();
+
+    // Update the jammer rowLen (BPM) - requires that the jammer has been
+    // started.
+    mJammer.updateRowLen(mSong.rowLen);
   };
 
 };
