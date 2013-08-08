@@ -63,7 +63,7 @@ gInstrumentPresets = [
           128, // OSC1_SEMI
           0, // OSC1_XENV
           1, // OSC2_WAVEFORM
-          192, // OSC2_VOL
+          191, // OSC2_VOL
           116, // OSC2_SEMI
           9, // OSC2_DETUNE
           0, // OSC2_XENV
