@@ -374,7 +374,7 @@ var CGUI = function()
 
 
   var makeNewSong = function () {
-    var song = {};
+    var song = {}, i, j, k, instr, col;
 
     // Row length
     song.rowLen = calcSamplesPerRow(120);
@@ -382,50 +382,25 @@ var CGUI = function()
     // Last pattern to play
     song.endPattern = 2;
 
+    // Select the default instrument from the presets
+    var defaultInstr;
+    for (i = 0; i < gInstrumentPresets.length; ++i) {
+      if (gInstrumentPresets[i].i) {
+        defaultInstr = gInstrumentPresets[i];
+        break;
+      }
+    }
+
     // All 8 instruments
     song.songData = [];
-    var i, j, k, instr, col;
     for (i = 0; i < 8; i++) {
       instr = {};
       instr.i = [];
 
-      // Oscillator 1
-      instr.i[OSC1_WAVEFORM] = 0;
-      instr.i[OSC1_VOL] = 192;
-      instr.i[OSC1_SEMI] = 128;
-      instr.i[OSC1_XENV] = 0;
-
-      // Oscillator 2
-      instr.i[OSC2_WAVEFORM] = 0;
-      instr.i[OSC2_VOL] = 192;
-      instr.i[OSC2_SEMI] = 128;
-      instr.i[OSC2_DETUNE] = 0;
-      instr.i[OSC2_XENV] = 0;
-
-      // Noise oscillator
-      instr.i[NOISE_VOL] = 0;
-
-      // Envelope
-      instr.i[ENV_ATTACK] = 7;
-      instr.i[ENV_SUSTAIN] = 22;
-      instr.i[ENV_RELEASE] = 70;
-
-      // LFO
-      instr.i[LFO_WAVEFORM] = 0;
-      instr.i[LFO_AMT] = 0;
-      instr.i[LFO_FREQ] = 0;
-      instr.i[LFO_FX_FREQ] = 0;
-
-      // Effects
-      instr.i[FX_FILTER] = 2;
-      instr.i[FX_FREQ] = 255;
-      instr.i[FX_RESONANCE] = 0;
-      instr.i[FX_DIST] = 0;
-      instr.i[FX_DRIVE] = 32;
-      instr.i[FX_PAN_AMT] = 0;
-      instr.i[FX_PAN_FREQ] = 0;
-      instr.i[FX_DELAY_AMT] = 0;
-      instr.i[FX_DELAY_TIME] = 0;
+      // Copy the default instrument
+      for (j = 0; j <= defaultInstr.i.length; ++j) {
+        instr.i[j] = defaultInstr.i[j];
+      }
 
       // Sequence
       instr.p = [];
