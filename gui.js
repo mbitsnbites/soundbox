@@ -27,10 +27,10 @@ include("demo-songs.js");
 include("presets.js");
 include("player.js");
 include("jammer.js");
-include("deflate.js");
-include("inflate.js");
 include("rle.js");
 
+include("third_party/deflate.js");
+include("third_party/inflate.js");
 include("third_party/Blob.js");
 include("third_party/FileSaver.js");
 include("third_party/WebMIDIAPI.js");
