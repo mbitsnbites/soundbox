@@ -79,3 +79,11 @@ h3 {
   padding: 3px 6px;
   border-radius: 3px;
 }
+
+.license {
+  font-family: monospace;
+  background: #eee;
+  border: 1px solid #a88;
+  padding: 3px 6px;
+  border-radius: 3px;
+}
