@@ -1570,7 +1570,7 @@ var CGUI = function()
     listDiv.appendChild(document.createTextNode(" Data URL: "));
     var customURLElement = document.createElement("input");
     customURLElement.type = "text";
-    customURLElement.size = "60";
+    customURLElement.size = "45";
     customURLElement.title = "Paste a saved song data URL here";
     customURLElement.onchange = function () {
       customURLRadioElement.checked = true;
