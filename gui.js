@@ -204,8 +204,12 @@ var CGUI = function()
   // Edit modes
   var EDIT_NONE = 0,
       EDIT_SEQUENCE = 1,
-      EDIT_PATTERN = 2;
+      EDIT_PATTERN = 2,
       EDIT_FXTRACK = 3;
+
+  // Misc constants
+  var MAX_SONG_ROWS = 128,
+      MAX_PATTERNS = 36;
 
   // Edit/gui state
   var mEditMode = EDIT_PATTERN,
@@ -404,12 +408,12 @@ var CGUI = function()
 
       // Sequence
       instr.p = [];
-      for (j = 0; j < 48; j++)
+      for (j = 0; j < MAX_SONG_ROWS; j++)
         instr.p[j] = 0;
 
       // Patterns
       instr.c = [];
-      for (j = 0; j < 10; j++)
+      for (j = 0; j < MAX_PATTERNS; j++)
       {
         col = {};
         col.n = [];
@@ -483,11 +487,11 @@ var CGUI = function()
       bin.putUBYTE(instr.i[FX_DELAY_TIME]);
 
       // Patterns
-      for (j = 0; j < 48; j++)
+      for (j = 0; j < MAX_SONG_ROWS; j++)
         bin.putUBYTE(instr.p[j]);
 
       // Columns
-      for (j = 0; j < 10; j++) {
+      for (j = 0; j < MAX_PATTERNS; j++) {
         col = instr.c[j];
         for (k = 0; k < 32 * 4; k++)
           bin.putUBYTE(col.n[k]);
@@ -524,7 +528,7 @@ var CGUI = function()
     bin.putULONG(2020557395);
 
     // Format version
-    bin.putUBYTE(8);
+    bin.putUBYTE(9);
 
     // Compression method
     //  0: none
@@ -549,7 +553,7 @@ var CGUI = function()
     var version = bin.getUBYTE();
 
     // Check if this is a SoundBox song
-    if (signature != 2020557395 || (version < 1 || version > 8))
+    if (signature != 2020557395 || (version < 1 || version > 9))
       return undefined;
 
     if (version >= 8) {
@@ -676,13 +680,17 @@ var CGUI = function()
       }
 
       // Patterns
+      var song_rows = version < 9 ? 48 : MAX_SONG_ROWS;
       instr.p = [];
-      for (j = 0; j < 48; j++)
+      for (j = 0; j < song_rows; j++)
         instr.p[j] = bin.getUBYTE();
+      for (j = song_rows; j < MAX_SONG_ROWS; j++)
+        instr.p[j] = 0;
 
       // Columns
+      var num_patterns = version < 9 ? 10 : MAX_PATTERNS;
       instr.c = [];
-      for (j = 0; j < 10; j++) {
+      for (j = 0; j < num_patterns; j++) {
         col = {};
         col.n = [];
         if (version == 1) {
@@ -706,6 +714,16 @@ var CGUI = function()
           for (k = 0; k < 32 * 2; k++)
             col.f[k] = bin.getUBYTE();
         }
+        instr.c[j] = col;
+      }
+      for (j = num_patterns; j < MAX_PATTERNS; j++) {
+        col = {};
+        col.n = [];
+        for (k = 0; k < 32 * 4; k++)
+          col.n[k] = 0;
+        col.f = [];
+        for (k = 0; k < 32 * 2; k++)
+          col.f[k] = 0;
         instr.c[j] = col;
       }
 
@@ -800,6 +818,8 @@ var CGUI = function()
       instr.p = [];
       for (j = 0; j < 48; j++)
         instr.p[j] = bin.getUBYTE();
+      for (j = 48; j < MAX_SONG_ROWS; j++)
+        instr.p[j] = 0;
 
       // Columns
       instr.c = [];
@@ -812,6 +832,16 @@ var CGUI = function()
           col.n[k+64] = 0;
           col.n[k+96] = 0;
         }
+        col.f = [];
+        for (k = 0; k < 32 * 2; k++)
+          col.f[k] = 0;
+        instr.c[j] = col;
+      }
+      for (j = 10; j < MAX_PATTERNS; j++) {
+        col = {};
+        col.n = [];
+        for (k = 0; k < 32 * 4; k++)
+          col.n[k] = 0;
         col.f = [];
         for (k = 0; k < 32 * 2; k++)
           col.f[k] = 0;
@@ -1179,7 +1209,7 @@ var CGUI = function()
   var updateSequencer = function (scrollIntoView, selectionOnly)
   {
     // Update sequencer element contents and selection
-    for (var i = 0; i < 48; ++i)
+    for (var i = 0; i < MAX_SONG_ROWS; ++i)
     {
       for (var j = 0; j < 8; ++j)
       {
@@ -1188,7 +1218,7 @@ var CGUI = function()
         {
           var pat = mSong.songData[j].p[i];
           if (pat > 0)
-            o.innerHTML = "" + (pat - 1);
+            o.innerHTML = "" + (pat <= 10 ? pat - 1 : String.fromCharCode(64 + pat - 10));
           else
             o.innerHTML = "";
         }
@@ -1448,7 +1478,7 @@ var CGUI = function()
   var updateSongSpeed = function () {
     // Determine song speed
     var bpm = parseInt(document.getElementById("bpm").value);
-    if (bpm && (bpm > 40) && (bpm < 300)) {
+    if (bpm && (bpm > 10) && (bpm < 1000)) {
       mSong.rowLen = calcSamplesPerRow(bpm);
       mJammer.updateRowLen(mSong.rowLen);
     }
@@ -2033,7 +2063,7 @@ var CGUI = function()
         mSeqRow2 = seqPos;
         updateSequencer(true, true);
       }
-      for (var i = 0; i < 48; ++i) {
+      for (var i = 0; i < MAX_SONG_ROWS; ++i) {
         var o = document.getElementById("spr" + i);
         o.className = (i == seqPos ? "playpos" : "");
       }
@@ -2086,7 +2116,7 @@ var CGUI = function()
       }
 
       // Clear the follower markers
-      for (var i = 0; i < 48; ++i)
+      for (var i = 0; i < MAX_SONG_ROWS; ++i)
       {
         document.getElementById("spr" + i).className = "";
       }
@@ -2380,7 +2410,7 @@ var CGUI = function()
     if (!e) var e = window.event;
     e.preventDefault();
 
-    for (var row = mSeqRow, i = 0; row < 48 && i < mSeqCopyBuffer.length; ++row, ++i)
+    for (var row = mSeqRow, i = 0; row < MAX_SONG_ROWS && i < mSeqCopyBuffer.length; ++row, ++i)
     {
       for (var col = mSeqCol, j = 0; col < 8 && j < mSeqCopyBuffer[i].length; ++col, ++j)
       {
@@ -2400,7 +2430,7 @@ var CGUI = function()
       for (var col = mSeqCol; col <= mSeqCol2; ++col)
       {
         var pat = mSong.songData[col].p[row];
-        if (pat < 10)
+        if (pat < MAX_PATTERNS)
         {
           mSong.songData[col].p[row] = pat + 1;
         }
@@ -2947,6 +2977,18 @@ var CGUI = function()
         updateFxTrack();
         return false;
       }
+
+      // A - Z
+      if (e.keyCode >= 64 && e.keyCode <= 90)
+      {
+        mSong.songData[mSeqCol].p[mSeqRow] = e.keyCode - 54;
+        updateSequencer();
+        updatePattern();
+        updateFxTrack();
+        return false;
+      }
+
+      return true;
     }
 
     // Emulate a piano through keyboard input.
@@ -3038,7 +3080,7 @@ var CGUI = function()
       case 40:  // DOWN
         if (mEditMode == EDIT_SEQUENCE)
         {
-          setSelectedSequencerCell(mSeqCol, (mSeqRow + 1) % 48);
+          setSelectedSequencerCell(mSeqCol, (mSeqRow + 1) % MAX_SONG_ROWS);
           updatePattern();
           updateFxTrack();
           return false;
@@ -3058,7 +3100,7 @@ var CGUI = function()
       case 38:  // UP
         if (mEditMode == EDIT_SEQUENCE)
         {
-          setSelectedSequencerCell(mSeqCol, (mSeqRow - 1 + 48) % 48);
+          setSelectedSequencerCell(mSeqCol, (mSeqRow - 1 + MAX_SONG_ROWS) % MAX_SONG_ROWS);
           updatePattern();
           updateFxTrack();
           return false;
@@ -3234,6 +3276,27 @@ var CGUI = function()
     document.onkeydown = null;
   };
 
+  var buildSequencerTable = function () {
+    var table = document.getElementById("sequencer-table");
+    var tr, th, td;
+    for (var row = 0; row < MAX_SONG_ROWS; row++) {
+      tr = document.createElement("tr");
+      if (row % 4 === 0)
+        tr.className = "beat";
+      th = document.createElement("th");
+      th.id = "spr" + row;
+      th.textContent = "" + row;
+      tr.appendChild(th);
+      for (col = 0; col < 8; col++) {
+        td = document.createElement("td");
+        td.id = "sc" + col + "r" + row;
+        td.textContent = " ";
+        tr.appendChild(td);
+      }
+      table.appendChild(tr);
+    }
+  };
+
 
   //--------------------------------------------------------------------------
   // Initialization
@@ -3281,6 +3344,9 @@ var CGUI = function()
     mPlayGfxVUImg.src = "gui/playGfxBg.png";
     mPlayGfxLedOffImg.src = "gui/led-off.png";
     mPlayGfxLedOnImg.src = "gui/led-on.png";
+
+    // Build the UI tables
+    buildSequencerTable();
 
     // Set up GUI elements
     document.getElementById("osc1_vol").sliderProps = { min: 0, max: 255 };
@@ -3333,7 +3399,7 @@ var CGUI = function()
     setSelectedPatternCell(0, 0);
 
     // Set up event handlers for the sequencer
-    for (i = 0; i < 48; ++i)
+    for (i = 0; i < MAX_SONG_ROWS; ++i)
     {
       for (j = 0; j < 8; ++j)
       {
