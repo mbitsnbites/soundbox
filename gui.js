@@ -559,7 +559,7 @@ var CGUI = function()
     var version = bin.getUBYTE();
 
     // Check if this is a SoundBox song
-    if (signature != 2020557395 || (version < 1 || version > 9))
+    if (signature != 2020557395 || (version < 1 || version > 10))
       return undefined;
 
     if (version >= 8) {
