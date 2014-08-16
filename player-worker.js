@@ -80,7 +80,7 @@ var CPlayerWorker = function() {
 
     // Prepare song info
     this.song = song;
-    this.numSamples = song.rowLen * 32 * (this.lastRow - this.firstRow + 1);
+    this.numSamples = song.rowLen * song.patternLen * (this.lastRow - this.firstRow + 1);
     this.numWords = this.numSamples * 2;
 
     // Create work buffers (initially cleared)
@@ -163,7 +163,8 @@ var CPlayerWorker = function() {
           waveSamples = this.numSamples,
           waveWords = this.numWords,
           instr = this.song.songData[currentCol],
-          rowLen = this.song.rowLen;
+          rowLen = this.song.rowLen,
+          patternLen = this.song.patternLen;
 
       // Clear effect state
       var low = 0, band = 0, high;
@@ -177,11 +178,11 @@ var CPlayerWorker = function() {
         cp = instr.p[p];
 
         // Pattern rows
-        for (row = 0; row < 32; ++row) {
+        for (row = 0; row < patternLen; ++row) {
             // Execute effect command.
             var cmdNo = cp ? instr.c[cp - 1].f[row] : 0;
             if (cmdNo) {
-              instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + 32] || 0;
+              instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + patternLen] || 0;
 
               // Clear the note cache since the instrument has changed.
               if (cmdNo < 14) {
@@ -205,11 +206,11 @@ var CPlayerWorker = function() {
                 dly = instr.i[25] * rowLen;
 
             // Calculate start sample number for this row in the pattern
-            rowStartSample = ((p - this.firstRow) * 32 + row) * rowLen;
+            rowStartSample = ((p - this.firstRow) * patternLen + row) * rowLen;
 
             // Generate notes for this pattern row
             for (col = 0; col < 4; ++col) {
-              n = cp ? instr.c[cp - 1].n[row + col * 32] : 0;
+              n = cp ? instr.c[cp - 1].n[row + col * patternLen] : 0;
               if (n) {
                 if (!noteCache[n]) {
                   noteCache[n] = createNote(instr, n);

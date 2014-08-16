@@ -148,7 +148,7 @@ var CPlayer = function() {
         mCurrentCol = 0;
 
         // Prepare song info
-        mNumWords =  song.rowLen * 32 * (mLastRow + 1) * 2;
+        mNumWords =  song.rowLen * song.patternLen * (mLastRow + 1) * 2;
 
         // Create work buffer (initially cleared)
         mMixBuf = new Int32Array(mNumWords);
@@ -168,7 +168,8 @@ var CPlayer = function() {
         // Put performance critical items in local variables
         var chnBuf = new Int32Array(mNumWords),
             instr = mSong.songData[mCurrentCol],
-            rowLen = mSong.rowLen;
+            rowLen = mSong.rowLen,
+            patternLen = mSong.patternLen;
 
         // Clear effect state
         var low = 0, band = 0, high;
@@ -182,11 +183,11 @@ var CPlayer = function() {
             cp = instr.p[p];
 
             // Pattern rows
-            for (row = 0; row < 32; ++row) {
+            for (row = 0; row < patternLen; ++row) {
                 // Execute effect command.
                 var cmdNo = cp ? instr.c[cp - 1].f[row] : 0;
                 if (cmdNo) {
-                    instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + 32] || 0;
+                    instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + patternLen] || 0;
 
                     // Clear the note cache since the instrument has changed.
                     if (cmdNo < 14) {
@@ -210,11 +211,11 @@ var CPlayer = function() {
                     dly = instr.i[25] * rowLen;
 
                 // Calculate start sample number for this row in the pattern
-                rowStartSample = (p * 32 + row) * rowLen;
+                rowStartSample = (p * patternLen + row) * rowLen;
 
                 // Generate notes for this pattern row
                 for (col = 0; col < 4; ++col) {
-                    n = cp ? instr.c[cp - 1].n[row + col * 32] : 0;
+                    n = cp ? instr.c[cp - 1].n[row + col * patternLen] : 0;
                     if (n) {
                         if (!noteCache[n]) {
                             noteCache[n] = createNote(instr, n);

@@ -27,7 +27,7 @@ body {
 
 #content {
   position: relative;
-  width: 1120px;
+  width: 1180px;
   margin-top: 0;
   margin-left: auto;
   margin-right: auto;
@@ -128,11 +128,17 @@ table.subui, table.subui td {
 }
 
 #pattern {
-  width: 140px;
+  width: 153px;
+  max-height: 475px;
+  overflow: auto;
+  overflow-y: scroll;
 }
 
 #fxtrack {
-  width: 40px;
+  width: 53px;
+  max-height: 475px;
+  overflow: auto;
+  overflow-y: scroll;
 }
 
 #statusText {
