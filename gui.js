@@ -1258,7 +1258,7 @@ var CGUI = function()
   };
 
   var updatePattern = function (selectionOnly) {
-    buildPatternTable(mSong.patternLen);
+    buildPatternTable();
     var singlePattern = (mSeqCol == mSeqCol2 && mSeqRow == mSeqRow2);
     var pat = singlePattern ? mSong.songData[mSeqCol].p[mSeqRow] - 1 : -1;
     for (var i = 0; i < mSong.patternLen; ++i)
@@ -1295,7 +1295,7 @@ var CGUI = function()
   };
 
   var updateFxTrack = function (selectionOnly) {
-    buildFxTable(mSong.patternLen);
+    buildFxTable();
     var singlePattern = (mSeqCol == mSeqCol2 && mSeqRow == mSeqRow2);
     var pat = singlePattern ? mSong.songData[mSeqCol].p[mSeqRow] - 1 : -1;
     for (var i = 0; i < mSong.patternLen; ++i) {
@@ -1528,7 +1528,7 @@ var CGUI = function()
 
   var updatePatternLength = function () {
     var rpp = parseInt(document.getElementById("rpp").value);
-    if (rpp && (rpp >= 1) && (rpp <= 256) && (rpp != mSong.patternLen)) {
+    if (rpp && (rpp >= 1) && (rpp <= 256)) {
       // Stop song if it's currently playing (the song will be wrong and the
       // follower will be off)
       stopAudio();
@@ -1537,8 +1537,8 @@ var CGUI = function()
       setPatternLength(rpp);
 
       // Update UI
-      buildPatternTable(rpp);
-      buildFxTable(rpp);
+      buildPatternTable();
+      buildFxTable();
       updatePattern();
       updateFxTrack();
     }
@@ -3346,15 +3346,42 @@ var CGUI = function()
     }
   };
 
-  var buildPatternTable = function (patternRows) {
+  var getCurrentBeatDistance = function (table) {
+    var beatDistance = 1;
+    while (beatDistance < table.children.length) {
+      if (table.children[beatDistance].className === "beat")
+        break;
+      beatDistance++;
+    }
+    return beatDistance;
+  };
+
+  var getBeatDistance = function () {
+    var bpm = getBPM();
+    var beatDistance = 4;
+    if (mSong.patternLen % 4 === 0)
+      beatDistance = 4;
+    else if (mSong.patternLen % 3 === 0)
+      beatDistance = 3;
+    else if (mSong.patternLen % 2 === 0)
+      beatDistance = 2;
+    else if (mSong.patternLen % 5 === 0)
+      beatDistance = 5;
+    if (bpm >= 180 && mSong.patternLen > 32 && (mSong.patternLen % (beatDistance * 2) === 0))
+      beatDistance *= 2;
+
+    return beatDistance;
+  };
+
+  var buildPatternTable = function () {
+    var beatDistance = getBeatDistance();
     var table = document.getElementById("pattern-table");
-    if (table.children.length === patternRows)
+    if (table.children.length === mSong.patternLen && getCurrentBeatDistance(table) === beatDistance)
       return;
     while (table.firstChild)
       table.removeChild(table.firstChild);
-    var beatDistance = 4; // TODO: Depend on patternRows
     var tr, th, td;
-    for (var row = 0; row < patternRows; row++) {
+    for (var row = 0; row < mSong.patternLen; row++) {
       tr = document.createElement("tr");
       if (row % beatDistance === 0)
         tr.className = "beat";
@@ -3375,15 +3402,15 @@ var CGUI = function()
     }
   };
 
-  var buildFxTable = function (patternRows) {
+  var buildFxTable = function () {
+    var beatDistance = getBeatDistance();
     var table = document.getElementById("fxtrack-table");
-    if (table.children.length === patternRows)
+    if (table.children.length === mSong.patternLen && getCurrentBeatDistance(table) === beatDistance)
       return;
     while (table.firstChild)
       table.removeChild(table.firstChild);
-    var beatDistance = 4; // TODO: Depend on patternRows
     var tr, td;
-    for (var row = 0; row < patternRows; row++) {
+    for (var row = 0; row < mSong.patternLen; row++) {
       tr = document.createElement("tr");
       if (row % beatDistance === 0)
         tr.className = "beat";
