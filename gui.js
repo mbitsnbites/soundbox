@@ -3387,15 +3387,15 @@ var CGUI = function()
   var getBeatDistance = function () {
     var bpm = getBPM();
     var beatDistance = 4;
-    if (mSong.patternLen % 4 === 0)
-      beatDistance = 4;
-    else if (mSong.patternLen % 3 === 0)
+    if (mSong.patternLen % 3 === 0)
       beatDistance = 3;
+    else if (mSong.patternLen % 4 === 0)
+      beatDistance = 4;
     else if (mSong.patternLen % 2 === 0)
       beatDistance = 2;
     else if (mSong.patternLen % 5 === 0)
       beatDistance = 5;
-    if (bpm >= 180 && mSong.patternLen > 32 && (mSong.patternLen % (beatDistance * 2) === 0))
+    if ((bpm / beatDistance) >= 40 && mSong.patternLen > 24 && (mSong.patternLen % (beatDistance * 2) === 0))
       beatDistance *= 2;
 
     return beatDistance;
