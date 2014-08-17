@@ -1200,6 +1200,8 @@ var CGUI = function()
   };
 
   var setEditMode = function (mode) {
+    if (mode === mEditMode)
+      return;
     mEditMode = mode;
 
     // Set the style for the different edit sections
@@ -1523,6 +1525,13 @@ var CGUI = function()
   };
 
   var setPatternLength = function (length) {
+    if (mSong.patternLen === length)
+      return;
+
+    // Stop song if it's currently playing (the song will be wrong and the
+    // follower will be off)
+    stopAudio();
+
     // Truncate/extend patterns
     var i, j, k, col, notes, fx;
     for (i = 0; i < 8; i++) {
@@ -1554,10 +1563,6 @@ var CGUI = function()
   var updatePatternLength = function () {
     var rpp = parseInt(document.getElementById("rpp").value);
     if (rpp && (rpp >= 1) && (rpp <= 256)) {
-      // Stop song if it's currently playing (the song will be wrong and the
-      // follower will be off)
-      stopAudio();
-
       // Update the pattern length of the song data
       setPatternLength(rpp);
 
