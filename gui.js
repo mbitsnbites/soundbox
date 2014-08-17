@@ -229,7 +229,8 @@ var CGUI = function()
       mSelectingFxRange = false,
       mSeqCopyBuffer = [],
       mPatCopyBuffer = [],
-      mFxCopyBuffer = [];
+      mFxCopyBuffer = [],
+      mInstrCopyBuffer = [];
 
   // Parsed URL data
   var mBaseURL;
@@ -2349,6 +2350,31 @@ var CGUI = function()
     return true;
   };
 
+  var instrCopyMouseDown = function (e) {
+    if (!e) var e = window.event;
+    e.preventDefault();
+
+    if (mSeqCol == mSeqCol2) {
+      mInstrCopyBuffer = [];
+      var instr = mSong.songData[mSeqCol];
+      for (var i = 0; i <= instr.i.length; ++i)
+        mInstrCopyBuffer[i] = instr.i[i];
+    }
+  };
+
+  var instrPasteMouseDown = function (e) {
+    if (!e) var e = window.event;
+    e.preventDefault();
+
+    if (mSeqCol == mSeqCol2 && mInstrCopyBuffer.length > 0) {
+      var instr = mSong.songData[mSeqCol];
+      instr.i = [];
+      for (var i = 0; i <= mInstrCopyBuffer.length; ++i)
+        instr.i[i] = mInstrCopyBuffer[i];
+    }
+    updateInstrument(true);
+  };
+
   var patternCopyMouseDown = function (e) {
     if (!e) var e = window.event;
     e.preventDefault();
@@ -3665,6 +3691,9 @@ var CGUI = function()
     document.getElementById("octaveUp").addEventListener("touchstart", octaveUp, false);
     document.getElementById("keyboard").addEventListener("mousedown", keyboardMouseDown, false);
     document.getElementById("keyboard").addEventListener("touchstart", keyboardMouseDown, false);
+
+    document.getElementById("instrCopy").onmousedown = instrCopyMouseDown;
+    document.getElementById("instrPaste").onmousedown = instrPasteMouseDown;
 
     // Initialize the MIDI handler
     initMIDI();
