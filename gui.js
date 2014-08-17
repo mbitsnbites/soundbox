@@ -1245,19 +1245,18 @@ var CGUI = function()
     }
 
     // Scroll the row into view? (only when needed)
-    if (scrollIntoView)
-    {
+    if (scrollIntoView) {
       var o = document.getElementById("spr" + mSeqRow);
-      if (o.scrollIntoView)
-      {
+      if (o.scrollIntoView) {
         var so = document.getElementById("sequencer");
         var oy = o.offsetTop - so.scrollTop;
-        if (oy < 0 || (oy + 10) > so.offsetHeight) o.scrollIntoView(oy < 0);
+        if (oy < 0 || (oy + 10) > so.offsetHeight)
+          o.scrollIntoView(oy < 0);
       }
     }
   };
 
-  var updatePattern = function (selectionOnly) {
+  var updatePattern = function (scrollIntoView, selectionOnly) {
     buildPatternTable();
     var singlePattern = (mSeqCol == mSeqCol2 && mSeqRow == mSeqRow2);
     var pat = singlePattern ? mSong.songData[mSeqCol].p[mSeqRow] - 1 : -1;
@@ -1284,6 +1283,17 @@ var CGUI = function()
           o.className = "";
       }
     }
+
+    // Scroll the row into view? (only when needed)
+    if (scrollIntoView & singlePattern) {
+      var o = document.getElementById("pc0r" + mPatternRow);
+      if (o.scrollIntoView) {
+        var so = document.getElementById("pattern");
+        var oy = o.offsetTop - so.scrollTop;
+        if (oy < 0 || (oy + 10) > so.offsetHeight)
+          o.scrollIntoView(oy < 0);
+      }
+    }
   };
 
   var toHex = function (num, count) {
@@ -1294,7 +1304,7 @@ var CGUI = function()
     return s;
   };
 
-  var updateFxTrack = function (selectionOnly) {
+  var updateFxTrack = function (scrollIntoView, selectionOnly) {
     buildFxTable();
     var singlePattern = (mSeqCol == mSeqCol2 && mSeqRow == mSeqRow2);
     var pat = singlePattern ? mSong.songData[mSeqCol].p[mSeqRow] - 1 : -1;
@@ -1317,6 +1327,17 @@ var CGUI = function()
       else
         o.className = "";
     }
+
+    // Scroll the row into view? (only when needed)
+    if (scrollIntoView & singlePattern) {
+      var o = document.getElementById("fxr" + mFxTrackRow);
+      if (o.scrollIntoView) {
+        var so = document.getElementById("fxtrack");
+        var oy = o.offsetTop - so.scrollTop;
+        if (oy < 0 || (oy + 10) > so.offsetHeight)
+          o.scrollIntoView(oy < 0);
+      }
+    }
   };
 
   var setSelectedPatternCell = function (col, row) {
@@ -1333,6 +1354,7 @@ var CGUI = function()
           o.className = "";
       }
     }
+    updatePattern(true, true);
   };
 
   var setSelectedPatternCell2 = function (col, row) {
@@ -1348,6 +1370,7 @@ var CGUI = function()
           o.className = "";
       }
     }
+    updatePattern(false, true);
   };
 
   var setSelectedSequencerCell = function (col, row) {
@@ -1374,6 +1397,7 @@ var CGUI = function()
       else
         o.className = "";
     }
+    updateFxTrack(true, true);
   };
 
   var setSelectedFxTrackRow2 = function (row) {
@@ -1385,6 +1409,7 @@ var CGUI = function()
       else
         o.className = "";
     }
+    updateFxTrack(false, true);
   };
 
   var playNote = function (n) {
@@ -2131,10 +2156,10 @@ var CGUI = function()
       if (patPos >= 0) {
         mPatternRow = patPos;
         mPatternRow2 = patPos;
-        updatePattern(!newSeqPos);
+        updatePattern(true, !newSeqPos);
         mFxTrackRow = patPos;
         mFxTrackRow2 = patPos;
-        updateFxTrack(!newSeqPos);
+        updateFxTrack(true, !newSeqPos);
       }
       for (var i = 0; i < mSong.patternLen; ++i) {
         var o = document.getElementById("ppr" + i);
@@ -2146,8 +2171,7 @@ var CGUI = function()
     redrawPlayerGfx(t);
   };
 
-  var startFollower = function ()
-  {
+  var startFollower = function () {
     // Update the sequencer selection
     mSeqRow = mFollowerFirstRow;
     mSeqRow2 = mFollowerFirstRow;
@@ -2990,8 +3014,7 @@ var CGUI = function()
     return true;
   };
 
-  var keyDown = function (e)
-  {
+  var keyDown = function (e) {
     if (!e) var e = window.event;
 
     // Check if we're editing BPM / RPP
@@ -3177,19 +3200,19 @@ var CGUI = function()
       case 35:  // END
         if (mEditMode == EDIT_SEQUENCE)
         {
-          setSelectedSequencerCell(mSeqCol, 47);
+          setSelectedSequencerCell(mSeqCol, MAX_SONG_ROWS - 1);
           updatePattern();
           updateFxTrack();
           return false;
         }
         else if (mEditMode == EDIT_PATTERN)
         {
-          setSelectedPatternCell(mPatternCol, 31);
+          setSelectedPatternCell(mPatternCol, mSong.patternLen - 1);
           return false;
         }
         else if (mEditMode == EDIT_FXTRACK)
         {
-          setSelectedFxTrackRow(31);
+          setSelectedFxTrackRow(mSong.patternLen - 1);
           return false;
         }
         break;
