@@ -46,45 +46,9 @@ var CPlayerWorker = function() {
     return 3 - v2;
   };
 
-  // Array of oscillator functions
-  var mOscillators = [
-    osc_sin,
-    osc_square,
-    osc_saw,
-    osc_tri
-  ];
-
   var getnotefreq = function (n) {
     // 174.61.. / 44100 = 0.003959503758 (F)
     return 0.003959503758 * Math.pow(2, (n-128)/12);
-  };
-
-
-  //----------------------------------------------------------------------------
-  // Public methods
-  //----------------------------------------------------------------------------
-
-  // Initialize buffers etc.
-  this.init = function (song, opts) {
-    // Handle optional arguments
-    this.firstRow = 0;
-    this.lastRow = song.endPattern - 2;
-    this.firstCol = 0;
-    this.lastCol = 7;
-    if (opts) {
-      this.firstRow = opts.firstRow;
-      this.lastRow = opts.lastRow;
-      this.firstCol = opts.firstCol;
-      this.lastCol = opts.lastCol;
-    }
-
-    // Prepare song info
-    this.song = song;
-    this.numSamples = song.rowLen * song.patternLen * (this.lastRow - this.firstRow + 1);
-    this.numWords = this.numSamples * 2;
-
-    // Create work buffers (initially cleared)
-    this.mixBufWork = new Int32Array(this.numWords);
   };
 
   var createNote = function (instr, n) {
@@ -150,6 +114,47 @@ var CPlayerWorker = function() {
     return noteBuf;
   };
 
+
+  //--------------------------------------------------------------------------
+  // Private members
+  //--------------------------------------------------------------------------
+
+  // Array of oscillator functions
+  var mOscillators = [
+    osc_sin,
+    osc_square,
+    osc_saw,
+    osc_tri
+  ];
+
+
+  //----------------------------------------------------------------------------
+  // Public methods
+  //----------------------------------------------------------------------------
+
+  // Initialize buffers etc.
+  this.init = function (song, opts) {
+    // Handle optional arguments
+    this.firstRow = 0;
+    this.lastRow = song.endPattern - 2;
+    this.firstCol = 0;
+    this.lastCol = 7;
+    if (opts) {
+      this.firstRow = opts.firstRow;
+      this.lastRow = opts.lastRow;
+      this.firstCol = opts.firstCol;
+      this.lastCol = opts.lastCol;
+    }
+
+    // Prepare song info
+    this.song = song;
+    this.numSamples = song.rowLen * song.patternLen * (this.lastRow - this.firstRow + 1);
+    this.numWords = this.numSamples * 2;
+
+    // Create work buffers (initially cleared)
+    this.mixBufWork = new Int32Array(this.numWords);
+  };
+
   // Generate audio data for a single track
   this.generate = function () {
     // Local variables
@@ -185,7 +190,7 @@ var CPlayerWorker = function() {
               instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + patternLen] || 0;
 
               // Clear the note cache since the instrument has changed.
-              if (cmdNo < 14) {
+              if (cmdNo < 13) {
                 noteCache = [];
               }
             }
