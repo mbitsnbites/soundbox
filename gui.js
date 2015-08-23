@@ -362,20 +362,23 @@ var CGUI = function()
       ENV_SUSTAIN = 11,
       ENV_RELEASE = 12,
 
-      LFO_WAVEFORM = 13,
-      LFO_AMT = 14,
-      LFO_FREQ = 15,
-      LFO_FX_FREQ = 16,
+      ARP_CHORD = 13,
+      ARP_SPEED = 14,
 
-      FX_FILTER = 17,
-      FX_FREQ = 18,
-      FX_RESONANCE = 19,
-      FX_DIST = 20,
-      FX_DRIVE = 21,
-      FX_PAN_AMT = 22,
-      FX_PAN_FREQ = 23,
-      FX_DELAY_AMT = 24,
-      FX_DELAY_TIME = 25;
+      LFO_WAVEFORM = 15,
+      LFO_AMT = 16,
+      LFO_FREQ = 17,
+      LFO_FX_FREQ = 18,
+
+      FX_FILTER = 19,
+      FX_FREQ = 20,
+      FX_RESONANCE = 21,
+      FX_DIST = 22,
+      FX_DRIVE = 23,
+      FX_PAN_AMT = 24,
+      FX_PAN_FREQ = 25,
+      FX_DELAY_AMT = 26,
+      FX_DELAY_TIME = 27;
 
 
   var makeNewSong = function () {
@@ -476,6 +479,10 @@ var CGUI = function()
       bin.putUBYTE(instr.i[ENV_SUSTAIN]);
       bin.putUBYTE(instr.i[ENV_RELEASE]);
 
+      // Arpeggio
+      bin.putUBYTE(instr.i[ARP_CHORD]);
+      bin.putUBYTE(instr.i[ARP_SPEED]);
+
       // LFO
       bin.putUBYTE(instr.i[LFO_WAVEFORM]);
       bin.putUBYTE(instr.i[LFO_AMT]);
@@ -535,7 +542,7 @@ var CGUI = function()
     bin.putULONG(2020557395);
 
     // Format version
-    bin.putUBYTE(10);
+    bin.putUBYTE(11);
 
     // Compression method
     //  0: none
@@ -560,7 +567,7 @@ var CGUI = function()
     var version = bin.getUBYTE();
 
     // Check if this is a SoundBox song
-    if (signature != 2020557395 || (version < 1 || version > 10))
+    if (signature != 2020557395 || (version < 1 || version > 11))
       return undefined;
 
     if (version >= 8) {
@@ -651,6 +658,16 @@ var CGUI = function()
         instr.i[ENV_RELEASE] = bin.getUBYTE();
       }
 
+      // Arpeggio
+      if (version < 11) {
+        instr.i[ARP_CHORD] = 0;
+        instr.i[ARP_SPEED] = 0;
+      }
+      else {
+        instr.i[ARP_CHORD] = bin.getUBYTE();
+        instr.i[ARP_SPEED] = bin.getUBYTE();
+      }
+
       if (version < 6) {
         // Effects
         instr.i[FX_FILTER] = bin.getUBYTE();
@@ -724,8 +741,15 @@ var CGUI = function()
             col.f[k] = 0;
         }
         else {
-          for (k = 0; k < song.patternLen * 2; k++)
-            col.f[k] = bin.getUBYTE();
+          for (k = 0; k < song.patternLen; k++) {
+            var fxCmd = bin.getUBYTE();
+            // We inserted two new commands in version 11
+            if (version < 11 && fxCmd >= 14)
+              fxCmd += 2;
+            col.f[k] = fxCmd;
+          }
+          for (k = 0; k < song.patternLen; k++)
+            col.f[song.patternLen + k] = bin.getUBYTE();
         }
         instr.c[j] = col;
       }
@@ -822,6 +846,10 @@ var CGUI = function()
       instr.i[FX_PAN_AMT] = bin.getUBYTE();
       instr.i[FX_DIST] = 0;
       instr.i[FX_DRIVE] = 32;
+
+      // Arpeggio
+      instr.i[ARP_CHORD] = 0;
+      instr.i[ARP_SPEED] = 0;
 
       // LFO
       bin.getUBYTE(); // Skip! (lfo_osc1_freq)
@@ -943,6 +971,8 @@ var CGUI = function()
       jsData += "          " + instr.i[ENV_ATTACK] + ", // ENV_ATTACK\n";
       jsData += "          " + instr.i[ENV_SUSTAIN] + ", // ENV_SUSTAIN\n";
       jsData += "          " + instr.i[ENV_RELEASE] + ", // ENV_RELEASE\n";
+      jsData += "          " + instr.i[ARP_CHORD] + ", // ARP_CHORD\n";
+      jsData += "          " + instr.i[ARP_SPEED] + ", // ARP_SPEED\n";
       jsData += "          " + instr.i[LFO_WAVEFORM] + ", // LFO_WAVEFORM\n";
       jsData += "          " + instr.i[LFO_AMT] + ", // LFO_AMT\n";
       jsData += "          " + instr.i[LFO_FREQ] + ", // LFO_FREQ\n";
@@ -1485,6 +1515,11 @@ var CGUI = function()
     updateSlider(document.getElementById("env_att"), instr.i[ENV_ATTACK]);
     updateSlider(document.getElementById("env_sust"), instr.i[ENV_SUSTAIN]);
     updateSlider(document.getElementById("env_rel"), instr.i[ENV_RELEASE]);
+
+    // Arpeggio
+    updateSlider(document.getElementById("arp_note1"), instr.i[ARP_CHORD] >> 4);
+    updateSlider(document.getElementById("arp_note2"), instr.i[ARP_CHORD] & 15);
+    updateSlider(document.getElementById("arp_speed"), instr.i[ARP_SPEED]);
 
     // LFO
     document.getElementById("lfo_wave_sin").src = instr.i[LFO_WAVEFORM] == 0 ? "gui/wave-sin-sel.png" : "gui/wave-sin.png";
@@ -2973,6 +3008,8 @@ var CGUI = function()
 
     // Handle slider?
     if (mActiveSlider) {
+      var instr = mSong.songData[mSeqCol];
+
       // Calculate slider position
       var pos = getMousePos(e, false);
       var origin = getElementPos(mActiveSlider.parentNode);
@@ -2986,6 +3023,10 @@ var CGUI = function()
       var max = mActiveSlider.sliderProps.max;
       x = Math.round(min + ((max - min) * x));
 
+      // Update the slider position
+      updateSlider(mActiveSlider, x);
+      clearPresetSelection();
+
       // Check which instrument property to update
       var cmdNo = -1;
       if (mActiveSlider.id == "osc1_vol")         cmdNo = OSC1_VOL;
@@ -2997,6 +3038,9 @@ var CGUI = function()
       else if (mActiveSlider.id == "env_att")     cmdNo = ENV_ATTACK;
       else if (mActiveSlider.id == "env_sust")    cmdNo = ENV_SUSTAIN;
       else if (mActiveSlider.id == "env_rel")     cmdNo = ENV_RELEASE;
+      else if (mActiveSlider.id == "arp_note1")   cmdNo = ARP_CHORD;
+      else if (mActiveSlider.id == "arp_note2")   cmdNo = ARP_CHORD;
+      else if (mActiveSlider.id == "arp_speed")   cmdNo = ARP_SPEED;
       else if (mActiveSlider.id == "lfo_amt")     cmdNo = LFO_AMT;
       else if (mActiveSlider.id == "lfo_freq")    cmdNo = LFO_FREQ;
       else if (mActiveSlider.id == "fx_freq")     cmdNo = FX_FREQ;
@@ -3008,7 +3052,14 @@ var CGUI = function()
       else if (mActiveSlider.id == "fx_dly_amt")  cmdNo = FX_DELAY_AMT;
       else if (mActiveSlider.id == "fx_dly_time") cmdNo = FX_DELAY_TIME;
 
-      var instr = mSong.songData[mSeqCol];
+      // The arpeggio chord notes are combined into a single byte
+      if (cmdNo === ARP_CHORD) {
+        if (mActiveSlider.id == "arp_note1")
+          x = (instr.i[ARP_CHORD] & 15) | (x << 4);
+        else
+          x = (instr.i[ARP_CHORD] & 240) | x;
+      }
+
       if (mEditMode == EDIT_FXTRACK && mFxTrackRow == mFxTrackRow2) {
         // Update the effect command in the FX track
         if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
@@ -3028,9 +3079,6 @@ var CGUI = function()
       // Update the jammer instrument
       mJammer.updateInstr(instr.i);
 
-      // Update the slider position
-      updateSlider(mActiveSlider, x);
-      clearPresetSelection();
       e.preventDefault();
     }
   };
@@ -3540,6 +3588,9 @@ var CGUI = function()
     document.getElementById("env_att").sliderProps = { min: 0, max: 255 };
     document.getElementById("env_sust").sliderProps = { min: 0, max: 255 };
     document.getElementById("env_rel").sliderProps = { min: 0, max: 255 };
+    document.getElementById("arp_note1").sliderProps = { min: 0, max: 12 };
+    document.getElementById("arp_note2").sliderProps = { min: 0, max: 12 };
+    document.getElementById("arp_speed").sliderProps = { min: 0, max: 7 };
     document.getElementById("lfo_amt").sliderProps = { min: 0, max: 255 };
     document.getElementById("lfo_freq").sliderProps = { min: 0, max: 16 };
     document.getElementById("fx_freq").sliderProps = { min: 0, max: 255, nonLinear: true };
@@ -3649,6 +3700,12 @@ var CGUI = function()
     document.getElementById("env_sust").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("env_rel").addEventListener("mousedown", sliderMouseDown, false);
     document.getElementById("env_rel").addEventListener("touchstart", sliderMouseDown, false);
+    document.getElementById("arp_note1").addEventListener("mousedown", sliderMouseDown, false);
+    document.getElementById("arp_note1").addEventListener("touchstart", sliderMouseDown, false);
+    document.getElementById("arp_note2").addEventListener("mousedown", sliderMouseDown, false);
+    document.getElementById("arp_note2").addEventListener("touchstart", sliderMouseDown, false);
+    document.getElementById("arp_speed").addEventListener("mousedown", sliderMouseDown, false);
+    document.getElementById("arp_speed").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("lfo_wave_sin").addEventListener("mousedown", lfoWaveMouseDown, false);
     document.getElementById("lfo_wave_sin").addEventListener("touchstart", lfoWaveMouseDown, false);
     document.getElementById("lfo_wave_sqr").addEventListener("mousedown", lfoWaveMouseDown, false);

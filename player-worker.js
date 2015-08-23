@@ -51,7 +51,7 @@ var CPlayerWorker = function() {
     return 0.003959503758 * Math.pow(2, (n-128)/12);
   };
 
-  var createNote = function (instr, n) {
+  var createNote = function (instr, n, rowLen) {
     var osc1 = mOscillators[instr.i[0]],
         o1vol = instr.i[1],
         o1xenv = instr.i[3],
@@ -62,22 +62,30 @@ var CPlayerWorker = function() {
         attack = instr.i[10] * instr.i[10] * 4,
         sustain = instr.i[11] * instr.i[11] * 4,
         release = instr.i[12] * instr.i[12] * 4,
-        releaseInv = 1 / release;
+        releaseInv = 1 / release,
+        arp = instr.i[13],
+        arpInterval = rowLen * Math.pow(2, 2 - instr.i[14]);
 
     var noteBuf = new Int32Array(attack + sustain + release);
-
-    // Calculate note frequencies for the oscillators
-    var o1t = getnotefreq(n + instr.i[2] - 128);
-    var o2t = getnotefreq(n + instr.i[6] - 128) * (1 + 0.0008 * instr.i[7]);
 
     // Re-trig oscillators
     var c1 = 0, c2 = 0;
 
     // Local variables.
-    var j, e, t, rsample;
+    var j, j2, e, t, rsample, o1t, o2t;
 
     // Generate one note (attack + sustain + release)
-    for (j = 0; j < attack + sustain + release; j++) {
+    for (j = 0, j2 = 0; j < attack + sustain + release; j++, j2++) {
+      if (j2 >= 0) {
+        // Switch arpeggio note.
+        arp = (arp >> 8) | ((arp & 255) << 4);
+        j2 -= arpInterval;
+
+        // Calculate note frequencies for the oscillators
+        o1t = getnotefreq(n + (arp & 15) + instr.i[2] - 128);
+        o2t = getnotefreq(n + (arp & 15) + instr.i[6] - 128) * (1 + 0.0008 * instr.i[7]);
+      }
+
       // Envelope
       e = 1;
       if (j < attack) {
@@ -190,25 +198,25 @@ var CPlayerWorker = function() {
               instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + patternLen] || 0;
 
               // Clear the note cache since the instrument has changed.
-              if (cmdNo < 13) {
+              if (cmdNo < 15) {
                 noteCache = [];
               }
             }
 
             // Put performance critical instrument properties in local variables
-            var oscLFO = mOscillators[instr.i[13]],
-                lfoAmt = instr.i[14] / 512,
-                lfoFreq = Math.pow(2, instr.i[15] - 9) / rowLen,
-                fxLFO = instr.i[16],
-                fxFilter = instr.i[17],
-                fxFreq = instr.i[18] * 43.23529 * 3.141592 / 44100,
-                q = 1 - instr.i[19] / 255,
-                dist = instr.i[20] * 1e-5,
-                drive = instr.i[21] / 32,
-                panAmt = instr.i[22] / 512,
-                panFreq = 6.283184 * Math.pow(2, instr.i[23] - 9) / rowLen,
-                dlyAmt = instr.i[24] / 255,
-                dly = instr.i[25] * rowLen;
+            var oscLFO = mOscillators[instr.i[15]],
+                lfoAmt = instr.i[16] / 512,
+                lfoFreq = Math.pow(2, instr.i[17] - 9) / rowLen,
+                fxLFO = instr.i[18],
+                fxFilter = instr.i[19],
+                fxFreq = instr.i[20] * 43.23529 * 3.141592 / 44100,
+                q = 1 - instr.i[21] / 255,
+                dist = instr.i[22] * 1e-5,
+                drive = instr.i[23] / 32,
+                panAmt = instr.i[24] / 512,
+                panFreq = 6.283184 * Math.pow(2, instr.i[25] - 9) / rowLen,
+                dlyAmt = instr.i[26] / 255,
+                dly = instr.i[27] * rowLen;
 
             // Calculate start sample number for this row in the pattern
             rowStartSample = ((p - this.firstRow) * patternLen + row) * rowLen;
@@ -218,7 +226,7 @@ var CPlayerWorker = function() {
               n = cp ? instr.c[cp - 1].n[row + col * patternLen] : 0;
               if (n) {
                 if (!noteCache[n]) {
-                  noteCache[n] = createNote(instr, n);
+                  noteCache[n] = createNote(instr, n, rowLen);
                 }
 
                 // Copy note from the note cache
