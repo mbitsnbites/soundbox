@@ -1860,7 +1860,7 @@ var CGUI = function()
 
     o = document.createElement("p");
     o.innerHTML = "Licensed under the <a href=\"gpl.txt\">GPL v3</a> license " +
-                  "(get the <a href=\"http://gitorious.org/soundbox/soundbox\">source</a>).";
+                  "(get the <a href=\"https://github.com/mbitsnbites/soundbox\">source</a>).";
     o.style.fontStyle = "italic";
     parent.appendChild(o);
 
