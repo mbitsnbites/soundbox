@@ -208,7 +208,7 @@ var CGUI = function()
       EDIT_FXTRACK = 3;
 
   // Misc constants
-  var MAX_SONG_ROWS = 256,
+  var MAX_SONG_ROWS = 128,
       MAX_PATTERNS = 36;
 
   // Edit/gui state
