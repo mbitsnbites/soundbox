@@ -208,7 +208,7 @@ var CGUI = function()
       EDIT_FXTRACK = 3;
 
   // Misc constants
-  var MAX_SONG_ROWS = 254,
+  var MAX_SONG_ROWS = 500,
       MAX_PATTERNS = 36,
       MAX_CHANNELS = 16;
 
@@ -455,7 +455,7 @@ var CGUI = function()
     bin.putULONG(song.rowLen);
 
     // Last pattern to play
-    bin.putUBYTE(song.endPattern - 2);
+    bin.putUSHORT(song.endPattern - 2);
 
     // Rows per pattern
     bin.putUBYTE(song.patternLen);
@@ -608,7 +608,10 @@ var CGUI = function()
     song.rowLen = bin.getULONG();
 
     // Last pattern to play
-    song.endPattern = bin.getUBYTE() + 2;
+    if (version >= 12)
+      song.endPattern = bin.getUSHORT() + 2;
+    else
+      song.endPattern = bin.getUBYTE() + 2;
 
     // Number of rows per pattern
     if (version >= 10)
