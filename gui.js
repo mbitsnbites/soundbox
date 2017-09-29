@@ -210,7 +210,7 @@ var CGUI = function()
   // Misc constants
   var MAX_SONG_ROWS = 254,
       MAX_PATTERNS = 36,
-      MAX_CHANNELS = 12;
+      MAX_CHANNELS = 16;
 
   // Edit/gui state
   var mEditMode = EDIT_PATTERN,
@@ -1295,7 +1295,7 @@ var CGUI = function()
           if (pat > 0)
             o.innerHTML = "" + (pat <= 10 ? pat - 1 : String.fromCharCode(64 + pat - 10));
           else
-            o.innerHTML = "";
+            o.innerHTML = "&nbsp;";
         }
         if (i >= mSeqRow && i <= mSeqRow2 &&
             j >= mSeqCol && j <= mSeqCol2)
@@ -1327,7 +1327,7 @@ var CGUI = function()
       {
         var o = document.getElementById("pc" + j + "r" + i);
         if (!selectionOnly) {
-          var noteName = "";
+          var noteName = "&nbsp;";
           if (pat >= 0)
           {
             var n = mSong.songData[mSeqCol].c[pat].n[i+j*mSong.patternLen] - 87;
@@ -2075,7 +2075,7 @@ var CGUI = function()
   {
     var o = document.getElementById("playGfxCanvas");
     var w = mPlayGfxVUImg.width > 0 ? mPlayGfxVUImg.width : o.width;
-    var h = mPlayGfxVUImg.height > 0 ? mPlayGfxVUImg.height : 51;
+    var h = mPlayGfxVUImg.height > 0 ? mPlayGfxVUImg.height : 62;
     var ctx = o.getContext("2d");
     if (ctx)
     {
@@ -2116,21 +2116,23 @@ var CGUI = function()
       }
 
       // Convert to angles in the VU meter
-      var a1 = pl > 0 ? 1.3 + 0.5 * Math.log(pl) : -1000;
+      var a1 = pl > 0 ? 1.5 + 0.5 * Math.log(pl) : -1000;
       a1 = a1 < -1 ? -1 : a1 > 1 ? 1 : a1;
-      a1 *= 0.57;
-      var a2 = pr > 0 ? 1.3 + 0.5 * Math.log(pr) : -1000;
+      a1 *= 0.54;
+      var a2 = pr > 0 ? 1.5 + 0.5 * Math.log(pr) : -1000;
       a2 = a2 < -1 ? -1 : a2 > 1 ? 1 : a2;
-      a2 *= 0.57;
+      a2 *= 0.54;
+
+      // Center: (70, 90)
 
       // Draw VU hands
       ctx.strokeStyle = "rgb(0,0,0)";
       ctx.beginPath();
-      ctx.moveTo(w * 0.25, h * 2.1);
+      ctx.moveTo(w * 0.25, h * 1.45);
       ctx.lineTo(w * 0.25 + h * 1.8 * Math.sin(a1), h * 2.1 - h * 1.8 * Math.cos(a1));
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(w * 0.75, h * 2.1);
+      ctx.moveTo(w * 0.75, h * 1.45);
       ctx.lineTo(w * 0.75 + h * 1.8 * Math.sin(a2), h * 2.1 - h * 1.8 * Math.cos(a2));
       ctx.stroke();
 
