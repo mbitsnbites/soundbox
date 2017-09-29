@@ -208,8 +208,9 @@ var CGUI = function()
       EDIT_FXTRACK = 3;
 
   // Misc constants
-  var MAX_SONG_ROWS = 128,
-      MAX_PATTERNS = 36;
+  var MAX_SONG_ROWS = 254,
+      MAX_PATTERNS = 36,
+      MAX_CHANNELS = 12;
 
   // Edit/gui state
   var mEditMode = EDIT_PATTERN,
@@ -380,6 +381,45 @@ var CGUI = function()
       FX_DELAY_AMT = 26,
       FX_DELAY_TIME = 27;
 
+  var makeEmptyChannel = function (patternLen) {
+    instr = {};
+    instr.i = [];
+
+    // Select the default instrument from the presets
+    var defaultInstr;
+    for (i = 0; i < gInstrumentPresets.length; ++i) {
+      if (gInstrumentPresets[i].i) {
+        defaultInstr = gInstrumentPresets[i];
+        break;
+      }
+    }
+
+    // Copy the default instrument
+    for (j = 0; j <= defaultInstr.i.length; ++j) {
+      instr.i[j] = defaultInstr.i[j];
+    }
+
+    // Sequence
+    instr.p = [];
+    for (j = 0; j < MAX_SONG_ROWS; j++)
+      instr.p[j] = 0;
+
+    // Patterns
+    instr.c = [];
+    for (j = 0; j < MAX_PATTERNS; j++)
+    {
+      col = {};
+      col.n = [];
+      for (k = 0; k < patternLen * 4; k++)
+        col.n[k] = 0;
+      col.f = [];
+      for (k = 0; k < patternLen * 2; k++)
+        col.f[k] = 0;
+      instr.c[j] = col;
+    }
+
+    return instr;
+  };
 
   var makeNewSong = function () {
     var song = {}, i, j, k, instr, col;
@@ -393,46 +433,13 @@ var CGUI = function()
     // Rows per pattern
     song.patternLen = 32;
 
-    // Select the default instrument from the presets
-    var defaultInstr;
-    for (i = 0; i < gInstrumentPresets.length; ++i) {
-      if (gInstrumentPresets[i].i) {
-        defaultInstr = gInstrumentPresets[i];
-        break;
-      }
-    }
+    // Number of channels
+    song.numChannels = 1;
 
-    // All 8 instruments
+    // All instruments
     song.songData = [];
-    for (i = 0; i < 8; i++) {
-      instr = {};
-      instr.i = [];
-
-      // Copy the default instrument
-      for (j = 0; j <= defaultInstr.i.length; ++j) {
-        instr.i[j] = defaultInstr.i[j];
-      }
-
-      // Sequence
-      instr.p = [];
-      for (j = 0; j < MAX_SONG_ROWS; j++)
-        instr.p[j] = 0;
-
-      // Patterns
-      instr.c = [];
-      for (j = 0; j < MAX_PATTERNS; j++)
-      {
-        col = {};
-        col.n = [];
-        for (k = 0; k < song.patternLen * 4; k++)
-          col.n[k] = 0;
-        col.f = [];
-        for (k = 0; k < song.patternLen * 2; k++)
-          col.f[k] = 0;
-        instr.c[j] = col;
-      }
-
-      song.songData[i] = instr;
+    for (i = 0; i < MAX_CHANNELS; i++) {
+      song.songData[i] = makeEmptyChannel(song.patternLen);
     }
 
     // Make a first empty pattern
@@ -453,9 +460,12 @@ var CGUI = function()
     // Rows per pattern
     bin.putUBYTE(song.patternLen);
 
-    // All 8 instruments
+    // Number of channels
+    bin.putUBYTE(song.numChannels);
+
+    // All instruments
     var i, j, k, instr, col;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < song.numChannels; i++) {
       instr = song.songData[i];
 
       // Oscillator 1
@@ -542,7 +552,7 @@ var CGUI = function()
     bin.putULONG(2020557395);
 
     // Format version
-    bin.putUBYTE(11);
+    bin.putUBYTE(12);
 
     // Compression method
     //  0: none
@@ -567,7 +577,7 @@ var CGUI = function()
     var version = bin.getUBYTE();
 
     // Check if this is a SoundBox song
-    if (signature != 2020557395 || (version < 1 || version > 11))
+    if (signature != 2020557395 || (version < 1 || version > 12))
       return undefined;
 
     if (version >= 8) {
@@ -606,10 +616,16 @@ var CGUI = function()
     else
       song.patternLen = 32;
 
-    // All 8 instruments
+    // Number of channels
+    if (version >= 12)
+      song.numChannels = bin.getUBYTE();
+    else
+      song.numChannels = 8;
+
+    // All instruments
     song.songData = [];
     var i, j, k, instr, col;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < song.numChannels; i++) {
       instr = {};
       instr.i = [];
 
@@ -710,7 +726,13 @@ var CGUI = function()
       }
 
       // Patterns
-      var song_rows = version < 9 ? 48 : MAX_SONG_ROWS;
+      var song_rows;
+      if (version < 9)
+        song_rows = 48;
+      else if (version < 12)
+        song_rows = 128;
+      else
+        song_rows = MAX_SONG_ROWS;  // TODO(m): This should be dynamic instead.
       instr.p = [];
       for (j = 0; j < song_rows; j++)
         instr.p[j] = bin.getUBYTE();
@@ -778,6 +800,9 @@ var CGUI = function()
         instr.i[FX_RESONANCE] = 255 - instr.i[FX_RESONANCE];
 
       song.songData[i] = instr;
+    }
+    for (; i < MAX_CHANNELS; i++) {
+      song.songData[i] = makeEmptyChannel(song.patternLen);
     }
 
     return song;
@@ -916,6 +941,9 @@ var CGUI = function()
 
       song.songData[i] = instr;
     }
+    for (; i < MAX_CHANNELS; i++) {
+      song.songData[i] = makeEmptyChannel(song.patternLen);
+    }
   
     // Last pattern to play
     song.endPattern = bin.getUBYTE() + 2;
@@ -954,7 +982,7 @@ var CGUI = function()
     jsData += "    var song = {\n";
 
     jsData += "      songData: [\n";
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < song.numChannels; i++) {
       var instr = song.songData[i];
       jsData += "        { // Instrument " + i + "\n";
       jsData += "          i: [\n";
@@ -1258,7 +1286,7 @@ var CGUI = function()
     // Update sequencer element contents and selection
     for (var i = 0; i < MAX_SONG_ROWS; ++i)
     {
-      for (var j = 0; j < 8; ++j)
+      for (var j = 0; j < MAX_CHANNELS; ++j)
       {
         var o = document.getElementById("sc" + j + "r" + i);
         if (!selectionOnly)
@@ -1570,7 +1598,7 @@ var CGUI = function()
 
     // Truncate/extend patterns
     var i, j, k, col, notes, fx;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < MAX_CHANNELS; i++) {
       for (j = 0; j < MAX_PATTERNS; j++) {
         col = mSong.songData[i].c[j];
         notes = [];
@@ -1613,19 +1641,22 @@ var CGUI = function()
   var updateSongRanges = function () {
     var i, j, emptyRow;
 
-    // Determine the last song pattern
-    mSong.endPattern = MAX_SONG_ROWS + 1;
-    for (i = MAX_SONG_ROWS - 1; i >= 0; --i) {
+    // Find the maximum song row and channel number
+    var maxRow = 0;
+    var maxCol = 0;
+    for (i = 0; i < MAX_SONG_ROWS; ++i) {
       emptyRow = true;
-      for (j = 0; j < 8; ++j) {
+      for (j = 0; j < MAX_CHANNELS; ++j) {
         if (mSong.songData[j].p[i] > 0) {
           emptyRow = false;
-          break;
+          maxCol = Math.max(maxCol, j);
         }
       }
-      if (!emptyRow) break;
-      mSong.endPattern--;
+      if (!emptyRow)
+        maxRow = i;
     }
+    mSong.endPattern = maxRow + 2;
+    mSong.numChannels = maxCol + 1;
 
     // Update the song speed
     updateSongSpeed();
@@ -2103,14 +2134,25 @@ var CGUI = function()
       ctx.lineTo(w * 0.75 + h * 1.8 * Math.sin(a2), h * 2.1 - h * 1.8 * Math.cos(a2));
       ctx.stroke();
 
+      // Calculate led dimensions
+      var ledSize = mPlayGfxLedOffImg.width > 0 ? mPlayGfxLedOffImg.width : 20;
+      var xWidth = Math.min(w, ledSize * MAX_CHANNELS + 12);
+      var xStep = xWidth / MAX_CHANNELS;
+      var xOffset = (w - xWidth) / 2.0;
+      var ledDrawSize = Math.min(ledSize, xStep);
+      var yOffset = Math.round((ledSize - ledDrawSize) / 2.0);
+
       // Draw leds
       ctx.fillStyle = "rgb(0,0,0)";
-      ctx.fillRect(0, h, w, 20);
-      for (i = 0; i < 8; ++i)
+      ctx.fillRect(0, h, w, ledSize);
+      for (i = 0; i < MAX_CHANNELS; ++i)
       {
+        // Calculate led position
+        var x = Math.round(xOffset + xStep * i);
+        var y = h + yOffset;
+
         // Draw un-lit led
-        var x = Math.round(26 + 23.0 * i);
-        ctx.drawImage(mPlayGfxLedOffImg, x, h);
+        ctx.drawImage(mPlayGfxLedOffImg, x, y, ledDrawSize, ledDrawSize);
 
         if (i >= mFollowerFirstCol && i <= mFollowerLastCol)
         {
@@ -2140,7 +2182,7 @@ var CGUI = function()
 
             // Draw lit led with alpha blending
             ctx.globalAlpha = alpha * alpha;
-            ctx.drawImage(mPlayGfxLedOnImg, x, h);
+            ctx.drawImage(mPlayGfxLedOnImg, x, y, ledDrawSize, ledDrawSize);
             ctx.globalAlpha = 1.0;
           }
         }
@@ -2549,7 +2591,7 @@ var CGUI = function()
 
     for (var row = mSeqRow, i = 0; row < MAX_SONG_ROWS && i < mSeqCopyBuffer.length; ++row, ++i)
     {
-      for (var col = mSeqCol, j = 0; col < 8 && j < mSeqCopyBuffer[i].length; ++col, ++j)
+      for (var col = mSeqCol, j = 0; col < MAX_CHANNELS && j < mSeqCopyBuffer[i].length; ++col, ++j)
       {
         mSong.songData[col].p[row] = mSeqCopyBuffer[i][j];
       }
@@ -2852,6 +2894,15 @@ var CGUI = function()
     }
   };
 
+  var getCellCoord = function (element)
+  {
+    var rowSplit = element.id.indexOf('r', 2);
+    return {
+      col: parseInt(element.id.slice(2, rowSplit)),
+      row: parseInt(element.id.slice(rowSplit + 1))
+    };
+  };
+
   var fxTrackMouseDown = function (e)
   {
     if (!e) var e = window.event;
@@ -2860,8 +2911,7 @@ var CGUI = function()
     if (!mFollowerActive)
     {
       var o = getEventElement(e);
-      var row = parseInt(o.id.slice(3));
-      setSelectedFxTrackRow(row);
+      setSelectedFxTrackRow(getCellCoord(o).row);
       mSelectingFxRange = true;
     }
     setEditMode(EDIT_FXTRACK);
@@ -2873,8 +2923,7 @@ var CGUI = function()
     {
       if (!e) var e = window.event;
       var o = getEventElement(e);
-      var row = parseInt(o.id.slice(3));
-      setSelectedFxTrackRow2(row);
+      setSelectedFxTrackRow2(getCellCoord(o).row);
       e.preventDefault();
     }
   };
@@ -2885,8 +2934,7 @@ var CGUI = function()
     {
       if (!e) var e = window.event;
       var o = getEventElement(e);
-      var row = parseInt(o.id.slice(3));
-      setSelectedFxTrackRow2(row);
+      setSelectedFxTrackRow2(getCellCoord(o).row);
       mSelectingFxRange = false;
       e.preventDefault();
     }
@@ -2900,9 +2948,8 @@ var CGUI = function()
     if (!mFollowerActive)
     {
       var o = getEventElement(e);
-      var col = parseInt(o.id.slice(2,3));
-      var row = parseInt(o.id.slice(4));
-      setSelectedPatternCell(col, row);
+      var coord = getCellCoord(o);
+      setSelectedPatternCell(coord.col, coord.row);
       mSelectingPatternRange = true;
     }
     setEditMode(EDIT_PATTERN);
@@ -2914,9 +2961,8 @@ var CGUI = function()
     {
       if (!e) var e = window.event;
       var o = getEventElement(e);
-      var col = parseInt(o.id.slice(2,3));
-      var row = parseInt(o.id.slice(4));
-      setSelectedPatternCell2(col, row);
+      var coord = getCellCoord(o);
+      setSelectedPatternCell2(coord.col, coord.row);
       e.preventDefault();
     }
   };
@@ -2927,9 +2973,8 @@ var CGUI = function()
     {
       if (!e) var e = window.event;
       var o = getEventElement(e);
-      var col = parseInt(o.id.slice(2,3));
-      var row = parseInt(o.id.slice(4));
-      setSelectedPatternCell2(col, row);
+      var coord = getCellCoord(o);
+      setSelectedPatternCell2(coord.col, coord.row);
       mSelectingPatternRange = false;
       e.preventDefault();
     }
@@ -2939,12 +2984,9 @@ var CGUI = function()
   {
     if (!e) var e = window.event;
     var o = getEventElement(e);
-    var col = parseInt(o.id.slice(2,3));
-    var row;
-    if (!mFollowerActive)
-      row = parseInt(o.id.slice(4));
-    else
-      row = mSeqRow;
+    var coord = getCellCoord(o);
+    var col = coord.col;
+    var row = mFollowerActive ? mSeqRow : coord.row;
     var newChannel = col != mSeqCol || mSeqCol != mSeqCol2;
     setSelectedSequencerCell(col, row);
     if (!mFollowerActive)
@@ -2962,9 +3004,8 @@ var CGUI = function()
     {
       if (!e) var e = window.event;
       var o = getEventElement(e);
-      var col = parseInt(o.id.slice(2,3));
-      var row = parseInt(o.id.slice(4));
-      setSelectedSequencerCell2(col, row);
+      var coord = getCellCoord(o);
+      setSelectedSequencerCell2(coord.col, coord.row);
       updatePattern();
       updateFxTrack();
       updateInstrument(true);
@@ -2978,10 +3019,9 @@ var CGUI = function()
     {
       if (!e) var e = window.event;
       var o = getEventElement(e);
-      var col = parseInt(o.id.slice(2,3));
-      var row = parseInt(o.id.slice(4));
-      var newChannel = col != mSeqCol2 || mSeqCol != mSeqCol2;
-      setSelectedSequencerCell2(col, row);
+      var coord = getCellCoord(o);
+      var newChannel = coord.col != mSeqCol2 || mSeqCol != mSeqCol2;
+      setSelectedSequencerCell2(coord.col, coord.row);
       mSelectingSeqRange = false;
       updatePattern();
       updateFxTrack();
@@ -3187,7 +3227,7 @@ var CGUI = function()
       case 39:  // RIGHT
         if (mEditMode == EDIT_SEQUENCE)
         {
-          setSelectedSequencerCell((mSeqCol + 1) % 8, mSeqRow);
+          setSelectedSequencerCell((mSeqCol + 1) % MAX_CHANNELS, mSeqRow);
           updatePattern();
           updateFxTrack();
           updateInstrument(true);
@@ -3203,7 +3243,7 @@ var CGUI = function()
       case 37:  // LEFT
         if (mEditMode == EDIT_SEQUENCE)
         {
-          setSelectedSequencerCell((mSeqCol - 1 + 8) % 8, mSeqRow);
+          setSelectedSequencerCell((mSeqCol - 1 + MAX_CHANNELS) % MAX_CHANNELS, mSeqRow);
           updatePattern();
           updateFxTrack();
           updateInstrument(true);
@@ -3435,7 +3475,7 @@ var CGUI = function()
       th.id = "spr" + row;
       th.textContent = "" + row;
       tr.appendChild(th);
-      for (col = 0; col < 8; col++) {
+      for (col = 0; col < MAX_CHANNELS; col++) {
         td = document.createElement("td");
         td.id = "sc" + col + "r" + row;
         td.textContent = " ";
