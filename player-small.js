@@ -152,7 +152,7 @@ var CPlayer = function() {
         mSong = song;
 
         // Init iteration state variables
-        mLastRow = song.endPattern - 2;
+        mLastRow = song.endPattern;
         mCurrentCol = 0;
 
         // Prepare song info

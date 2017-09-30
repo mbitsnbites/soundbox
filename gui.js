@@ -428,7 +428,7 @@ var CGUI = function()
     song.rowLen = calcSamplesPerRow(120);
   
     // Last pattern to play
-    song.endPattern = 2;
+    song.endPattern = 0;
 
     // Rows per pattern
     song.patternLen = 32;
@@ -455,7 +455,7 @@ var CGUI = function()
     bin.putULONG(song.rowLen);
 
     // Last pattern to play
-    bin.putUSHORT(song.endPattern - 2);
+    bin.putUSHORT(song.endPattern);
 
     // Rows per pattern
     bin.putUBYTE(song.patternLen);
@@ -609,7 +609,7 @@ var CGUI = function()
 
     // Last pattern to play
     if (version >= 12)
-      song.endPattern = bin.getUSHORT() + 2;
+      song.endPattern = bin.getUSHORT();
     else
       song.endPattern = bin.getUBYTE() + 2;
 
@@ -1022,7 +1022,7 @@ var CGUI = function()
       // Sequencer data for this instrument
       jsData += "          // Patterns\n";
       jsData += "          p: [";
-      var lastRow = song.endPattern - 2;
+      var lastRow = song.endPattern;
       var maxPattern = 0, lastNonZero = 0;
       for (j = 0; j <= lastRow; j++) {
         var pattern = instr.p[j];
@@ -1658,7 +1658,7 @@ var CGUI = function()
       if (!emptyRow)
         maxRow = i;
     }
-    mSong.endPattern = maxRow + 2;
+    mSong.endPattern = maxRow;
     mSong.numChannels = maxCol + 1;
 
     // Update the song speed
@@ -2316,7 +2316,7 @@ var CGUI = function()
 
     // Select range to play
     mFollowerFirstRow = 0;
-    mFollowerLastRow = mSong.endPattern - 2;
+    mFollowerLastRow = mSong.endPattern;
     mFollowerFirstCol = 0;
     mFollowerLastCol = 7;
 
