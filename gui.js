@@ -1078,7 +1078,7 @@ var CGUI = function()
       }
       jsData += "          ]\n";
       jsData += "        }";
-      if (i < 7)
+      if (i < song.numChannels)
         jsData += ",";
       jsData += "\n";
     }
@@ -1086,7 +1086,8 @@ var CGUI = function()
     jsData += "      ],\n";
     jsData += "      rowLen: " + song.rowLen + ",   // In sample lengths\n";
     jsData += "      patternLen: " + song.patternLen + ",  // Rows per pattern\n";
-    jsData += "      endPattern: " + song.endPattern + "  // End pattern\n";
+    jsData += "      endPattern: " + song.endPattern + ",  // End pattern\n";
+    jsData += "      numChannels: " + song.numChannels + "  // Number of channels\n";
     jsData += "    };\n";
 
     return jsData;
