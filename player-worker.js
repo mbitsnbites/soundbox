@@ -144,7 +144,7 @@ var CPlayerWorker = function() {
   this.init = function (song, opts) {
     // Handle optional arguments
     this.firstRow = 0;
-    this.lastRow = song.endPattern - 2;
+    this.lastRow = song.endPattern;
     this.firstCol = 0;
     this.lastCol = song.numChannels - 1;
     if (opts) {
