@@ -1984,13 +1984,14 @@ var CGUI = function()
 
   var exportJS = function(e)
   {
+    e.preventDefault();
+
     // Update song ranges
     updateSongRanges();
 
     // Generate JS song data
-    var dataURI = "data:text/javascript;base64," + btoa(songToJS(mSong));
-    window.open(dataURI);
-    return false;
+    var blob = new Blob([songToJS(mSong)], {type: "text/plain"});
+    saveAs(blob, "song.js");
   };
 
   var setStatus = function (msg)
