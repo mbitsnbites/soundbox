@@ -152,7 +152,7 @@ var CPlayer = function() {
         mSong = song;
 
         // Init iteration state variables
-        mLastRow = song.endPattern - 2;
+        mLastRow = song.endPattern;
         mCurrentCol = 0;
 
         // Prepare song info
@@ -299,7 +299,7 @@ var CPlayer = function() {
 
         // Next iteration. Return progress (1.0 == done!).
         mCurrentCol++;
-        return mCurrentCol / 8;
+        return mCurrentCol / mSong.numChannels;
     };
 
     // Create a WAVE formatted Uint8Array from the generated audio data

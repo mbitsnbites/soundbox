@@ -27,7 +27,7 @@ body {
 
 #content {
   position: relative;
-  width: 1180px;
+  width: 1210px;
   margin-top: 0;
   margin-left: auto;
   margin-right: auto;
@@ -122,7 +122,7 @@ table.subui, table.subui td {
 }
 
 #sequencer {
-  width: 221px;
+  width: 281px;
   height: 433px;
   overflow: auto;
 }
@@ -148,14 +148,17 @@ table.subui, table.subui td {
   text-align: center;
 }
 
+table.tracks {
+  font-family: "DejaVu Sans Mono",monospace;
+  font-size: 10px;
+  cursor: default;
+}
+
 table.tracks, table.tracks td, table.tracks th {
   border: 1px solid #333;
   border-collapse: collapse;
   padding: 0px 2px;
-  font-family: "DejaVu Sans Mono",monospace;
-  font-size: 10px;
   text-align: center;
-  cursor: default;
 }
 
 table.tracks th {
@@ -342,7 +345,7 @@ table.tracks td.selected, table.tracks tr.beat td.selected {
 }
 
 table.ui td > table.ui td {
-  background: #79b;
+  background: #89a;
 }
 
 body {
@@ -350,6 +353,6 @@ body {
 }
 
 #cover {
-  background: rgba(29,37,45,0.6);
+  background: rgba(29,29,29,0.6);
 }
 
