@@ -1,6 +1,6 @@
 /* -*- mode: javascript; tab-width: 2; indent-tabs-mode: nil; -*-
 *
-* Copyright (c) 2011-2013 Marcus Geelnard
+* Copyright (c) 2011-2017 Marcus Geelnard
 *
 * This file is part of SoundBox.
 *
@@ -297,10 +297,19 @@ var CJammer = function () {
       mAudioContext = new AudioContext();
     } else if (window.webkitAudioContext) {
       mAudioContext = new webkitAudioContext();
-      mAudioContext.createScriptProcessor = mAudioContext.createJavaScriptNode;
     } else {
       mAudioContext = undefined;
       return;
+    }
+
+    // Backwards compat (e.g. Safari).
+    if (!mAudioContext.createScriptProcessor) {
+      if (mAudioContext.createJavaScriptNode) {
+        mAudioContext.createScriptProcessor = mAudioContext.createJavaScriptNode;
+      } else {
+        mAudioContext = undefined;
+        return;
+      }
     }
 
     // Get actual sample rate (SoundBox is hard-coded to 44100 samples/s).
