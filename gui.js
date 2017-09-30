@@ -511,7 +511,7 @@ var CGUI = function()
       bin.putUBYTE(instr.i[FX_DELAY_TIME]);
 
       // Patterns
-      for (j = 0; j < MAX_SONG_ROWS; j++)
+      for (j = 0; j <= song.endPattern; j++)
         bin.putUBYTE(instr.p[j]);
 
       // Columns
@@ -735,7 +735,7 @@ var CGUI = function()
       else if (version < 12)
         song_rows = 128;
       else
-        song_rows = MAX_SONG_ROWS;  // TODO(m): This should be dynamic instead.
+        song_rows = song.endPattern + 1;
       instr.p = [];
       for (j = 0; j < song_rows; j++)
         instr.p[j] = bin.getUBYTE();
