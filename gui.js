@@ -239,8 +239,11 @@ var CGUI = function()
 
   // Resources
   var mSong = {};
-  var mAudio = null;
+  var mAudio = undefined;
   var mAudioTimer = new CAudioTimer();
+  var mAudioContext = undefined;
+  var mAudioSourceNode = undefined;
+  var mAudioSourceStartTime = 0.0;
   var mPlayer = new CPlayer();
   var mPlayGfxVUImg = new Image();
   var mPlayGfxLedOffImg = new Image();
@@ -2037,6 +2040,11 @@ var CGUI = function()
     if (mAudio) {
       mAudio.pause();
       mAudioTimer.reset();
+    } else if (mAudioSourceNode) {
+      mAudioSourceNode.stop();
+      mAudioSourceNode.disconnect();
+      mAudioSourceNode = undefined;
+      mAudioSourceStartTime = 0.0;
     }
   };
 
@@ -2198,14 +2206,21 @@ var CGUI = function()
   };
 
   var updateFollower = function () {
-    if (mAudio == null)
-      return;
-
     // Get current time
-    var t = mAudioTimer.currentTime();
+    var t, hasAudioEnded;
+    if (mAudio) {
+      t = mAudioTimer.currentTime();
+      hasAudioEnded = (mAudio.ended || (mAudio.duration && ((mAudio.duration - t) < 0.1)));
+    } else if (mAudioContext && mAudioSourceNode) {
+      t = mAudioContext.currentTime - mAudioSourceStartTime;
+      hasAudioEnded = false;
+    } else {
+      t = 0.0;
+      hasAudioEnded = true;
+    }
 
     // Are we past the play range (i.e. stop the follower?)
-    if (mAudio.ended || (mAudio.duration && ((mAudio.duration - t) < 0.1))) {
+    if (hasAudioEnded) {
       stopFollower();
 
       // Reset pattern position
@@ -2305,6 +2320,64 @@ var CGUI = function()
   //----------------------------------------------------------------------------
 
 
+  var playGeneratedWave = function (wave) {
+    try {
+      if (mAudio) {
+        // Restart the follower
+        startFollower();
+
+        // Load the data into the audio element (it will start playing as soon
+        // as the data has been loaded)
+        mAudio.src = URL.createObjectURL(new Blob([wave], {type: "audio/wav"}));
+
+        // Hack
+        mAudio.play();
+        mAudioTimer.reset();
+      } else if (mAudioContext) {
+        // Decode the WAVE buffer
+        mAudioContext.decodeAudioData(wave.buffer,
+            function (buffer) {
+              try {
+                // Stop any previously playing buffer if necessary
+                if (mAudioSourceNode) {
+                  mAudioSourceNode.stop();
+                  mAudioSourceNode.disconnect();
+                  mAudioSourceNode = undefined;
+                }
+
+                // Create a new source node and start playing it
+                mAudioSourceNode = mAudioContext.createBufferSource();
+                mAudioSourceNode.buffer = buffer;
+                mAudioSourceNode.connect(mAudioContext.destination);
+                mAudioSourceNode.onended = function (e) {
+                  // When the playback has ended, stop everything
+                  mAudioSourceNode.disconnect();
+                  mAudioSourceNode = undefined;
+                  stopFollower();
+                };
+                if (mAudioSourceNode.start)
+                  mAudioSourceNode.start(0);
+                else
+                  mAudioSourceNode.noteOn(0);
+                mAudioSourceStartTime = mAudioContext.currentTime;
+
+                // Restart the follower
+                startFollower();
+              } catch (err) {
+                alert("Error playing: " + err.message);
+              }
+            }, function (e) {
+              alert("Error decoding audio data: " + e.err);
+            }
+        );
+      } else {
+        alert("Audio unavailable.");
+      }
+    } catch (err) {
+      alert("Error playing: " + err.message);
+    }
+  };
+
   var playSong = function (e)
   {
     if (!e) var e = window.event;
@@ -2323,33 +2396,7 @@ var CGUI = function()
     mFollowerLastCol = 7;
 
     // Generate audio data
-    var doneFun = function (wave)
-    {
-      if (mAudio == null)
-      {
-         alert("Audio element unavailable.");
-         return;
-      }
-
-      try
-      {
-        // Start the follower
-        startFollower();
-
-        // Load the data into the audio element (it will start playing as soon
-        // as the data has been loaded)
-        mAudio.src = URL.createObjectURL(new Blob([wave], {type: "audio/wav"}));
-
-        // Hack
-        mAudioTimer.reset();
-        mAudio.play();
-      }
-      catch (err)
-      {
-        alert("Error playing: " + err.message);
-      }
-    };
-    generateAudio(doneFun);
+    generateAudio(playGeneratedWave);
   };
 
   var playRange = function (e)
@@ -2376,45 +2423,13 @@ var CGUI = function()
     mFollowerLastCol = mSeqCol2;
 
     // Generate audio data
-    var doneFun = function (wave)
-    {
-      if (mAudio == null)
-      {
-         alert("Audio element unavailable.");
-         return;
-      }
-
-      try
-      {
-        // Restart the follower
-        startFollower();
-
-        // Load the data into the audio element (it will start playing as soon
-        // as the data has been loaded)
-        mAudio.src = URL.createObjectURL(new Blob([wave], {type: "audio/wav"}));
-
-        // Hack
-        mAudio.play();
-        mAudioTimer.reset();
-      }
-      catch (err)
-      {
-        alert("Error playing: " + err.message);
-      }
-    };
-    generateAudio(doneFun, opts);
+    generateAudio(playGeneratedWave, opts);
   };
 
   var stopPlaying = function (e)
   {
     if (!e) var e = window.event;
     e.preventDefault();
-
-    if (mAudio == null)
-    {
-       alert("Audio element unavailable.");
-       return;
-    }
 
     stopAudio();
   };
@@ -3574,6 +3589,15 @@ var CGUI = function()
     }
   };
 
+  var canPlayDataUri = function () {
+    // Most mobile browsers have problems with data URI:s. To my knowledge, the
+    // only major mobile browser that can play data URI:s properly is Firefox
+    // for Android.
+    var userAgent = window.navigator.userAgent;
+    var isMobile = userAgent.match(/Mobile/) || userAgent.match(/Tablet/);
+    var isFF = userAgent.match(/Firefox/)
+    return isFF || !isMobile
+  };
 
   //--------------------------------------------------------------------------
   // Initialization
@@ -3649,17 +3673,36 @@ var CGUI = function()
     document.getElementById("fx_dist").sliderProps = { min: 0, max: 255, nonLinear: true };
     document.getElementById("fx_drive").sliderProps = { min: 0, max: 255 };
 
+    mAudio = undefined;
+    mAudioContext = undefined;
+
     // Create audio element, and always play the audio as soon as it's ready
-    try
-    {
+    try {
       mAudio = new Audio();
       mAudioTimer.setAudioElement(mAudio);
       mAudio.addEventListener("canplay", function () { this.play(); }, true);
+    } catch (err) {
+      mAudio = undefined;
     }
-    catch (err)
-    {
-      mAudio = null;
+
+    // Do we prefer WebAudio over HTMLAudioElement?
+    if (!mAudio || !canPlayDataUri()) {
+      if (window.AudioContext) {
+        mAudioContext = new AudioContext();
+      } else if (window.webkitAudioContext) {
+        mAudioContext = new webkitAudioContext();
+      }
+      if (mAudioContext) {
+        mAudio = undefined;
+      }
     }
+
+    if (mAudio) {
+      setStatus("Using Audio element playback");
+    } else if (mAudioContext) {
+      setStatus("Using WebAudio playback");
+    }
+
 
     // Load the song
     var songData = getURLSongData(mGETParams && mGETParams.data && mGETParams.data[0]);
