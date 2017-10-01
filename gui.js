@@ -244,6 +244,7 @@ var CGUI = function()
   var mAudioContext = undefined;
   var mAudioSourceNode = undefined;
   var mAudioSourceStartTime = 0.0;
+  var mPlaybackUnlocked = false;
   var mPlayer = new CPlayer();
   var mPlayGfxVUImg = new Image();
   var mPlayGfxLedOffImg = new Image();
@@ -1918,6 +1919,7 @@ var CGUI = function()
     o.type = "submit";
     o.value = "Close";
     o.onclick = function () {
+      unlockAudioPlaybackHack();
       hideDialog();
       return false;
     };
@@ -2383,6 +2385,9 @@ var CGUI = function()
     if (!e) var e = window.event;
     e.preventDefault();
 
+    // HACK!
+    unlockAudioPlaybackHack();
+
     // Stop the currently playing audio
     stopAudio();
 
@@ -2403,6 +2408,9 @@ var CGUI = function()
   {
     if (!e) var e = window.event;
     e.preventDefault();
+
+    // HACK!
+    unlockAudioPlaybackHack();
 
     // Stop the currently playing audio
     stopAudio();
@@ -3599,6 +3607,29 @@ var CGUI = function()
     return isFF || !isMobile
   };
 
+  var unlockAudioPlaybackHack = function () {
+    if (mPlaybackUnlocked) {
+      return;
+    }
+
+    if (mAudioContext) {
+      // Play an empty sound on the audio context - this is a hack to enable
+      // the element while we're still part of a user interaction (iOS only).
+      var dummySource = mAudioContext.createBufferSource();
+      dummySource.buffer = mAudioContext.createBuffer(1, 1, 22050);;
+      dummySource.connect(mAudioContext.destination);
+      if (dummySource.start)
+        dummySource.start(0);
+      else
+        dummySource.noteOn(0);
+
+      setStatus("Playback is now unlocked");
+    }
+
+    mPlaybackUnlocked = true;
+  };
+
+
   //--------------------------------------------------------------------------
   // Initialization
   //--------------------------------------------------------------------------
@@ -3675,6 +3706,7 @@ var CGUI = function()
 
     mAudio = undefined;
     mAudioContext = undefined;
+    mPlaybackUnlocked = false;
 
     // Create audio element.
     try {
@@ -3697,16 +3729,6 @@ var CGUI = function()
       }
       if (mAudioContext) {
         mAudio = undefined;
-
-        // Play an empty sound on the audio context - this is a hack to enable
-        // the element while we're still part of a user interaction (iOS only).
-        var dummySource = mAudioContext.createBufferSource();
-        dummySource.buffer = mAudioContext.createBuffer(1, 1, 22050);;
-        dummySource.connect(mAudioContext.destination);
-        if (dummySource.start)
-          dummySource.start(0);
-        else
-          dummySource.noteOn(0);
       }
     }
 
@@ -3864,6 +3886,9 @@ var CGUI = function()
     // Show the about dialog (if no song was loaded)
     if (!songData)
       showAboutDialog();
+
+    // Hack!
+    window.addEventListener('touchstart', unlockAudioPlaybackHack, false);
 
     // Start the jammer
     mJammer.start();
