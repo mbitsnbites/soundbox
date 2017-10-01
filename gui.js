@@ -3676,10 +3676,13 @@ var CGUI = function()
     mAudio = undefined;
     mAudioContext = undefined;
 
-    // Create audio element, and always play the audio as soon as it's ready
+    // Create audio element.
     try {
       mAudio = new Audio();
       mAudioTimer.setAudioElement(mAudio);
+
+      // Play the audio as soon as it's ready - this is a hack to enable the
+      // element while we're still part of a user interaction.
       mAudio.addEventListener("canplay", function () { this.play(); }, true);
     } catch (err) {
       mAudio = undefined;
@@ -3694,6 +3697,16 @@ var CGUI = function()
       }
       if (mAudioContext) {
         mAudio = undefined;
+
+        // Play an empty sound on the audio context - this is a hack to enable
+        // the element while we're still part of a user interaction (iOS only).
+        var dummySource = mAudioContext.createBufferSource();
+        dummySource.buffer = mAudioContext.createBuffer(1, 1, 22050);;
+        dummySource.connect(mAudioContext.destination);
+        if (dummySource.start)
+          dummySource.start(0);
+        else
+          dummySource.noteOn(0);
       }
     }
 
