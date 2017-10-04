@@ -2037,6 +2037,10 @@ var CGUI = function()
     });
   };
 
+  var isPLaying = function () {
+    return mFollowerActive;
+  };
+
   var stopAudio = function () {
     stopFollower();
     if (mAudio) {
@@ -3381,7 +3385,10 @@ var CGUI = function()
       case 32: // SPACE
         if (mEditMode != EDIT_NONE)
         {
-          playRange(e);
+          if (isPLaying())
+            stopAudio();
+          else
+            playRange(e);
           return false;
         }
         break;
