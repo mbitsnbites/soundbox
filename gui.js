@@ -3634,8 +3634,6 @@ var CGUI = function()
         dummySource.start(0);
       else
         dummySource.noteOn(0);
-
-      setStatus("Playback is now unlocked");
     }
 
     mPlaybackUnlocked = true;
@@ -3720,26 +3718,23 @@ var CGUI = function()
     mAudioContext = undefined;
     mPlaybackUnlocked = false;
 
-    // Create audio element.
-    try {
-      mAudio = new Audio();
-      mAudioTimer.setAudioElement(mAudio);
-
-      // Play the audio as soon as it's ready - this is a hack to enable the
-      // element while we're still part of a user interaction.
-      mAudio.addEventListener("canplay", function () { this.play(); }, true);
-    } catch (err) {
-      mAudio = undefined;
+    // We prefer WebAudio over HTMLAudioElement.
+    if (window.AudioContext) {
+      mAudioContext = new AudioContext();
+    } else if (window.webkitAudioContext) {
+      mAudioContext = new webkitAudioContext();
     }
 
-    // Do we prefer WebAudio over HTMLAudioElement?
-    if (!mAudio || !canPlayDataUri()) {
-      if (window.AudioContext) {
-        mAudioContext = new AudioContext();
-      } else if (window.webkitAudioContext) {
-        mAudioContext = new webkitAudioContext();
-      }
-      if (mAudioContext) {
+    // If we can't do WebAudio, use an HTMLAudioElement instead.
+    if (!mAudioContext && canPlayDataUri()) {
+      try {
+        mAudio = new Audio();
+        mAudioTimer.setAudioElement(mAudio);
+
+        // Play the audio as soon as it's ready - this is a hack to enable the
+        // element while we're still part of a user interaction.
+        mAudio.addEventListener("canplay", function () { this.play(); }, true);
+      } catch (err) {
         mAudio = undefined;
       }
     }
@@ -3748,8 +3743,9 @@ var CGUI = function()
       setStatus("Using Audio element playback");
     } else if (mAudioContext) {
       setStatus("Using WebAudio playback");
+    } else {
+      setStatus("No audio playback possible!");
     }
-
 
     // Load the song
     var songData = getURLSongData(mGETParams && mGETParams.data && mGETParams.data[0]);
