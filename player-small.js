@@ -216,7 +216,7 @@ var CPlayer = function() {
                     panAmt = instr.i[24] / 512,
                     panFreq = 6.283184 * Math.pow(2, instr.i[25] - 9) / rowLen,
                     dlyAmt = instr.i[26] / 255,
-                    dly = instr.i[27] * rowLen;
+                    dly = instr.i[27] * rowLen & ~1;  // Must be an even number
 
                 // Calculate start sample number for this row in the pattern
                 rowStartSample = (p * patternLen + row) * rowLen;
