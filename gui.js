@@ -2209,13 +2209,19 @@ var CGUI = function()
 
   var updateFollower = function () {
     // Get current time
-    var t, hasAudioEnded;
+    var t, hasAudioEnded = false;
     if (mAudio) {
       t = mAudioTimer.currentTime();
-      hasAudioEnded = (mAudio.ended || (mAudio.duration && ((mAudio.duration - t) < 0.1)));
+      hasAudioEnded = (mAudio.ended ||
+                      (!mAudio.loop && (mAudio.duration && ((mAudio.duration - t) < 0.1))));
     } else if (mAudioContext && mAudioSourceNode) {
       t = mAudioContext.currentTime - mAudioSourceStartTime;
-      hasAudioEnded = false;
+      if (mAudioSourceNode.loop && (mAudioSourceNode.buffer.duration > 0)) {
+        while (t > mAudioSourceNode.buffer.duration) {
+          t -= mAudioSourceNode.buffer.duration;
+        }
+        mAudioSourceStartTime = mAudioContext.currentTime - t;
+      }
     } else {
       t = 0.0;
       hasAudioEnded = true;
@@ -2323,6 +2329,8 @@ var CGUI = function()
 
 
   var playGeneratedWave = function (wave) {
+    var isLooping = document.getElementById("loopPlayback").checked;
+
     try {
       if (mAudio) {
         // Restart the follower
@@ -2331,6 +2339,7 @@ var CGUI = function()
         // Load the data into the audio element (it will start playing as soon
         // as the data has been loaded)
         mAudio.src = URL.createObjectURL(new Blob([wave], {type: "audio/wav"}));
+        mAudio.loop = isLooping;
 
         // Hack
         mAudio.play();
@@ -2351,12 +2360,15 @@ var CGUI = function()
                 mAudioSourceNode = mAudioContext.createBufferSource();
                 mAudioSourceNode.buffer = buffer;
                 mAudioSourceNode.connect(mAudioContext.destination);
-                mAudioSourceNode.onended = function (e) {
-                  // When the playback has ended, stop everything
-                  mAudioSourceNode.disconnect();
-                  mAudioSourceNode = undefined;
-                  stopFollower();
-                };
+                mAudioSourceNode.loop = isLooping;
+                if (!isLooping) {
+                  mAudioSourceNode.onended = function (e) {
+                    // When the playback has ended, stop everything
+                    mAudioSourceNode.disconnect();
+                    mAudioSourceNode = undefined;
+                    stopFollower();
+                  };
+                }
                 if (mAudioSourceNode.start)
                   mAudioSourceNode.start(0);
                 else
@@ -3604,7 +3616,7 @@ var CGUI = function()
     var userAgent = window.navigator.userAgent;
     var isMobile = userAgent.match(/Mobile/) || userAgent.match(/Tablet/);
     var isFF = userAgent.match(/Firefox/)
-    return isFF || !isMobile
+    return isFF || !isMobile;
   };
 
   var unlockAudioPlaybackHack = function () {

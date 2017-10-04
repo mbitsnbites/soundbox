@@ -265,6 +265,10 @@ table.tracks td.selected, table.tracks tr.beat td.selected {
   margin-right: 4px;
 }
 
+label.checkbox input {
+  vertical-align: middle;
+}
+
 .box {
   padding: 0;
   margin: 0;
