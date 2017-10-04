@@ -3454,10 +3454,23 @@ var CGUI = function()
           document.getElementById("rpp").blur();
         }
         break;
+    }
 
-      default:
-        // alert("onkeydown: " + e.keyCode);
-        break;
+    // Non-function keys.
+    if (e.key) {
+      switch (e.key) {
+        case "<":
+          octaveDown(e);
+          return false;
+
+        case ">":
+          octaveUp(e);
+          return false;
+
+        default:
+          // console.log("onkeydown: keyCode=" + e.keyCode + " key=" + e.key);
+          break;
+      }
     }
 
     return true;
