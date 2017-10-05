@@ -1,6 +1,6 @@
 /* -*- mode: javascript; tab-width: 2; indent-tabs-mode: nil; -*-
 *
-* Copyright (c) 2011-2013 Marcus Geelnard
+* Copyright (c) 2011-2017 Marcus Geelnard
 *
 * This file is part of SoundBox.
 *
@@ -157,6 +157,39 @@ gInstrumentPresets = [
     ]
   },
   {
+    name: "Mellow",
+    i: [
+          0, // OSC1_WAVEFORM
+          91, // OSC1_VOL
+          128, // OSC1_SEMI
+          0, // OSC1_XENV
+          0, // OSC2_WAVEFORM
+          95, // OSC2_VOL
+          128, // OSC2_SEMI
+          12, // OSC2_DETUNE
+          0, // OSC2_XENV
+          0, // NOISE_VOL
+          12, // ENV_ATTACK
+          0, // ENV_SUSTAIN
+          72, // ENV_RELEASE
+          0, // ARP_CHORD
+          0, // ARP_SPEED
+          0, // LFO_WAVEFORM
+          0, // LFO_AMT
+          0, // LFO_FREQ
+          0, // LFO_FX_FREQ
+          2, // FX_FILTER
+          255, // FX_FREQ
+          0, // FX_RESONANCE
+          0, // FX_DIST
+          32, // FX_DRIVE
+          83, // FX_PAN_AMT
+          3, // FX_PAN_FREQ
+          130, // FX_DELAY_AMT
+          4 // FX_DELAY_TIME
+    ]
+  },
+  {
     name: "Filter Bass 1",
     i: [
           2, // OSC1_WAVEFORM
@@ -187,6 +220,72 @@ gInstrumentPresets = [
           6, // FX_PAN_FREQ
           84, // FX_DELAY_AMT
           6 // FX_DELAY_TIME
+    ]
+  },
+  {
+    name: "Filter bass 2",
+    i: [
+          3, // OSC1_WAVEFORM
+          100, // OSC1_VOL
+          128, // OSC1_SEMI
+          0, // OSC1_XENV
+          3, // OSC2_WAVEFORM
+          201, // OSC2_VOL
+          128, // OSC2_SEMI
+          2, // OSC2_DETUNE
+          0, // OSC2_XENV
+          0, // NOISE_VOL
+          0, // ENV_ATTACK
+          6, // ENV_SUSTAIN
+          49, // ENV_RELEASE
+          0, // ARP_CHORD
+          0, // ARP_SPEED
+          0, // LFO_WAVEFORM
+          139, // LFO_AMT
+          4, // LFO_FREQ
+          1, // LFO_FX_FREQ
+          3, // FX_FILTER
+          30, // FX_FREQ
+          184, // FX_RESONANCE
+          119, // FX_DIST
+          244, // FX_DRIVE
+          147, // FX_PAN_AMT
+          6, // FX_PAN_FREQ
+          84, // FX_DELAY_AMT
+          6 // FX_DELAY_TIME
+    ]
+  },
+  {
+    name: "Filter bass 3",
+    i: [
+          3, // OSC1_WAVEFORM
+          194, // OSC1_VOL
+          128, // OSC1_SEMI
+          0, // OSC1_XENV
+          2, // OSC2_WAVEFORM
+          198, // OSC2_VOL
+          128, // OSC2_SEMI
+          6, // OSC2_DETUNE
+          0, // OSC2_XENV
+          0, // NOISE_VOL
+          12, // ENV_ATTACK
+          12, // ENV_SUSTAIN
+          33, // ENV_RELEASE
+          0, // ARP_CHORD
+          0, // ARP_SPEED
+          0, // LFO_WAVEFORM
+          61, // LFO_AMT
+          4, // LFO_FREQ
+          1, // LFO_FX_FREQ
+          2, // FX_FILTER
+          109, // FX_FREQ
+          86, // FX_RESONANCE
+          7, // FX_DIST
+          32, // FX_DRIVE
+          112, // FX_PAN_AMT
+          3, // FX_PAN_FREQ
+          67, // FX_DELAY_AMT
+          2 // FX_DELAY_TIME
     ]
   },
   {
@@ -424,6 +523,39 @@ gInstrumentPresets = [
           0, // FX_PAN_FREQ
           66, // FX_DELAY_AMT
           6 // FX_DELAY_TIME
+    ]
+  },
+  {
+    name: "Bass drum 4 (dirty)",
+    i: [
+          0, // OSC1_WAVEFORM
+          255, // OSC1_VOL
+          116, // OSC1_SEMI
+          1, // OSC1_XENV
+          0, // OSC2_WAVEFORM
+          255, // OSC2_VOL
+          120, // OSC2_SEMI
+          0, // OSC2_DETUNE
+          1, // OSC2_XENV
+          127, // NOISE_VOL
+          4, // ENV_ATTACK
+          6, // ENV_SUSTAIN
+          35, // ENV_RELEASE
+          0, // ARP_CHORD
+          0, // ARP_SPEED
+          0, // LFO_WAVEFORM
+          0, // LFO_AMT
+          0, // LFO_FREQ
+          0, // LFO_FX_FREQ
+          2, // FX_FILTER
+          14, // FX_FREQ
+          0, // FX_RESONANCE
+          10, // FX_DIST
+          32, // FX_DRIVE
+          0, // FX_PAN_AMT
+          0, // FX_PAN_FREQ
+          0, // FX_DELAY_AMT
+          0 // FX_DELAY_TIME
     ]
   },
   {

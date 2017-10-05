@@ -1,6 +1,6 @@
 /* -*- mode: javascript; tab-width: 2; indent-tabs-mode: nil; -*-
 *
-* Copyright (c) 2011-2013 Marcus Geelnard
+* Copyright (c) 2011-2017 Marcus Geelnard
 *
 * This file is part of SoundBox.
 *
@@ -21,10 +21,13 @@
 
 function include(filename)
 {
+  // Randomnize the URL to always reload it.
+  var getParam = '?id=' + Math.round(Math.random() * 99999);
+
 	var head = document.getElementsByTagName('head')[0];
 	var s = document.createElement('script');
 	s.type = 'text/javascript';
-	s.src = filename;
+	s.src = filename + getParam;
 	head.appendChild(s);
 }
 
