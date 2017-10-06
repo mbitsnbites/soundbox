@@ -1944,6 +1944,7 @@ var CGUI = function()
     var ok = confirm("Start a new song? Your current song will be lost.");
     if (ok) {  
       mSong = makeNewSong();
+      stopAudio();
 
       // Update GUI
       updateSongInfo();
