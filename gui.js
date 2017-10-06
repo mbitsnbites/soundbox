@@ -452,6 +452,93 @@ var CGUI = function()
 
     return song;
   };
+  
+  var putInstrument = function(bin,instrI)
+  {
+    // Oscillator 1
+    bin.putUBYTE(instrI[OSC1_WAVEFORM]);
+    bin.putUBYTE(instrI[OSC1_VOL]);
+    bin.putUBYTE(instrI[OSC1_SEMI]);
+    bin.putUBYTE(instrI[OSC1_XENV]);
+
+    // Oscillator 2
+    bin.putUBYTE(instrI[OSC2_WAVEFORM]);
+    bin.putUBYTE(instrI[OSC2_VOL]);
+    bin.putUBYTE(instrI[OSC2_SEMI]);
+    bin.putUBYTE(instrI[OSC2_DETUNE]);
+    bin.putUBYTE(instrI[OSC2_XENV]);
+
+    // Noise oscillator
+    bin.putUBYTE(instrI[NOISE_VOL]);
+
+    // Envelope
+    bin.putUBYTE(instrI[ENV_ATTACK]);
+    bin.putUBYTE(instrI[ENV_SUSTAIN]);
+    bin.putUBYTE(instrI[ENV_RELEASE]);
+
+    // Arpeggio
+    bin.putUBYTE(instrI[ARP_CHORD]);
+    bin.putUBYTE(instrI[ARP_SPEED]);
+
+    // LFO
+    bin.putUBYTE(instrI[LFO_WAVEFORM]);
+    bin.putUBYTE(instrI[LFO_AMT]);
+    bin.putUBYTE(instrI[LFO_FREQ]);
+    bin.putUBYTE(instrI[LFO_FX_FREQ]);
+
+    // Effects
+    bin.putUBYTE(instrI[FX_FILTER]);
+    bin.putUBYTE(instrI[FX_FREQ]);
+    bin.putUBYTE(instrI[FX_RESONANCE]);
+    bin.putUBYTE(instrI[FX_DIST]);
+    bin.putUBYTE(instrI[FX_DRIVE]);
+    bin.putUBYTE(instrI[FX_PAN_AMT]);
+    bin.putUBYTE(instrI[FX_PAN_FREQ]);
+    bin.putUBYTE(instrI[FX_DELAY_AMT]);
+    bin.putUBYTE(instrI[FX_DELAY_TIME]);
+  }
+  
+  var compress = function(unpackedData)
+  {
+    // Pack the song data
+    // FIXME: To avoid bugs, we try different compression methods here until we
+    // find something that works (this should not be necessary).
+    var packedData, testData, compressionMethod = 0;
+    for (i = 9; i > 0; i--) {
+      packedData = RawDeflate.deflate(unpackedData, i);
+      testData = RawDeflate.inflate(packedData);
+      if (unpackedData === testData) {
+        compressionMethod = 2;
+        break;
+      }
+    }
+    if (compressionMethod == 0) {
+      packedData = rle_encode(bin.getData());
+      testData = rle_decode(packedData);
+      if (unpackedData === testData)
+        compressionMethod = 1;
+      else
+        packedData = unpackedData;
+    }
+    // method: 
+    //  0: none
+    //  1: RLE
+    //  2: DEFLATE
+    return {method:compressionMethod,data:packedData};
+  }
+  
+  var uncompress = function(method,packedData)
+  {
+    switch (method) {
+      default:
+      case 0:
+        return packedData;        
+      case 1:
+        return rle_decode(packedData);        
+      case 2:
+        return RawDeflate.inflate(packedData);        
+    }
+  }
 
   var songToBin = function (song) {
     var bin = new CBinWriter();
@@ -473,48 +560,8 @@ var CGUI = function()
     for (i = 0; i < song.numChannels; i++) {
       instr = song.songData[i];
 
-      // Oscillator 1
-      bin.putUBYTE(instr.i[OSC1_WAVEFORM]);
-      bin.putUBYTE(instr.i[OSC1_VOL]);
-      bin.putUBYTE(instr.i[OSC1_SEMI]);
-      bin.putUBYTE(instr.i[OSC1_XENV]);
-
-      // Oscillator 2
-      bin.putUBYTE(instr.i[OSC2_WAVEFORM]);
-      bin.putUBYTE(instr.i[OSC2_VOL]);
-      bin.putUBYTE(instr.i[OSC2_SEMI]);
-      bin.putUBYTE(instr.i[OSC2_DETUNE]);
-      bin.putUBYTE(instr.i[OSC2_XENV]);
-
-      // Noise oscillator
-      bin.putUBYTE(instr.i[NOISE_VOL]);
-
-      // Envelope
-      bin.putUBYTE(instr.i[ENV_ATTACK]);
-      bin.putUBYTE(instr.i[ENV_SUSTAIN]);
-      bin.putUBYTE(instr.i[ENV_RELEASE]);
-
-      // Arpeggio
-      bin.putUBYTE(instr.i[ARP_CHORD]);
-      bin.putUBYTE(instr.i[ARP_SPEED]);
-
-      // LFO
-      bin.putUBYTE(instr.i[LFO_WAVEFORM]);
-      bin.putUBYTE(instr.i[LFO_AMT]);
-      bin.putUBYTE(instr.i[LFO_FREQ]);
-      bin.putUBYTE(instr.i[LFO_FX_FREQ]);
-
-      // Effects
-      bin.putUBYTE(instr.i[FX_FILTER]);
-      bin.putUBYTE(instr.i[FX_FREQ]);
-      bin.putUBYTE(instr.i[FX_RESONANCE]);
-      bin.putUBYTE(instr.i[FX_DIST]);
-      bin.putUBYTE(instr.i[FX_DRIVE]);
-      bin.putUBYTE(instr.i[FX_PAN_AMT]);
-      bin.putUBYTE(instr.i[FX_PAN_FREQ]);
-      bin.putUBYTE(instr.i[FX_DELAY_AMT]);
-      bin.putUBYTE(instr.i[FX_DELAY_TIME]);
-
+      putInstrument(bin,instr.i);
+      
       // Patterns
       for (j = 0; j <= song.endPattern; j++)
         bin.putUBYTE(instr.p[j]);
@@ -527,28 +574,9 @@ var CGUI = function()
         for (k = 0; k < song.patternLen * 2; k++)
           bin.putUBYTE(col.f[k]);
       }
-    }
-
-    // Pack the song data
-    // FIXME: To avoid bugs, we try different compression methods here until we
-    // find something that works (this should not be necessary).
-    var unpackedData = bin.getData(), packedData, testData, compressionMethod = 0;
-    for (i = 9; i > 0; i--) {
-      packedData = RawDeflate.deflate(unpackedData, i);
-      testData = RawDeflate.inflate(packedData);
-      if (unpackedData === testData) {
-        compressionMethod = 2;
-        break;
-      }
-    }
-    if (compressionMethod == 0) {
-      packedData = rle_encode(bin.getData());
-      testData = rle_decode(packedData);
-      if (unpackedData === testData)
-        compressionMethod = 1;
-      else
-        packedData = unpackedData;
-    }
+    }   
+    
+    var compressedData = compress(bin.getData());
 
     // Create a new binary stream - this is the actual file
     bin = new CBinWriter();
@@ -560,13 +588,10 @@ var CGUI = function()
     bin.putUBYTE(12);
 
     // Compression method
-    //  0: none
-    //  1: RLE
-    //  2: DEFLATE
-    bin.putUBYTE(compressionMethod);
+    bin.putUBYTE(compressedData.method);
 
     // Append packed data
-    bin.append(packedData);
+    bin.append(compressedData.data);
 
     return bin.getData();
   };
@@ -587,25 +612,11 @@ var CGUI = function()
 
     if (version >= 8) {
       // Get compression method
-      //  0: none
-      //  1: RLE
-      //  2: DEFLATE
       var compressionMethod = bin.getUBYTE();
 
       // Unpack song data
-      var packedData = bin.getTail(), unpackedData;
-      switch (compressionMethod) {
-      default:
-      case 0:
-        unpackedData = packedData;
-        break;
-      case 1:
-        unpackedData = rle_decode(packedData);
-        break;
-      case 2:
-        unpackedData = RawDeflate.inflate(packedData);
-        break;
-      }
+      var packedData = bin.getTail();
+      var unpackedData = uncompress(compressionMethod,packedData);
       bin = new CBinParser(unpackedData);
     }
 
@@ -958,6 +969,101 @@ var CGUI = function()
 
     return song;
   };
+    
+  var instrumentToBin = function (instrI) {
+    var bin = new CBinWriter();
+
+    putInstrument(bin,instrI);
+
+    // The code and file format are ready to support compressed data;
+    // However, at the moment, the instruments are so small that no point
+    // compressing. Replace this line with compress(bin.getData()) if needed
+    var compressedData = {method:0,data:bin.getData()};
+
+    // Create a new binary stream - this is the actual file
+    bin = new CBinWriter();
+
+    // Signature "SBoxI" when base64 encoded
+    bin.putULONG(540088904);
+
+    // Format version
+    bin.putUBYTE(1);
+
+    // Compression method
+    bin.putUBYTE(compressedData.method);
+
+    // Append packed data
+    bin.append(compressedData.data);
+
+    return bin.getData();
+  };
+  
+  var binToInstrument = function (d) {
+    var bin = new CBinParser(d);
+    var instrI = [];
+
+    // Signature
+    var signature = bin.getULONG();
+
+    // Format version
+    var version = bin.getUBYTE();
+
+    // Check if this is a SoundBox instrument, signature "SBoi"
+    if (signature != 540088904 || (version < 1 || version > 1))
+      return undefined;
+
+    var compressionMethod = bin.getUBYTE();
+
+    // Unpack instrument data
+    var packedData = bin.getTail();
+    var unpackedData = uncompress(compressionMethod,packedData);
+   
+    bin = new CBinParser(unpackedData);    
+
+    // Oscillator 1     
+    instrI[OSC1_WAVEFORM] = bin.getUBYTE();
+    instrI[OSC1_VOL] = bin.getUBYTE();
+    instrI[OSC1_SEMI] = bin.getUBYTE();
+    instrI[OSC1_XENV] = bin.getUBYTE();
+
+    // Oscillator 2
+    instrI[OSC2_WAVEFORM] = bin.getUBYTE();
+    instrI[OSC2_VOL] = bin.getUBYTE();
+    instrI[OSC2_SEMI] = bin.getUBYTE();
+    instrI[OSC2_DETUNE] = bin.getUBYTE();
+    instrI[OSC2_XENV] = bin.getUBYTE();
+    
+    // Noise oscillator
+    instrI[NOISE_VOL] = bin.getUBYTE();
+
+    // Envelope
+    instrI[ENV_ATTACK] = bin.getUBYTE();
+    instrI[ENV_SUSTAIN] = bin.getUBYTE();
+    instrI[ENV_RELEASE] = bin.getUBYTE();
+    
+    // Arpeggio
+    instrI[ARP_CHORD] = bin.getUBYTE();
+    instrI[ARP_SPEED] = bin.getUBYTE();
+
+    // LFO
+    instrI[LFO_WAVEFORM] = bin.getUBYTE();
+    instrI[LFO_AMT] = bin.getUBYTE();
+    instrI[LFO_FREQ] = bin.getUBYTE();
+    instrI[LFO_FX_FREQ] = bin.getUBYTE();
+
+    // Effects
+    instrI[FX_FILTER] = bin.getUBYTE();
+    instrI[FX_FREQ] = bin.getUBYTE();
+    instrI[FX_RESONANCE] = bin.getUBYTE();
+    instrI[FX_DIST] = bin.getUBYTE();
+    instrI[FX_DRIVE] = bin.getUBYTE();
+    instrI[FX_PAN_AMT] = bin.getUBYTE();
+    instrI[FX_PAN_FREQ] = bin.getUBYTE();
+    instrI[FX_DELAY_AMT] = bin.getUBYTE();
+    instrI[FX_DELAY_TIME] = bin.getUBYTE();
+      
+    return instrI;
+  };
 
   var binToSong = function (d) {
     // Try to parse the binary data as a SoundBox song
@@ -968,8 +1074,7 @@ var CGUI = function()
       song = sonantBinToSong(d);
 
     // If we couldn't parse the song, just make a clean new song
-    if (!song) {
-      alert("Song format not recognized.");
+    if (!song) {      
       return undefined;
     }
 
@@ -1718,7 +1823,20 @@ var CGUI = function()
       updatePattern();
       updateFxTrack();
       updateInstrument(true);
+      return true;
     }
+    return false;
+  };
+  
+  var loadInstrumentFromData = function (instrumentData) {
+    var instrI = binToInstrument(instrumentData);
+    if (instrI) {
+      stopAudio();
+      mSong.songData[mSeqCol].i = instrI;   
+      updateInstrument(true);
+      return true;
+    }
+    return false;
   };
 
   var showOpenDialog = function () {
@@ -1931,7 +2049,6 @@ var CGUI = function()
     showDialog();
   };
 
-
   //--------------------------------------------------------------------------
   // Event handlers
   //--------------------------------------------------------------------------
@@ -2058,7 +2175,6 @@ var CGUI = function()
       mAudioSourceStartTime = 0.0;
     }
   };
-
 
   //----------------------------------------------------------------------------
   // Playback follower
@@ -2543,6 +2659,14 @@ var CGUI = function()
         instr.i[i] = mInstrCopyBuffer[i];
     }
     updateInstrument(true);
+  };
+  
+  var instrSaveMouseDown = function () {
+    var instrI = mSong.songData[mSeqCol].i;   
+    var dataURI = "data:application/octet-stream;base64," + btoa(instrumentToBin(instrI));
+    window.open(dataURI);
+    hideDialog();
+    return false;
   };
 
   var patternCopyMouseDown = function (e) {
@@ -3538,7 +3662,13 @@ var CGUI = function()
     // Load the file into the editor
     var reader = new FileReader();
     reader.onload = function(e) {
-      loadSongFromData(getURLSongData(e.target.result));
+      var data = getURLSongData(e.target.result);
+      // try first loading the file as a song
+      var success = loadSongFromData(data);
+      if (!success) // if it is not a song, maybe its an instrument       
+        success = loadInstrumentFromData(data);
+      if (!success)
+        alert("Binary format not recognized.");
     };
     reader.readAsDataURL(file);
   };
@@ -3951,6 +4081,7 @@ var CGUI = function()
 
     document.getElementById("instrCopy").onmousedown = instrCopyMouseDown;
     document.getElementById("instrPaste").onmousedown = instrPasteMouseDown;
+    document.getElementById("instrSave").onmousedown = instrSaveMouseDown;
 
     document.getElementById("displaySize").checked = false;
     document.getElementById("displaySize").onchange = displaySizeOnChange;
