@@ -250,6 +250,7 @@ var CGUI = function()
   var mPlayGfxLedOffImg = new Image();
   var mPlayGfxLedOnImg = new Image();
   var mJammer = new CJammer();
+  var mDisplaySizeTimer = undefined;
 
   // Constant look-up-tables
   var mNoteNames = [
@@ -2461,6 +2462,37 @@ var CGUI = function()
 
     stopAudio();
   };
+  
+  var stopDisplayingSize = function ()
+  {
+    if (mDisplaySizeTimer)
+      clearInterval(mDisplaySizeTimer);
+    mDisplaySizeTimer = undefined;  
+  };
+  
+  var startDisplayingSize = function ()
+  {
+    stopDisplayingSize();
+    mDisplaySizeTimer = setInterval(function() {
+      if (!isPLaying()) {
+        var JS = songToJS(mSong);
+        var uncommented = JS.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');     
+        var whitespaceRemoved = uncommented.replace(/\s/g, '');
+        setStatus("Bytesize in javascript: " + whitespaceRemoved.length);
+      }
+    },2000);
+  };
+  
+  var displaySizeOnChange = function (e)
+  {
+    if (!e) var e = window.event;
+    var isDisplaySizeChecked = document.getElementById("displaySize").checked;
+    if (isDisplaySizeChecked) {
+      startDisplayingSize();
+    } else {
+      stopDisplayingSize();
+    }
+  };
 
   var bpmFocus = function (e) {
     setEditMode(EDIT_NONE);
@@ -3908,6 +3940,8 @@ var CGUI = function()
 
     document.getElementById("instrCopy").onmousedown = instrCopyMouseDown;
     document.getElementById("instrPaste").onmousedown = instrPasteMouseDown;
+    
+    document.getElementById("displaySize").onchange = displaySizeOnChange;
 
     // Initialize the MIDI handler
     initMIDI();
