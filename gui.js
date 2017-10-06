@@ -2953,6 +2953,14 @@ var CGUI = function()
       }
     }
   };
+  
+  var presetOnKeyDown = function (e)
+  {
+    // ignore all keys to avoid accidentally overwriting current instrument with preset
+    if (!e) var e = window.event; 
+    e.returnValue = false;
+    e.cancel = true;    
+  }
 
   var keyboardMouseDown = function (e)
   {
@@ -3862,6 +3870,8 @@ var CGUI = function()
 
     document.getElementById("instrPreset").onfocus = instrPresetFocus;
     document.getElementById("instrPreset").onchange = selectPreset;
+    document.getElementById("instrPreset").onkeydown = presetOnKeyDown;
+    
     document.getElementById("osc1_wave_sin").addEventListener("mousedown", osc1WaveMouseDown, false);
     document.getElementById("osc1_wave_sin").addEventListener("touchstart", osc1WaveMouseDown, false);
     document.getElementById("osc1_wave_sqr").addEventListener("mousedown", osc1WaveMouseDown, false);
