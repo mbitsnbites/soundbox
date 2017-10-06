@@ -1898,8 +1898,8 @@ var CGUI = function()
     parent.appendChild(o);
 
     o = document.createElement("p");
-    o.innerHTML = "Licensed under the <a href=\"gpl.txt\">GPL v3</a> license " +
-                  "(get the <a href=\"https://github.com/mbitsnbites/soundbox\">source</a>).";
+    o.innerHTML = "Licensed under the <a href=\"gpl.txt\" target=\"_blank\" rel=\"noopener noreferrer\">GPL v3</a> license " +
+                  "(get the <a href=\"https://github.com/mbitsnbites/soundbox\" target=\"_blank\" rel=\"noopener noreferrer\">source</a>).";
     o.style.fontStyle = "italic";
     parent.appendChild(o);
 
