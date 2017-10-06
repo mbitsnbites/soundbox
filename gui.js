@@ -1940,20 +1940,23 @@ var CGUI = function()
   };
 
   var newSong = function (e) {
-    mSong = makeNewSong();
+    var ok = confirm("Start a new song? Your current song will be lost.");
+    if (ok) {  
+      mSong = makeNewSong();
 
-    // Update GUI
-    updateSongInfo();
-    updateSequencer();
-    updatePattern();
-    updateFxTrack();
-    updateInstrument();
+      // Update GUI
+      updateSongInfo();
+      updateSequencer();
+      updatePattern();
+      updateFxTrack();
+      updateInstrument();
 
-    // Initialize the song
-    setEditMode(EDIT_PATTERN);
-    setSelectedPatternCell(0, 0);
-    setSelectedSequencerCell(0, 0);
-    setSelectedFxTrackRow(0);
+      // Initialize the song
+      setEditMode(EDIT_PATTERN);
+      setSelectedPatternCell(0, 0);
+      setSelectedSequencerCell(0, 0);
+      setSelectedFxTrackRow(0);
+    }
     return false;
   };
 
