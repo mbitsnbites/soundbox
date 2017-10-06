@@ -1909,6 +1909,7 @@ var CGUI = function()
 
     o = document.createElement("a");
     o.href = "help.html";
+    o.target = '_blank';
     o.appendChild(document.createTextNode("Help"));
     parent.appendChild(o);
     parent.appendChild(document.createElement("br"));
