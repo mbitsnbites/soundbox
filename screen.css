@@ -25,6 +25,16 @@ body {
   margin: 0;
 }
 
+img {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+}
+
 #content {
   position: relative;
   width: 1210px;
