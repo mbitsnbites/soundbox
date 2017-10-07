@@ -2462,27 +2462,38 @@ var CGUI = function()
 
     stopAudio();
   };
-  
+
+  var displaySongSize = function () {
+    updateSongRanges();
+    var JS = songToJS(mSong);
+    var uncommented = JS.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
+    var whitespaceRemoved = uncommented.replace(/\s/g, '');
+    var status = "JavaScript: " + whitespaceRemoved.length + " bytes";
+    var compressed = RawDeflate.deflate(whitespaceRemoved, 8);
+    status += "<br />Compressed JS: " + compressed.length + " bytes";
+    setStatus(status);
+  };
+
   var stopDisplayingSize = function ()
   {
-    if (mDisplaySizeTimer)
+    if (mDisplaySizeTimer) {
       clearInterval(mDisplaySizeTimer);
+      setStatus("");
+    }
     mDisplaySizeTimer = undefined;  
   };
-  
+
   var startDisplayingSize = function ()
   {
     stopDisplayingSize();
+    displaySongSize();
     mDisplaySizeTimer = setInterval(function() {
       if (!isPLaying()) {
-        var JS = songToJS(mSong);
-        var uncommented = JS.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');     
-        var whitespaceRemoved = uncommented.replace(/\s/g, '');
-        setStatus("Bytesize in javascript: " + whitespaceRemoved.length);
+        displaySongSize();
       }
-    },2000);
+    }, 2000);
   };
-  
+
   var displaySizeOnChange = function (e)
   {
     if (!e) var e = window.event;
