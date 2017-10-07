@@ -38,6 +38,8 @@ This makes it suitable for inclusion in your own software.
 You are very welcome to contribute with pull requests. When doing so, follow
 these conventions:
 
+### Git commits
+
 * Use [proper commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html),
   in imperative form.
 * Let the Git history of your feature branch follow the
@@ -48,4 +50,15 @@ these conventions:
 
 These are simple, conventional practices that make it easier to keep track of
 different patches.
+
+### Code
+
+* All code is written in pure HTML/JavaScript/CSS, without any third party
+  toolkits or frameworks (though some shims are used for portability). Keep it
+  so.
+* Use spaces for indentation (not tabs).
+* The player routine is special - it is designed and tuned for being as small
+  and easily compressible (e.g. using [GCC](https://developers.google.com/closure/compiler/)
+  and [DEFLATE](https://en.wikipedia.org/wiki/DEFLATE)) as possible. Do not add
+  or alter the player routine without careful consideration.
 
