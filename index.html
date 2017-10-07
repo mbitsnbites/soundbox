@@ -26,8 +26,22 @@
   <meta name="viewport" content="width=device-width" />
   <meta name="robots" content="noindex" />
   <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
-  <script type="text/javascript" src="common.js?version=3"></script>
-  <script type="text/javascript" src="gui.js?version=3"></script>
+  <script type="text/javascript">
+// Helper function to load JavaScript files.
+function include(filename) {
+  // We randomnize the URL to always reload it.
+  var getParam = '?id=' + Math.round(Math.random() * 99999);
+  var head = document.getElementsByTagName('head')[0];
+  var s = document.createElement('script');
+  s.type = 'text/javascript';
+  s.src = filename + getParam;
+  head.appendChild(s);
+}
+
+// Load the main program.
+include("common.js");
+include("gui.js");
+</script>
   <link rel="stylesheet" type="text/css" href="screen.css?version=2" />
   <link rel="shortcut icon" href="favicon.ico" />
 </head>

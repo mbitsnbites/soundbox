@@ -19,18 +19,6 @@
 *
 */
 
-function include(filename)
-{
-  // Randomnize the URL to always reload it.
-  var getParam = '?id=' + Math.round(Math.random() * 99999);
-
-	var head = document.getElementsByTagName('head')[0];
-	var s = document.createElement('script');
-	s.type = 'text/javascript';
-	s.src = filename + getParam;
-	head.appendChild(s);
-}
-
 // based on https://j11y.io/javascript/deep-copying-of-objects-and-arrays/
 function deepCopy(obj)
 {
