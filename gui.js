@@ -239,6 +239,7 @@ var CGUI = function()
 
   // Resources
   var mSong = {};
+  var mSongUnmodified = {};
   var mAudio = undefined;
   var mAudioTimer = new CAudioTimer();
   var mAudioContext = undefined;
@@ -1709,6 +1710,13 @@ var CGUI = function()
   };
 
   var loadSongFromData = function (songData) {
+    // If the song is now different than it was when loaded, the user has done some changes.
+    // Confirm before overwriting
+    if (!deepEquals(mSong,mSongUnmodified)) {
+      var ok = confirm("Load the song? Unsaved changes to your current song will be lost.");
+      if (!ok)
+        return false;
+    }
     var song = binToSong(songData);
     if (song) {
       stopAudio();
@@ -1718,6 +1726,7 @@ var CGUI = function()
       updatePattern();
       updateFxTrack();
       updateInstrument(true);
+      mSongUnmodified = deepCopy(mSong); // store the song before any modifications´
     }
   };
 
@@ -1835,6 +1844,10 @@ var CGUI = function()
   };
 
   var showSaveDialog = function () {
+    // Opening the save dialog is considered saving; however, we have no way of knowing
+    // if the user really bookmarked the song url.
+    mSongUnmodified = deepCopy(mSong);
+    
     var parent = document.getElementById("dialog");
     parent.innerHTML = "";
 
@@ -1931,7 +1944,6 @@ var CGUI = function()
     showDialog();
   };
 
-
   //--------------------------------------------------------------------------
   // Event handlers
   //--------------------------------------------------------------------------
@@ -1942,24 +1954,31 @@ var CGUI = function()
   };
 
   var newSong = function (e) {
-    var ok = confirm("Start a new song? Your current song will be lost.");
-    if (ok) {  
-      mSong = makeNewSong();
-      stopAudio();
-
-      // Update GUI
-      updateSongInfo();
-      updateSequencer();
-      updatePattern();
-      updateFxTrack();
-      updateInstrument();
-
-      // Initialize the song
-      setEditMode(EDIT_PATTERN);
-      setSelectedPatternCell(0, 0);
-      setSelectedSequencerCell(0, 0);
-      setSelectedFxTrackRow(0);
+    // If the song is now different than it was when loaded, the user has done some changes.
+    // Confirm before overwriting
+    if (!deepEquals(mSong,mSongUnmodified)) {
+      var ok = confirm("Start a new song? Unsaved changes to your current song will be lost.");
+      if (!ok)
+        return false;
     }
+    
+    mSong = makeNewSong();
+		stopAudio();
+
+    // Update GUI
+    updateSongInfo();
+    updateSequencer();
+    updatePattern();
+    updateFxTrack();
+    updateInstrument();
+
+    // Initialize the song
+    setEditMode(EDIT_PATTERN);
+    setSelectedPatternCell(0, 0);
+    setSelectedSequencerCell(0, 0);
+    setSelectedFxTrackRow(0);
+    
+    mSongUnmodified = deepCopy(mSong); // store the song before any modifications   
     return false;
   };
 
@@ -2059,6 +2078,16 @@ var CGUI = function()
       mAudioSourceStartTime = 0.0;
     }
   };
+  
+  var windowBeforeUnload = function(e) {
+    // makes sure the user doesn't leave the page without saving
+    if (!deepEquals(mSong,mSongUnmodified)) {
+      var confirmationMessage = 'Warning: song has unsaved changes. If you leave before saving, your changes will be lost.';      
+      (e || window.event).returnValue = confirmationMessage; //Gecko + IE
+      return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
+    }
+    return undefined;
+  }
 
 
   //----------------------------------------------------------------------------
@@ -3827,6 +3856,7 @@ var CGUI = function()
     var songData = getURLSongData(mGETParams && mGETParams.data && mGETParams.data[0]);
     var song = songData ? binToSong(songData) : null;
     mSong = song ? song : makeNewSong();
+    mSongUnmodified = deepCopy(mSong);
 
     // Update UI according to the loaded song
     updateSongInfo();
@@ -3980,6 +4010,9 @@ var CGUI = function()
 
     // Hack!
     window.addEventListener('touchstart', unlockAudioPlaybackHack, false);
+    
+    // Checks if the user is about to leave the page without saving
+    window.addEventListener('beforeunload', windowBeforeUnload, false);
 
     // Start the jammer
     mJammer.start();
