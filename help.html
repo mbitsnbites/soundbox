@@ -102,6 +102,15 @@ then copy the selected range with the <img class="smallButton" src="gui/edit-cop
 and the copied range can then be pasted to any other position with the
 <img class="smallButton" src="gui/edit-paste.png" alt="Paste" /> button.</p>
 
+<p>Hitting enter with a range selected fills the empty space in that range 
+by looping or interpolating the values at the top of the range. For example:
+<ul>
+<li>1,(empty),(empty),(empty),(empty) becomes 1,1,1,1,1.</li>
+<li>1,2,(empty),(empty),(empty) becomes 1,2,3,4,5.</li>
+<li>1,2,1,(empty),(empty) becomes 1,2,1,2,1.</li>
+</ul>
+</p>
+
 <h3><a name="theeditor_patterneditor" />3. Pattern editor</h3>
 
 <p>The pattern editor consists of four columns, which enables four notes to be
@@ -123,6 +132,9 @@ It is also possible to transpose a selected range of notes with the
 <img class="smallButton" src="gui/plus-twelve.png" alt="+12" /> and
 <img class="smallButton" src="gui/minus-twelve.png" alt="-12" /> buttons.</p>
 
+<p>Hitting enter with a range selected fills the empty space in that range 
+by looping the notes in the top part of that range.</p>
+
 <h4>The FX editor</h4>
 
 <p>To enter commands in the FX editor, select a row in the FX track, and modify
@@ -136,6 +148,10 @@ entered into the selected row.</p>
 <p class="note">Please note that FX commands are persistent, so if a command for a specific
 instrument parameter is issued in one pattern, it will remain active until
 set to something else (either in the same or another pattern).</p>
+
+<p>Hitting enter with a range selected interpolates between the effect
+parameters. The range has to be empty and the command in the beginning and
+in the end of the same type.</p>
 
 <h3><a name="theeditor_instrumenteditor" />4. Instrument editor</h3>
 

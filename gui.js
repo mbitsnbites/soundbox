@@ -3537,7 +3537,12 @@ var CGUI = function()
           updatePatternLength();
           document.getElementById("bpm").blur();
           document.getElementById("rpp").blur();
-        }
+        } else if (mEditMode == EDIT_SEQUENCE)
+          fillSequenceRange();
+        else if (mEditMode == EDIT_FXTRACK)
+          fillFxRange();
+        else if (mEditMode == EDIT_PATTERN)
+          fillPatternRange();       
         break;
     }
 
@@ -3560,6 +3565,108 @@ var CGUI = function()
 
     return true;
   };
+  
+  // This function tries to automatically fill the currently
+  // selected range in the sequencer. If there's only one value
+  // at top, it repeats it. If there's two, it tries to create
+  // an increasing or decreasing sequence e.g. [1 2 0 0 0 0]
+  // becomes [1 2 3 4 5 6]. Three or more patterns are looped e.g.
+  // [1 2 1 2 0 0 0 0] becomes [1 2 1 2 1 2 1 2]
+  var fillSequenceRange = function()
+  {   
+    if (mSeqRow2 <= mSeqRow)
+      return;
+    // checks if the condition holds for any value between first and last, inclusive
+    // find the lastrow that is not all empty
+    outer:
+    for (var lastRow = mSeqRow2; lastRow > mSeqRow; --lastRow) {
+      for (var col = mSeqCol;col <= mSeqCol2;++col)
+        if (mSong.songData[col].p[lastRow]>0)
+          break outer;
+    }   
+    var firstRowHasEmpty = false;
+    for (var col = mSeqCol;col <= mSeqCol2;++col)
+      if (!mSong.songData[col].p[mSeqRow]) {
+        firstRowHasEmpty = true;
+        break;
+      }
+    if (lastRow - mSeqRow >= 2 || firstRowHasEmpty) {     
+      // we have 3 or more rows of patterns or the first row has empty cells
+      // loop the cells
+      var loopLength = lastRow-mSeqRow+1;   
+      var fillFunction = function(col,row) {
+        return mSong.songData[col].p[mSeqRow+(row-mSeqRow)%loopLength];
+      };    
+    } else {
+      // we have zero to two rows, try to repeate or extrapolate values
+      var fillFunction = function(col,row) {
+        var start = mSong.songData[col].p[mSeqRow];        
+        var next = mSong.songData[col].p[mSeqRow+1];
+        var delta = !next ? 0 : next - start;       
+        var extrapolated = delta * (row-mSeqRow)+start;
+        return Math.max(Math.min(extrapolated,MAX_PATTERNS),1);
+      }        
+    }
+    for (var col = mSeqCol;col <= mSeqCol2;col++)
+      for (var row = mSeqRow;row <= mSeqRow2;row++)
+        mSong.songData[col].p[row] = fillFunction(col,row);     
+    updateSequencer();
+  }
+  
+  // This function interpolates the effect parameters
+  // between two values. The two commands have to be the same
+  // and the cells between them empty.
+  var fillFxRange = function()
+  {   
+    if (mFxTrackRow2 <= mFxTrackRow+2)
+      return; 
+    var pat = mSong.songData[mSeqCol].p[mSeqRow]-1;
+    if (pat < 0) 
+      return;
+    var f = mSong.songData[mSeqCol].c[pat].f;
+    var cmd1 = f[mFxTrackRow];
+    var cmd2 = f[mFxTrackRow2];
+    if (cmd1 != cmd2)
+      return;           
+    for (var row = mFxTrackRow+1; row < mFxTrackRow2; ++row)
+      if (f[row])
+        return;
+    var val1 = f[mFxTrackRow + mSong.patternLen];
+    var val2 = f[mFxTrackRow2 + mSong.patternLen];        
+    for (var row = mFxTrackRow+1; row < mFxTrackRow2; ++row)
+    {
+      f[row] = cmd1;
+      var alpha = (row - mFxTrackRow)/(mFxTrackRow2- mFxTrackRow)*1.0;
+      var roundedValue = ((alpha * val2 + (1 - alpha) * val1)+.5)|0;
+      f[row + mSong.patternLen] = roundedValue;
+    }                       
+    updateFxTrack();
+  }
+  
+  // This function loops the notes in the selected pattern
+  // e.g. [C#5 F#5 0 0 0 0] becomes [C#5 F#5 C#5 F#5 C#5 F#5]
+  var fillPatternRange = function()
+  {   
+    if (mPatternRow2 <= mPatternRow)
+      return;
+    var pat = mSong.songData[mSeqCol].p[mSeqRow]-1;
+    if (pat < 0) 
+      return;   
+    var n = mSong.songData[mSeqCol].c[pat].n;
+    var patternLen = mSong.patternLen;
+    // find the last row that is not all empty
+    outer:
+    for (var lastRow = mPatternRow2; lastRow > mPatternRow; --lastRow) {
+      for (var col = mPatternCol;col <= mPatternCol2;++col)
+        if (n[lastRow+col*patternLen])
+          break outer;
+    }   
+    var loopLength = lastRow-mPatternRow+1;       
+    for (var row = mPatternRow;row <= mPatternRow2;row++)
+      for (var col = mPatternCol;col <= mPatternCol2;col++)       
+        n[col*patternLen+row] = n[col*patternLen+(row-mPatternRow)%loopLength+mPatternRow];
+    updatePattern();
+  }
 
   var onFileDrop = function (e) {
     e.stopPropagation();
