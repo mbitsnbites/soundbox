@@ -32,3 +32,20 @@ However, the minimal player routine, [player-small.js](player-small.js), is
 released under the [zlib/libpng license](https://opensource.org/licenses/Zlib).
 This makes it suitable for inclusion in your own software.
 
+
+## Contributing
+
+You are very welcome to contribute with pull requests. When doing so, follow
+these conventions:
+
+* Use [proper commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html),
+  in imperative form.
+* Let the Git history of your feature branch follow the
+  [recipe model](http://www.bitsnbites.eu/git-history-work-log-vs-recipe/).
+* If your commit fixes a reported issue, add "Fixes #14" (where "14" is the
+  issue number) on a separate line in the commit message (in the body part of
+  the comment, *not* in the summary part).
+
+These are simple, conventional practices that make it easier to keep track of
+different patches.
+
