@@ -3951,8 +3951,11 @@ var CGUI = function()
 
     document.getElementById("instrCopy").onmousedown = instrCopyMouseDown;
     document.getElementById("instrPaste").onmousedown = instrPasteMouseDown;
-    
+
+    document.getElementById("displaySize").checked = false;
     document.getElementById("displaySize").onchange = displaySizeOnChange;
+
+    document.getElementById("loopPlayback").checked = true;
 
     // Initialize the MIDI handler
     initMIDI();
