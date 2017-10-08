@@ -3564,6 +3564,14 @@ var CGUI = function()
           octaveUp(e);
           return false;
 
+        case "°":
+          octaveUp(e);
+          return false;
+
+        case "§":
+          octaveDown(e);
+          return false;          
+          
         default:
           // console.log("onkeydown: keyCode=" + e.keyCode + " key=" + e.key);
           break;
