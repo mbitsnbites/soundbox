@@ -4125,6 +4125,9 @@ var CGUI = function()
 
     document.getElementById("loopPlayback").checked = true;
 
+    // Initialize the keyboard octave number.
+    document.getElementById("keyboardOctave").innerHTML = "" + mKeyboardOctave;
+
     // Initialize the MIDI handler
     initMIDI();
 
