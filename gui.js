@@ -3467,6 +3467,19 @@ var CGUI = function()
         }
         break;
 
+      case 9: // TAB
+        if (e.shiftKey)
+          setEditMode(mEditMode == EDIT_SEQUENCE ? EDIT_FXTRACK :
+                      mEditMode == EDIT_PATTERN ? EDIT_SEQUENCE :
+                      mEditMode == EDIT_FXTRACK ? EDIT_PATTERN :
+                      EDIT_FXTRACK);
+        else  
+          setEditMode(mEditMode == EDIT_SEQUENCE ? EDIT_PATTERN :
+                      mEditMode == EDIT_PATTERN ? EDIT_FXTRACK :
+                      mEditMode == EDIT_FXTRACK ? EDIT_SEQUENCE :
+                      EDIT_SEQUENCE);       
+        return false;       
+        
       case 32: // SPACE
         if (mEditMode != EDIT_NONE)
         {
