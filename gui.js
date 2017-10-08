@@ -214,7 +214,7 @@ var CGUI = function()
 
   // Edit/gui state
   var mEditMode = EDIT_PATTERN,
-      mKeyboardOctave = 5,
+      mKeyboardOctave = 4,
       mPatternCol = 0,
       mPatternRow = 0,
       mPatternCol2 = 0,
