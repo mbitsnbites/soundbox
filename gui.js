@@ -2635,6 +2635,33 @@ var CGUI = function()
     setEditMode(EDIT_NONE);
     return true;
   };
+  
+  var instrInputOnFocus = function (e) {
+    if (!e) var e = window.event;
+    var input = document.getElementById("instrInput");    
+    var instrI = mSong.songData[mSeqCol].i;     
+    input.value = btoa(instrumentToBin(instrI));
+    input.select();    
+    setEditMode(EDIT_NONE);
+    return true;
+  };
+  
+  var instrInputOnBlur = function (e) {
+    var input = document.getElementById("instrInput");
+    input.value = '(import/export)';    
+    return true;
+  };
+  
+  var instrInputOnInput = function (e) {
+    if (!e) var e = window.event;
+    var input = document.getElementById("instrInput");    
+    var instrI = mSong.songData[mSeqCol].i;
+    try {
+      var base64encoded = input.value.trim();
+      var binary = atob(base64encoded);
+      loadInstrumentFromData(binary);    
+    } catch (ex) { };
+  };
 
   var instrCopyMouseDown = function (e) {
     if (!e) var e = window.event;
@@ -3353,10 +3380,11 @@ var CGUI = function()
   var keyDown = function (e) {
     if (!e) var e = window.event;
 
-    // Check if we're editing BPM / RPP
+    // Check if we're editing BPM / RPP / instrument exporting
     var editingBpmRpp =
         document.activeElement === document.getElementById("bpm") ||
-        document.activeElement === document.getElementById("rpp");
+        document.activeElement === document.getElementById("rpp") ||
+        document.activeElement === document.getElementById("instrInput");
 
     var row, col, n;
 
@@ -3992,6 +4020,12 @@ var CGUI = function()
 
     document.getElementById("instrPreset").onfocus = instrPresetFocus;
     document.getElementById("instrPreset").onchange = selectPreset;
+    
+    document.getElementById("instrInput").onfocus = instrInputOnFocus;
+    document.getElementById("instrInput").onblur = instrInputOnBlur;
+    document.getElementById("instrInput").oninput = instrInputOnInput;    
+    document.getElementById("instrInput").value = '(import/export)';
+    
     document.getElementById("osc1_wave_sin").addEventListener("mousedown", osc1WaveMouseDown, false);
     document.getElementById("osc1_wave_sin").addEventListener("touchstart", osc1WaveMouseDown, false);
     document.getElementById("osc1_wave_sqr").addEventListener("mousedown", osc1WaveMouseDown, false);
