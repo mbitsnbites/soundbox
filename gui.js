@@ -3278,20 +3278,22 @@ var CGUI = function()
     if (mEditMode == EDIT_SEQUENCE &&
         mSeqCol == mSeqCol2 && mSeqRow == mSeqRow2)
     {
+      var patternCode = undefined;
       // 0 - 9
       if (e.keyCode >= 48 && e.keyCode <= 57)
-      {
-        mSong.songData[mSeqCol].p[mSeqRow] = e.keyCode - 47;
-        updateSequencer();
-        updatePattern();
-        updateFxTrack();
-        return false;
-      }
+        patternCode = e.keyCode - 47;
 
       // A - Z
       if (e.keyCode >= 64 && e.keyCode <= 90)
-      {
-        mSong.songData[mSeqCol].p[mSeqRow] = e.keyCode - 54;
+        patternCode = e.keyCode - 54;
+      
+      if (patternCode) {
+        mSong.songData[mSeqCol].p[mSeqRow] = patternCode;
+        
+        // if shift is pressed, advance one row
+        if (e.shiftKey)
+          setSelectedSequencerCell(mSeqCol, (mSeqRow + 1) % MAX_SONG_ROWS);
+        
         updateSequencer();
         updatePattern();
         updateFxTrack();
@@ -3489,6 +3491,11 @@ var CGUI = function()
               mSong.songData[col].p[row] = 0;
             }
           }
+          
+          // if shift is pressed, advance one row
+          if (e.shiftKey)
+            setSelectedSequencerCell(mSeqCol, (mSeqRow + 1) % MAX_SONG_ROWS);
+          
           updateSequencer();
           updatePattern();
           updateFxTrack();
