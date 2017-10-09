@@ -171,7 +171,7 @@ var CPlayer = function() {
     this.generate = function () {
         // Local variables
         var i, j, b, p, row, col, n, cp,
-            k, t, lfor, e, x, rsample, rowStartSample, f, da;
+            k, t, lfor, e, x, rsample, rowStartSample, f, da, lfoValue, dly;
 
         // Put performance critical items in local variables
         var chnBuf = new Int32Array(mNumWords),
@@ -216,7 +216,7 @@ var CPlayer = function() {
                     panAmt = instr.i[24] / 512,
                     panFreq = 6.283184 * Math.pow(2, instr.i[25] - 9) / rowLen,
                     dlyAmt = instr.i[26] / 255,
-                    dly = instr.i[27] * rowLen & ~1;  // Must be an even number
+                    dlySamples = instr.i[27] * rowLen;
 
                 // Calculate start sample number for this row in the pattern
                 rowStartSample = (p * patternLen + row) * rowLen;
@@ -243,12 +243,15 @@ var CPlayer = function() {
                     k = (rowStartSample + j) * 2;
                     rsample = chnBuf[k];
 
+                    // F/X LFO.
+                    lfoValue = oscLFO(lfoFreq * k) * lfoAmt + 0.5;
+
                     // We only do effects if we have some sound input
                     if (rsample || filterActive) {
                         // State variable filter
                         f = fxFreq;
-                        if (fxLFO) {
-                            f *= oscLFO(lfoFreq * k) * lfoAmt + 0.5;
+                        if (fxLFO & 1) {
+                            f *= lfoValue;
                         }
                         f = 1.5 * Math.sin(f);
                         low += f * band;
@@ -278,6 +281,7 @@ var CPlayer = function() {
                     }
 
                     // Delay is always done, since it does not need sound input
+                    dly = (dlySamples * ((fxLFO & 2) ? lfoValue : 1)) & ~1;
                     if (k >= dly) {
                         // Left channel = left + right[-p] * t
                         lsample += chnBuf[k-dly+1] * dlyAmt;

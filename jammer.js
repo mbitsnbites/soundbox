@@ -92,7 +92,7 @@ var CJammer = function () {
 
     // Local variables
     var i, j, k, b, p, row, col, n, cp,
-        t, lfor, e, x, rsample, rowStartSample, f, da;
+        t, lfor, e, x, rsample, rowStartSample, f, da, lfoValue, dly;
 
     // Clear buffers
     for (k = 0; k < numSamples; ++k) {
@@ -209,12 +209,7 @@ var CJammer = function () {
         panAmt = mInstr[24] / 512,
         panFreq = 6.283184 * Math.pow(2, mInstr[25] - 9) / mRowLen,
         dlyAmt = mInstr[26] / 255,
-        dly = (mInstr[27] * mRowLen) >> 1;
-
-    // Limit the delay to the delay buffer size.
-    if (dly >= MAX_DELAY) {
-      dly = MAX_DELAY - 1;
-    }
+        dlySamples = mInstr[27] * mRowLen;
 
     // Perform effects for this time slice
     for (j = 0; j < numSamples; j++) {
@@ -223,12 +218,15 @@ var CJammer = function () {
       // Dry mono-sample.
       rsample = rightBuf[j];
 
+      // F/X LFO.
+      lfoValue = oscLFO(lfoFreq * k) * lfoAmt + 0.5;
+
       // We only do effects if we have some sound input.
       if (rsample || filterActive) {
         // State variable filter.
         f = fxFreq;
-        if (fxLFO) {
-          f *= oscLFO(lfoFreq * k) * lfoAmt + 0.5;
+        if (fxLFO & 1) {
+          f *= lfoValue;
         }
         f = 1.5 * Math.sin(f);
         low += f * band;
@@ -255,6 +253,12 @@ var CJammer = function () {
         rsample *= t;
       } else {
         lsample = 0;
+      }
+
+      // Limit the delay to the delay buffer size.
+      dly = (dlySamples * ((fxLFO & 2) ? lfoValue : 1)) >> 1;
+      if (dly >= MAX_DELAY) {
+        dly = MAX_DELAY - 1;
       }
 
       // Delay is always done, since it does not need sound input.

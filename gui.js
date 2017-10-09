@@ -1566,7 +1566,8 @@ var CGUI = function()
     document.getElementById("lfo_wave_tri").src = instr.i[LFO_WAVEFORM] == 3 ? "gui/wave-tri-sel.png" : "gui/wave-tri.png";
     updateSlider(document.getElementById("lfo_amt"), instr.i[LFO_AMT]);
     updateSlider(document.getElementById("lfo_freq"), instr.i[LFO_FREQ]);
-    updateCheckBox(document.getElementById("lfo_fxfreq"), instr.i[LFO_FX_FREQ]);
+    updateCheckBox(document.getElementById("lfo_fxfreq"), instr.i[LFO_FX_FREQ] & 1);
+    updateCheckBox(document.getElementById("lfo_fxdly"), instr.i[LFO_FX_FREQ] & 2);
 
     // Effects
     document.getElementById("fx_filt_lp").src = instr.i[FX_FILTER] == 2 ? "gui/filt-lp-sel.png" : "gui/filt-lp.png";
@@ -2805,24 +2806,30 @@ var CGUI = function()
       var o = getEventElement(e);
 
       // Check which instrument parameter was changed
-      var fxCmd = -1;
-      if (o.id === "osc1_xenv")
+      var fxCmd, fxValue, bit;
+      if (o.id === "osc1_xenv") {
         fxCmd = OSC1_XENV;
-      else if (o.id === "osc2_xenv")
+        bit = 1;
+      } else if (o.id === "osc2_xenv") {
         fxCmd = OSC2_XENV;
-      else if (o.id === "lfo_fxfreq")
+        bit = 1;
+      } else if (o.id === "lfo_fxfreq") {
         fxCmd = LFO_FX_FREQ;
+        bit = 1;
+      } else if (o.id === "lfo_fxdly") {
+        fxCmd = LFO_FX_FREQ;
+        bit = 2;
+      }
+      else
+        return;
 
       // Update the instrument (toggle boolean)
-      var fxValue;
-      if (fxCmd >= 0) {
-        fxValue = mSong.songData[mSeqCol].i[fxCmd] ? 0 : 1;
-        mSong.songData[mSeqCol].i[fxCmd] = fxValue;
-      }
+      fxValue = mSong.songData[mSeqCol].i[fxCmd] ^ bit;
+      mSong.songData[mSeqCol].i[fxCmd] = fxValue;
 
       // Edit the fx track
       if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 &&
-          mFxTrackRow == mFxTrackRow2 && fxCmd) {
+          mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
           mSong.songData[mSeqCol].c[pat].f[mFxTrackRow] = fxCmd + 1;
@@ -4088,6 +4095,8 @@ var CGUI = function()
     document.getElementById("lfo_freq").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("lfo_fxfreq").addEventListener("mousedown", boxMouseDown, false);
     document.getElementById("lfo_fxfreq").addEventListener("touchstart", boxMouseDown, false);
+    document.getElementById("lfo_fxdly").addEventListener("mousedown", boxMouseDown, false);
+    document.getElementById("lfo_fxdly").addEventListener("touchstart", boxMouseDown, false);
     document.getElementById("fx_filt_lp").addEventListener("mousedown", fxFiltMouseDown, false);
     document.getElementById("fx_filt_lp").addEventListener("touchstart", fxFiltMouseDown, false);
     document.getElementById("fx_filt_hp").addEventListener("mousedown", fxFiltMouseDown, false);
