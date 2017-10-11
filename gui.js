@@ -1815,15 +1815,15 @@ var CGUI = function()
   };
 
   var loadSongFromData = function (songData) {
-    // If the song is now different than it was when loaded, the user has done some changes.
-    // Confirm before overwriting
-    if (!deepEquals(mSong,mSongUnmodified)) {
-      var ok = confirm("Load the song? Unsaved changes to your current song will be lost.");
-      if (!ok)
-        return false;
-    }
     var song = binToSong(songData);
     if (song) {
+      // If the song is now different than it was when loaded, the user has done some changes.
+      // Confirm before overwriting
+      if (!deepEquals(mSong, mSongUnmodified)) {
+        var ok = confirm("Load the song? Unsaved changes to your current song will be lost.");
+        if (!ok)
+          return false;
+      }
       stopAudio();
       mSong = song;
       updateSongInfo();
