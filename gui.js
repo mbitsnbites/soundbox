@@ -196,6 +196,16 @@ var CAudioTimer = function () {
 
 
 //------------------------------------------------------------------------------
+// Helper functions
+//------------------------------------------------------------------------------
+
+var makeFourCC = function (fourChars) {
+  return (fourChars.charCodeAt(3) << 24) | (fourChars.charCodeAt(2) << 16) |
+         (fourChars.charCodeAt(1) << 8) | fourChars.charCodeAt(0);
+};
+
+
+//------------------------------------------------------------------------------
 // GUI class
 //------------------------------------------------------------------------------
 
@@ -582,8 +592,8 @@ var CGUI = function()
     // Create a new binary stream - this is the actual file
     bin = new CBinWriter();
 
-    // Signature ("SBox")
-    bin.putULONG(2020557395);
+    // Signature
+    bin.putULONG(makeFourCC("SBox"));
 
     // Format version
     bin.putUBYTE(12);
@@ -608,7 +618,7 @@ var CGUI = function()
     var version = bin.getUBYTE();
 
     // Check if this is a SoundBox song
-    if (signature != 2020557395 || (version < 1 || version > 12))
+    if (signature != makeFourCC("SBox") || (version < 1 || version > 12))
       return undefined;
 
     if (version >= 8) {
@@ -984,8 +994,8 @@ var CGUI = function()
     // Create a new binary stream - this is the actual file
     bin = new CBinWriter();
 
-    // Signature "SBoxI" when base64 encoded
-    bin.putULONG(540088904);
+    // Signature
+    bin.putULONG(makeFourCC("SBxI"));
 
     // Format version
     bin.putUBYTE(1);
@@ -1009,8 +1019,8 @@ var CGUI = function()
     // Format version
     var version = bin.getUBYTE();
 
-    // Check if this is a SoundBox instrument, signature "SBoi"
-    if (signature != 540088904 || (version < 1 || version > 1))
+    // Check if this is a SoundBox instrument
+    if (signature != makeFourCC("SBxI") || (version < 1 || version > 1))
       return undefined;
 
     var compressionMethod = bin.getUBYTE();
@@ -1074,8 +1084,8 @@ var CGUI = function()
     if (!song)
       song = sonantBinToSong(d);
 
-    // If we couldn't parse the song, just make a clean new song
     if (!song) {      
+      // We coulnd't parse the song
       return undefined;
     }
 
