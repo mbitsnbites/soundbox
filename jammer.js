@@ -43,6 +43,7 @@ var CJammer = function () {
   // Delay buffers.
   var MAX_DELAY = 131072;   // Must be a power of 2.
   var mDlyLeft, mDlyRight;
+  var mRequestClearFilter = false;
 
   // Web Audio context.
   var mAudioContext;
@@ -85,6 +86,21 @@ var CJammer = function () {
     osc_saw,
     osc_tri
   ];
+  
+  var clearFilterState = function()
+  {
+    if (mDlyLeft)
+      mDlyLeft.fill(0);
+    if (mDlyRight)
+      mDlyRight.fill(0);    
+    mFXState = {
+      pos: 0,
+      low: 0,
+      band: 0,
+      filterActive: false,
+      dlyPos: 0
+    };
+  }
 
   // Fill the buffer with more audio, and advance state accordingly.
   var generateTimeSlice = function (leftBuf, rightBuf) {
@@ -99,6 +115,12 @@ var CJammer = function () {
       leftBuf[k] = 0;
       rightBuf[k] = 0;
     }
+    
+    if (mRequestClearFilter)
+    {
+      clearFilterState();
+      mRequestClearFilter = false;
+    } 
 
     // Generate active notes.
     for (i = 0; i < MAX_POLYPHONY; ++i) {
@@ -314,20 +336,14 @@ var CJammer = function () {
 
     // Get actual sample rate (SoundBox is hard-coded to 44100 samples/s).
     mSampleRate = mAudioContext.sampleRate;
-    mRateScale = mSampleRate / 44100;
-
-    // Clear state.
-    mFXState = {
-      pos: 0,
-      low: 0,
-      band: 0,
-      filterActive: false,
-      dlyPos: 0
-    };
+    mRateScale = mSampleRate / 44100;   
 
     // Create delay buffers (lengths must be equal and a power of 2).
     mDlyLeft = new Float32Array(MAX_DELAY);
     mDlyRight = new Float32Array(MAX_DELAY);
+    
+    // Clear state.
+    clearFilterState();
 
     // Create a script processor node with no inputs and one stereo output.
     mScriptNode = mAudioContext.createScriptProcessor(2048, 0, 2);
@@ -345,16 +361,27 @@ var CJammer = function () {
     // TODO(m): Implement me!
   };
 
-  this.updateInstr = function (instr) {
-    // Copy instrument description.
-    mInstr = [];
-    for (var i = 0; i < instr.length; ++i) {
-      mInstr.push(instr[i]);
-    }
+  this.updateInstr = function (instr) {    
+    var diffCount = 0;
+    if (instr && mInstr) 
+      for (var i = 0; i < instr.length; ++i)
+        diffCount += mInstr[i] != instr[i] ? 1 : 0;      
+    // if more than one setting changed at once, the user is probably not
+    // making minor adjustments but quite large ones (e.g. loading a new 
+    // preset). Prevent accidental deafness by stopping notes    
+    if (diffCount >= 2) 
+      this.clearNotes();
+    mInstr = deepCopy(instr);
   };
 
   this.updateRowLen = function (rowLen) {
     mRowLen = Math.round(rowLen * mRateScale);
+  };
+  
+  this.clearNotes = function() {
+    for (var i = 0; i < MAX_POLYPHONY; ++i)             
+      mPlayingNotes[i] = undefined;
+    mRequestClearFilter = true;
   };
 
   this.addNote = function (n) {
