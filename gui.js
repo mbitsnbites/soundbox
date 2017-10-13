@@ -262,6 +262,9 @@ var CGUI = function()
   var mPlayGfxLedOnImg = new Image();
   var mJammer = new CJammer();
   var mDisplaySizeTimer = undefined;
+  var mUndoStack = [];
+  var mRedoStack = [];
+  var mUndoTimer = undefined;
 
   // Constant look-up-tables
   var mNoteNames = [
@@ -1301,6 +1304,65 @@ var CGUI = function()
   // Helper functions
   //--------------------------------------------------------------------------
 
+  var clearUndoTimer = function()
+  {
+    if (mUndoTimer)
+      clearInterval(mUndoTimer);
+    mUndoTimer = undefined;
+  }
+  
+  var saveStateForUndo = function()
+  {
+    // the timer throttles the undos, so we don't save too many of them
+    if (!mUndoTimer) {
+      mUndoStack.push(deepCopy(mSong));
+      if (mUndoStack.length > 100)
+        mUndoStack = mUndoStack.slice(-100);      
+      mRedoStack = [];
+      mUndoTimer = setInterval(clearUndoTimer,3000);        
+    }             
+  };
+  
+  var updateDelta = function(oldSong,newSong)
+  {
+    if (!deepEquals(oldSong,newSong))
+    {
+      updateSongInfo();     
+      if (oldSong.patternLen != newSong.patternLen)
+        updatePatternLength();
+      if (oldSong.rowLen != newSong.rowLen)
+        updateRowLen();
+      if (!deepEquals(oldSong.songData,newSong.songData)) {       
+        updateInstrument(true); 
+        updateSequencer();
+        updatePattern();
+        updateFxTrack();
+      }
+    }
+  };
+  
+  var undo = function()
+  {
+    if (mUndoStack.length) {
+      var storedSong = deepCopy(mSong);
+      mRedoStack.push(storedSong);
+      mSong = mUndoStack.pop(); 
+      updateDelta(storedSong,mSong);
+      clearUndoTimer();
+    }
+  };
+  
+  var redo = function()
+  {
+    if (mRedoStack.length) {
+      var storedSong = deepCopy(mSong);
+      mUndoStack.push(storedSong);
+      mSong = mRedoStack.pop();     
+      updateDelta(storedSong,mSong);
+      clearUndoTimer();
+    }   
+  };
+  
   var preloadImage = function (url)
   {
     var img = new Image();
@@ -1610,6 +1672,7 @@ var CGUI = function()
     {
       var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
       if (pat >= 0) {
+        saveStateForUndo();
         mSong.songData[mSeqCol].c[pat].n[mPatternRow + mPatternCol*mSong.patternLen] = note;
         setSelectedPatternCell(mPatternCol, (mPatternRow + 1) % mSong.patternLen);
         updatePattern();
@@ -1708,6 +1771,7 @@ var CGUI = function()
     // Determine song speed
     var bpm = parseInt(document.getElementById("bpm").value);
     if (bpm && (bpm >= 10) && (bpm <= 1000)) {
+      saveStateForUndo();
       mSong.rowLen = calcSamplesPerRow(bpm);
       mJammer.updateRowLen(mSong.rowLen);
     }
@@ -1745,6 +1809,7 @@ var CGUI = function()
       }
     }
 
+    saveStateForUndo();
     // Update pattern length
     mSong.patternLen = length;
   };
@@ -1780,6 +1845,7 @@ var CGUI = function()
       if (!emptyRow)
         maxRow = i;
     }
+    saveStateForUndo();
     mSong.endPattern = maxRow;
     mSong.numChannels = maxCol + 1;
 
@@ -1835,6 +1901,7 @@ var CGUI = function()
           return false;
       }
       stopAudio();
+      saveStateForUndo();
       mSong = song;
       updateSongInfo();
       updateSequencer();
@@ -1851,6 +1918,7 @@ var CGUI = function()
     var instrI = binToInstrument(instrumentData);
     if (instrI) {
       stopAudio();
+      saveStateForUndo();
       mSong.songData[mSeqCol].i = instrI;   
       updateInstrument(true);
       return true;
@@ -2090,6 +2158,7 @@ var CGUI = function()
         return false;
     }
     
+    saveStateForUndo();
     mSong = makeNewSong();
 		stopAudio();
 
@@ -2736,6 +2805,7 @@ var CGUI = function()
     if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
       var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
       if (pat >= 0) {
+        saveStateForUndo();
         for (var row = mPatternRow, i = 0; row < mSong.patternLen && i < mPatCopyBuffer.length; ++row, ++i) {
           for (var col = mPatternCol, j = 0; col < 4 && j < mPatCopyBuffer[i].length; ++col, ++j) {
             mSong.songData[mSeqCol].c[pat].n[row+col*mSong.patternLen] = mPatCopyBuffer[i][j];
@@ -2753,6 +2823,7 @@ var CGUI = function()
     if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
       var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
       if (pat >= 0) {
+        saveStateForUndo();
         for (var row = mPatternRow; row <= mPatternRow2; ++row) {
           for (var col = mPatternCol; col <= mPatternCol2; ++col) {
             var n = mSong.songData[mSeqCol].c[pat].n[row+col*mSong.patternLen];
@@ -2773,6 +2844,7 @@ var CGUI = function()
     if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
       var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
       if (pat >= 0) {
+        saveStateForUndo();
         for (var row = mPatternRow; row <= mPatternRow2; ++row) {
           for (var col = mPatternCol; col <= mPatternCol2; ++col) {
             var n = mSong.songData[mSeqCol].c[pat].n[row+col*mSong.patternLen];
@@ -2793,6 +2865,7 @@ var CGUI = function()
     if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
       var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
       if (pat >= 0) {
+        saveStateForUndo();
         for (var row = mPatternRow; row <= mPatternRow2; ++row) {
           for (var col = mPatternCol; col <= mPatternCol2; ++col) {
             var n = mSong.songData[mSeqCol].c[pat].n[row+col*mSong.patternLen];
@@ -2813,6 +2886,7 @@ var CGUI = function()
     if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
       var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
       if (pat >= 0) {
+        saveStateForUndo();
         for (var row = mPatternRow; row <= mPatternRow2; ++row) {
           for (var col = mPatternCol; col <= mPatternCol2; ++col) {
             var n = mSong.songData[mSeqCol].c[pat].n[row+col*mSong.patternLen];
@@ -2847,6 +2921,7 @@ var CGUI = function()
     if (!e) var e = window.event;
     e.preventDefault();
 
+    saveStateForUndo();
     for (var row = mSeqRow, i = 0; row < MAX_SONG_ROWS && i < mSeqCopyBuffer.length; ++row, ++i)
     {
       for (var col = mSeqCol, j = 0; col < MAX_CHANNELS && j < mSeqCopyBuffer[i].length; ++col, ++j)
@@ -2862,6 +2937,7 @@ var CGUI = function()
     if (!e) var e = window.event;
     e.preventDefault();
 
+    saveStateForUndo();
     for (var row = mSeqRow; row <= mSeqRow2; ++row)
     {
       for (var col = mSeqCol; col <= mSeqCol2; ++col)
@@ -2883,6 +2959,7 @@ var CGUI = function()
     if (!e) var e = window.event;
     e.preventDefault();
 
+    saveStateForUndo();
     for (var row = mSeqRow; row <= mSeqRow2; ++row)
     {
       for (var col = mSeqCol; col <= mSeqCol2; ++col)
@@ -2924,6 +3001,7 @@ var CGUI = function()
     if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
       var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
       if (pat >= 0) {
+        saveStateForUndo();
         for (var row = mFxTrackRow, i = 0; row < mSong.patternLen && i < mFxCopyBuffer.length; ++row, ++i) {
           var arr = mFxCopyBuffer[i];
           mSong.songData[mSeqCol].c[pat].f[row] = arr[0];
@@ -2952,6 +3030,7 @@ var CGUI = function()
       var fxValue;
       if (fxCmd >= 0) {
         fxValue = mSong.songData[mSeqCol].i[fxCmd] ? 0 : 1;
+        saveStateForUndo();
         mSong.songData[mSeqCol].i[fxCmd] = fxValue;
       }
 
@@ -2960,6 +3039,7 @@ var CGUI = function()
           mFxTrackRow == mFxTrackRow2 && fxCmd) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
         if (pat >= 0) {
+          saveStateForUndo();
           mSong.songData[mSeqCol].c[pat].f[mFxTrackRow] = fxCmd + 1;
           mSong.songData[mSeqCol].c[pat].f[mFxTrackRow+mSong.patternLen] = fxValue;
           updateFxTrack();
@@ -2981,6 +3061,7 @@ var CGUI = function()
       else if (o.id === "osc1_wave_sqr") wave = 1;
       else if (o.id === "osc1_wave_saw") wave = 2;
       else if (o.id === "osc1_wave_tri") wave = 3;
+      saveStateForUndo();
       if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 &&
           mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
@@ -3006,6 +3087,7 @@ var CGUI = function()
       else if (o.id === "osc2_wave_sqr") wave = 1;
       else if (o.id === "osc2_wave_saw") wave = 2;
       else if (o.id === "osc2_wave_tri") wave = 3;
+      saveStateForUndo();
       if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 &&
           mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
@@ -3031,6 +3113,7 @@ var CGUI = function()
       else if (o.id === "lfo_wave_sqr") wave = 1;
       else if (o.id === "lfo_wave_saw") wave = 2;
       else if (o.id === "lfo_wave_tri") wave = 3;
+      saveStateForUndo();
       if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 &&
           mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
@@ -3055,6 +3138,7 @@ var CGUI = function()
       if (o.id === "fx_filt_hp") filt = 1;
       else if (o.id === "fx_filt_lp") filt = 2;
       else if (o.id === "fx_filt_bp") filt = 3;
+      saveStateForUndo();
       if (mEditMode == EDIT_FXTRACK && mSeqRow == mSeqRow2 &&
           mFxTrackRow == mFxTrackRow2) {
         var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
@@ -3109,6 +3193,7 @@ var CGUI = function()
         {
           // Clone instrument settings
           var src = gInstrumentPresets[val];
+          saveStateForUndo();
           for (var i = 0; i < src.i.length; ++i)
             mSong.songData[mSeqCol].i[i] = src.i[i];
 
@@ -3314,6 +3399,8 @@ var CGUI = function()
 
     // Handle slider?
     if (mActiveSlider) {
+      saveStateForUndo(); 
+      
       var instr = mSong.songData[mSeqCol];
 
       // Calculate slider position
@@ -3402,6 +3489,14 @@ var CGUI = function()
   var keyDown = function (e) {
     if (!e) var e = window.event;
 
+    if (e.ctrlKey && e.keyCode == 90) {
+      if (e.altKey)
+        redo(); // alt-ctrl-z is redo
+      else
+        undo(); // ctrl-z is undo
+      return false;
+    }
+    
     // Check if we're editing BPM / RPP
     var editingBpmRpp =
         document.activeElement === document.getElementById("bpm") ||
@@ -3440,6 +3535,7 @@ var CGUI = function()
         patternCode = e.keyCode - 54;
       
       if (patternCode) {
+        saveStateForUndo();
         mSong.songData[mSeqCol].p[mSeqRow] = patternCode;
         
         // if shift is pressed, advance one row
@@ -3649,6 +3745,7 @@ var CGUI = function()
       case 46:  // DELETE
         if (mEditMode == EDIT_SEQUENCE)
         {
+          saveStateForUndo();
           for (row = mSeqRow; row <= mSeqRow2; ++row)
           {
             for (col = mSeqCol; col <= mSeqCol2; ++col)
@@ -3672,6 +3769,7 @@ var CGUI = function()
           {
             var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
             if (pat >= 0) {
+              saveStateForUndo();
               for (row = mPatternRow; row <= mPatternRow2; ++row) {
                 for (col = mPatternCol; col <= mPatternCol2; ++col)
                   mSong.songData[mSeqCol].c[pat].n[row+col*mSong.patternLen] = 0;
@@ -3689,6 +3787,7 @@ var CGUI = function()
           if (mSeqRow == mSeqRow2 && mSeqCol == mSeqCol2) {
             var pat = mSong.songData[mSeqCol].p[mSeqRow] - 1;
             if (pat >= 0) {
+              saveStateForUndo();
               for (row = mFxTrackRow; row <= mFxTrackRow2; ++row) {
                 mSong.songData[mSeqCol].c[pat].f[row] = 0;
                 mSong.songData[mSeqCol].c[pat].f[row + mSong.patternLen] = 0;
@@ -3762,6 +3861,7 @@ var CGUI = function()
         return Math.max(Math.min(extrapolated,MAX_PATTERNS),1);
       }        
     }
+    saveStateForUndo();
     for (var col = mSeqCol;col <= mSeqCol2;col++)
       for (var row = mSeqRow;row <= mSeqRow2;row++)
         mSong.songData[col].p[row] = fillFunction(col,row);     
@@ -3788,6 +3888,7 @@ var CGUI = function()
         return;
     var val1 = f[mFxTrackRow + mSong.patternLen];
     var val2 = f[mFxTrackRow2 + mSong.patternLen];        
+    saveStateForUndo();
     for (var row = mFxTrackRow+1; row < mFxTrackRow2; ++row)
     {
       f[row] = cmd1;
@@ -3816,6 +3917,7 @@ var CGUI = function()
         if (n[lastRow+col*patternLen])
           break outer;
     }   
+    saveStateForUndo();
     var loopLength = lastRow-mPatternRow+1;       
     for (var row = mPatternRow;row <= mPatternRow2;row++)
       for (var col = mPatternCol;col <= mPatternCol2;col++)       
@@ -4125,6 +4227,7 @@ var CGUI = function()
     var song = songData ? binToSong(songData) : null;
     mSong = song ? song : makeNewSong();
     mSongUnmodified = deepCopy(mSong);
+    saveStateForUndo();
 
     // Update UI according to the loaded song
     updateSongInfo();
