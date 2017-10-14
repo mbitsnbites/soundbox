@@ -203,9 +203,14 @@ table.tracks td:hover, table.tracks tr.beat td:hover {
   background: #77d;
 }
 
-table.tracks td.selected, table.tracks tr.beat td.selected {
+table.tracks td.cursor, table.tracks tr.beat td.cursor {
   color: #fff;
   background: #88f;
+}
+
+table.tracks td.selected, table.tracks tr.beat td.selected {
+  color: #fff;
+  background: #66c;
 }
 
 #sequencer table.tracks td {
