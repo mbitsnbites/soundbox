@@ -96,12 +96,16 @@ editor (4).</p>
 <img class="smallButton" src="gui/plus-one.png" alt="+1" />/<img class="smallButton" src="gui/minus-one.png" alt="-1" />
 buttons below the sequencer), the corresponding note pattern will be visible and
 editable in the pattern editor (3). Holding shift while typing the character will 
-also advance the cursor to the next row.</p>
+also advance the cursor to the next row. The cells can be navigated using the
+arrow keys. Holding control down while navigating the table moves to the very
+end (e.g. the top-most cell when pressing arrow up).</p>
 
 <p>It is possible to select a range in the sequencer (by click+dragging), and
 then copy the selected range with the <img class="smallButton" src="gui/edit-copy.png" alt="Copy" /> button,
 and the copied range can then be pasted to any other position with the
-<img class="smallButton" src="gui/edit-paste.png" alt="Paste" /> button.</p>
+<img class="smallButton" src="gui/edit-paste.png" alt="Paste" /> button.
+A range can also be selected by holding shift down and navigating the table
+with arrows. Alt-shift and arrows adjust the second corner of the selection range.</p>
 
 <p>Hitting enter with a range selected fills the empty space in that range 
 by looping or interpolating the values at the top of the range. For example:
@@ -124,8 +128,8 @@ used to dynamically control all aspects of an instrument during playback.</p>
 selected in the sequencer</em>. Notes are entered with the piano (5), the keyboard
 or a MIDI input device (see below).</p>
 
-<p>Just as with the sequencer, it is possible to copy and paste note data with
-the <img class="smallButton" src="gui/edit-copy.png" alt="Copy" /> &amp;
+<p>Just as with the sequencer, it is possible to select a range and copy and 
+paste note data with the <img class="smallButton" src="gui/edit-copy.png" alt="Copy" /> &amp;
 <img class="smallButton" src="gui/edit-paste.png" alt="Paste" /> buttons.
 It is also possible to transpose a selected range of notes with the
 <img class="smallButton" src="gui/plus-one.png" alt="+1" />,

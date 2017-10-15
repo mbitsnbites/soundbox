@@ -3262,6 +3262,11 @@ var CGUI = function()
         document.activeElement === document.getElementById("bpm") ||
         document.activeElement === document.getElementById("rpp");
 
+    var tableEditor = mEditMode == EDIT_SEQUENCE ? mSeq :
+              mEditMode == EDIT_PATTERN ? mPattern :
+              mEditMode == EDIT_FXTRACK ? mFxTrack :
+              undefined;
+        
     var row, col, n;
 
     // Non-function keys.
@@ -3280,6 +3285,18 @@ var CGUI = function()
           break;
       }
     }
+    
+    if (tableEditor && e.ctrlKey && e.keyCode == 67)
+    {
+      tableEditor.copy();
+      return false;
+    }
+    
+    if (tableEditor && e.ctrlKey && e.keyCode == 86)
+    {
+      tableEditor.paste();
+      return false;
+    }    
 
     // Sequencer editing
     if (mEditMode == EDIT_SEQUENCE)
@@ -3355,109 +3372,80 @@ var CGUI = function()
           return false;
         }
       }
-    }
+    }   
 
+    if (tableEditor) {
+      if (e.shiftKey) {
+        if (e.altKey) {
+          var col = tableEditor.selectionCol2();     
+          var row = tableEditor.selectionRow2();    
+        } else {
+          var col = tableEditor.selectionCol1();     
+          var row = tableEditor.selectionRow1();    
+        }
+      } else {
+        var col = tableEditor.col();     
+        var row = tableEditor.row();
+      }
+      var oldCol = col;
+      var oldRow = row;
+      switch (e.keyCode) {
+        case 39:  // RIGHT
+          if (e.ctrlKey)
+            col = tableEditor.numcols()-1;
+          else
+            col = col + 1;            
+          break;
+        case 37:  // LEFT
+          if (e.ctrlKey)
+            col = 0;
+          else
+            col = col-1;
+          break;
+        case 40:  // DOWN
+          if (e.ctrlKey)   
+            row = tableEditor.numrows()-1;
+          else
+            row = row+1;
+          break;
+        case 38:  // UP
+          if (e.ctrlKey)   
+            row = 0;
+          else
+            row = row-1;
+          break;          
+        case 36:  // HOME
+          row = 0;
+          break;
+        case 35:  // END
+          row = tableEditor.numrows()-1; 
+          break;          
+        case 8:   // BACKSPACE (Mac delete)
+        case 46:  // DELETE
+          var emptyCell = mEditMode == EDIT_FXTRACK ? [0,0] : 0;
+          tableEditor.modifySelection(function (value) { return emptyCell; });
+          if (tableEditor.isSingleSelected())
+            row = row + 1;
+          break;
+      }
+      if (oldRow != row || oldCol != col) {
+        col = (col + tableEditor.numcols()) % tableEditor.numcols();
+        row = (row + tableEditor.numrows()) % tableEditor.numrows();
+        if (e.shiftKey) {
+          if (e.altKey)
+            tableEditor.setSelectionCorner2(col,row)
+          else
+            tableEditor.setSelectionCorner(col,row);         
+        } else {
+          tableEditor.setCursor(col,row);         
+        }
+        return false;
+      }
+    }      
+                      
     // The rest of the key presses...
     switch (e.keyCode)
-    {
-      case 39:  // RIGHT
-        if (mEditMode == EDIT_SEQUENCE)
-        {
-          mSeq.setCursor((mSeq.col() + 1) % MAX_CHANNELS, mSeq.row());
-          return false;
-        }
-        else if (mEditMode == EDIT_PATTERN)
-        {
-          mPattern.setCursor((mPattern.col() + 1) % 4, mPattern.row());
-          return false;
-        }
-        break;
-
-      case 37:  // LEFT
-        if (mEditMode == EDIT_SEQUENCE)
-        {
-          mSeq.setCursor((mSeq.col() - 1 + MAX_CHANNELS) % MAX_CHANNELS, mSeq.row());
-          return false;
-        }
-        else if (mEditMode == EDIT_PATTERN)
-        {
-          mPattern.setCursor((mPattern.col() - 1 + 4) % 4, mPattern.row());
-          return false;
-        }
-        break;
-
-      case 40:  // DOWN
-        if (mEditMode == EDIT_SEQUENCE)
-        {
-          mSeq.setCursor(mSeq.col(), (mSeq.row() + 1) % MAX_SONG_ROWS);
-          return false;
-        }
-        else if (mEditMode == EDIT_PATTERN)
-        {
-          mPattern.setCursor(mPattern.col(), (mPattern.row() + 1) % mSong.patternLen);
-          return false;
-        }
-        else if (mEditMode == EDIT_FXTRACK)
-        {
-          mFxTrack.setCursor(0,(mFxTrack.selectionTop() + 1) % mSong.patternLen);
-          return false;
-        }
-        break;
-
-      case 38:  // UP
-        if (mEditMode == EDIT_SEQUENCE)
-        {
-          mSeq.setCursor(mSeq.col(), (mSeq.row() - 1 + MAX_SONG_ROWS) % MAX_SONG_ROWS);
-          return false;
-        }
-        else if (mEditMode == EDIT_PATTERN)
-        {
-          mPattern.setCursor(mPattern.col(), (mPattern.row() - 1 + mSong.patternLen) % mSong.patternLen);
-          return false;
-        }
-        else if (mEditMode == EDIT_FXTRACK)
-        {
-          mFxTrack.setCursor(0,(mFxTrack.selectionTop() - 1 + mSong.patternLen) % mSong.patternLen);
-          return false;
-        }
-        break;
-
-      case 36:  // HOME
-        if (mEditMode == EDIT_SEQUENCE)
-        {
-          mSeq.setCursor(mSeq.col(), 0);
-          return false;
-        }
-        else if (mEditMode == EDIT_PATTERN)
-        {
-          mPattern.setCursor(mPattern.col(), 0);
-          return false;
-        }
-        else if (mEditMode == EDIT_FXTRACK)
-        {
-          mFxTrack.setCursor(0,0);
-          return false;
-        }
-        break;
-
-      case 35:  // END
-        if (mEditMode == EDIT_SEQUENCE)
-        {
-          mSeq.setCursor(mSeq.col(), MAX_SONG_ROWS - 1);
-          return false;
-        }
-        else if (mEditMode == EDIT_PATTERN)
-        {
-          mPattern.setCursor(mPattern.col(), mSong.patternLen - 1);
-          return false;
-        }
-        else if (mEditMode == EDIT_FXTRACK)
-        {
-          mFxTrack.setCursor(mSong.patternLen - 1);
-          return false;
-        }
-        break;
-
+    { 
       case 9: // TAB
         if (e.shiftKey)
           setEditMode(mEditMode == EDIT_SEQUENCE ? EDIT_FXTRACK :
@@ -3479,38 +3467,6 @@ var CGUI = function()
           else
             playRange(e);
           return false;
-        }
-        break;
-
-      case 8:   // BACKSPACE (Mac delete)
-      case 46:  // DELETE
-        if (mEditMode == EDIT_SEQUENCE)
-        {
-          mSeq.modify(function (value) { return 0; });
-          
-          // if shift is pressed, advance one row
-          if (e.shiftKey)
-            mSeq.setCursor(mSeq.col(), (mSeq.row() + 1) % MAX_SONG_ROWS);
-          
-          return false;
-        }
-        else if (mEditMode == EDIT_PATTERN)
-        {
-          mPattern.modify(function (value) { return 0; });
-          
-          if (mPattern.isSingle())
-            mPattern.setCursor(mPattern.col(), (mPattern.row() + 1) % mSong.patternLen);
-          
-          return false;
-        }
-        else if (mEditMode == EDIT_FXTRACK)
-        {
-          mFxTrack.modify(function (value) { return [0,0]; });
-          
-          if (mFxTrack.isSingle())
-            mPattern.setCursor(mFxTrack.col(), (mFxTrack.row() + 1) % mSong.patternLen);
-         
-          return false;          
         }
         break;
 
