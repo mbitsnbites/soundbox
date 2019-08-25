@@ -136,7 +136,7 @@ gDemoSongs = [
   },
   {
     name: "4chordsong",
-    description: ' 4 Chord Song by m @ Bits\'n\'Bites, chord test inspired by <a href="http://www.youtube.com/watch?v=5pidokakU4I" target="_blank">Axis of Awsome</a>',
+    description: ' 4 Chord Song by m @ Bits\'n\'Bites, chord test inspired by <a href="http://www.youtube.com/watch?v=5pidokakU4I" target="_blank">Axis of Awesome</a>',
     data: String.fromCharCode(
       83,66,111,120,8,2,237,153,65,107,19,81,16,199,231,189,151,77,2,105,14,
       90,8,138,72,115,80,170,168,24,76,3,70,237,161,164,90,176,74,245,166,
