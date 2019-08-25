@@ -2036,7 +2036,7 @@ var CGUI = function()
     parent.appendChild(o);
 
     o = document.createElement("p");
-    o.appendChild(document.createTextNode("an HTML5 synth music tracker"));
+    o.appendChild(document.createTextNode("a HTML5 synth music tracker"));
     parent.appendChild(o);
 
     o = document.createElement("p");
