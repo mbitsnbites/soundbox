@@ -22,7 +22,7 @@
 gDemoSongs = [
   {
     name: "sway",
-    description: ' SWAY by m @ Bits\'n\'Bites, from the 4k demo <a href="http://pouet.net/prod.php?which=59203">SWAY</a>',
+    description: ' SWAY by m @ Bits\'n\'Bites, from the 4k demo <a href="http://pouet.net/prod.php?which=59203" target="_blank">SWAY</a>',
     data: String.fromCharCode(
       83,66,111,120,8,2,237,154,65,107,19,65,20,199,255,179,51,179,141,166,49,
       197,82,161,66,48,80,164,122,235,65,177,7,193,67,114,244,86,61,89,232,
@@ -64,7 +64,7 @@ gDemoSongs = [
   },
   {
     name: "rechord",
-    description: ' re:chord by m @ Bits\'n\'Bites, from the 4k demo <a href="http://www.pouet.net/prod.php?which=60915">re:chord</a>',
+    description: ' re:chord by m @ Bits\'n\'Bites, from the 4k demo <a href="http://www.pouet.net/prod.php?which=60915" target="_blank">re:chord</a>',
     base64: "U0JveAgC7ZpRa9NQFMfPzU0ycZ0gOEWYo6CC4AaDPakPPgk-TPDBtz34oEMRQcZkdJTZMEdLSUhDQrexSV_9AH6BoU9-Cz-DH8B6bpKmN0nTTGVNiueXnp5zc9v03Jvb_O9N254HWFR-GaD0jSsA2vICIEoFKuv32COFJTauii2IYAQ1OcJH3Y_rMIjKzrYc4WPTj7dgWqjBW9mw099hz0e2PdlsKpXx5cvL6fIb7PbIsPs38Bxs4Bl45Vux-SdJ5k8QBFEc_Csq-anB8dpVvQvPZhiff8iqK3xJlVXcf6WqoYIHcfCcxszxTsLbCe_l-LHXXj6-vmrkH6Od4c2MfK3Qd0LvJryTKJ8npuM5MbM9W7Zz175_fH_bdu2YWY4lzOy4HWFl_yYV3f85wz8aq1l0j3vHMTv6dCTs8KR3IoyulQRRXlDF0d4zgCdX15QdnSkLvVurDXVFHSj2UM2Hqj5KyWuJ8qRX4nM59QdnXpMHbIZ-q6D853LyX6PBSxAEQQglBwNVHJerfQ2u-1P7_k-4MahlyugNa7IP6XmpJbR3plV1SYjy90Q82OXRWCEIgiBKSR_X4_0PqMyqfseX9kug3Lx9MVTyELFfioGNEPJWjk0rQf6tFg0VgiAIopRr8pcG8O-GBqDp9-GbzvgiKEuevqMHK_JgZS7fWc_6lbyBeufAYczbki87u9DEPLuS3wcLfQPLnSnInyAIgvhPldy1gP0w_L_LPOdfNMYftNRrB9zQQ9Xmvo7zQL1VTdX0GbGlj-RkfIK4LW1PoCWzOfXrf3i8LmYeWDEqPpvTtgs5beuiTdP8wwEzGkMi8grs77-hjaPcjfW_gzNBMad1cSbolr7_90MLqOMMNo18Y2pvRL2Z8dpJsOfPxofzciOMPmbkPGhrU9rXjJ3PdJsIoqyw09cMnr4A9liFz0LPFZ3pq7vRZY1Jz0GU3CMrNkEQBEEQk-U3"
   },
   {
@@ -136,7 +136,7 @@ gDemoSongs = [
   },
   {
     name: "4chordsong",
-    description: ' 4 Chord Song by m @ Bits\'n\'Bites, chord test inspired by <a href="http://www.youtube.com/watch?v=5pidokakU4I">Axis of Awsome</a>',
+    description: ' 4 Chord Song by m @ Bits\'n\'Bites, chord test inspired by <a href="http://www.youtube.com/watch?v=5pidokakU4I" target="_blank">Axis of Awsome</a>',
     data: String.fromCharCode(
       83,66,111,120,8,2,237,153,65,107,19,81,16,199,231,189,151,77,2,105,14,
       90,8,138,72,115,80,170,168,24,76,3,70,237,161,164,90,176,74,245,166,
@@ -175,7 +175,7 @@ gDemoSongs = [
   },
   {
     name: "wilderness",
-    description: ' Wilderness by m @ Bits\'n\'Bites, from the 8k demo <a href="http://www.pouet.net/prod.php?which=64246">Ninja Style!</a>',
+    description: ' Wilderness by m @ Bits\'n\'Bites, from the 8k demo <a href="http://www.pouet.net/prod.php?which=64246" target="_blank">Ninja Style!</a>',
     data: String.fromCharCode(
       83,66,111,120,8,2,237,155,65,107,19,65,20,199,223,204,236,172,149,26,80,
       75,65,208,131,165,7,15,30,4,79,189,246,32,30,196,131,250,21,122,104,171,
