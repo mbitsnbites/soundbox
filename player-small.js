@@ -58,10 +58,10 @@ var CPlayer = function() {
     var createNote = function (instr, n, rowLen) {
         var osc1 = mOscillators[instr.i[0]],
             o1vol = instr.i[1],
-            o1xenv = instr.i[3],
+            o1xenv = instr.i[3]/32,
             osc2 = mOscillators[instr.i[4]],
             o2vol = instr.i[5],
-            o2xenv = instr.i[8],
+            o2xenv = instr.i[8]/32,
             noiseVol = instr.i[9],
             attack = instr.i[10] * instr.i[10] * 4,
             sustain = instr.i[11] * instr.i[11] * 4,
@@ -99,19 +99,11 @@ var CPlayer = function() {
             }
 
             // Oscillator 1
-            t = o1t;
-            if (o1xenv) {
-                t *= e * e;
-            }
-            c1 += t;
+            c1 += o1t * e ** o1xenv; // replace with Math.pow for old browsers
             rsample = osc1(c1) * o1vol;
 
             // Oscillator 2
-            t = o2t;
-            if (o2xenv) {
-                t *= e * e;
-            }
-            c2 += t;
+            c2 += o2t * e ** o2xenv; // replace with Math.pow for old browsers
             rsample += osc2(c2) * o2vol;
 
             // Noise oscillator

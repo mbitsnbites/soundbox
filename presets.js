@@ -432,12 +432,12 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           255, // OSC1_VOL
           116, // OSC1_SEMI
-          1, // OSC1_XENV
+          64, // OSC1_XENV
           0, // OSC2_WAVEFORM
           255, // OSC2_VOL
           116, // OSC2_SEMI
           0, // OSC2_DETUNE
-          1, // OSC2_XENV
+          64, // OSC2_XENV
           0, // NOISE_VOL
           4, // ENV_ATTACK
           6, // ENV_SUSTAIN
@@ -465,12 +465,12 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           255, // OSC1_VOL
           117, // OSC1_SEMI
-          1, // OSC1_XENV
+          64, // OSC1_XENV
           0, // OSC2_WAVEFORM
           255, // OSC2_VOL
           110, // OSC2_SEMI
           0, // OSC2_DETUNE
-          1, // OSC2_XENV
+          64, // OSC2_XENV
           0, // NOISE_VOL
           4, // ENV_ATTACK
           6, // ENV_SUSTAIN
@@ -498,12 +498,12 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           255, // OSC1_VOL
           116, // OSC1_SEMI
-          1, // OSC1_XENV
+          64, // OSC1_XENV
           0, // OSC2_WAVEFORM
           255, // OSC2_VOL
           116, // OSC2_SEMI
           0, // OSC2_DETUNE
-          1, // OSC2_XENV
+          64, // OSC2_XENV
           14, // NOISE_VOL
           4, // ENV_ATTACK
           6, // ENV_SUSTAIN
@@ -531,12 +531,12 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           255, // OSC1_VOL
           116, // OSC1_SEMI
-          1, // OSC1_XENV
+          64, // OSC1_XENV
           0, // OSC2_WAVEFORM
           255, // OSC2_VOL
           120, // OSC2_SEMI
           0, // OSC2_DETUNE
-          1, // OSC2_XENV
+          64, // OSC2_XENV
           127, // NOISE_VOL
           4, // ENV_ATTACK
           6, // ENV_SUSTAIN
@@ -564,7 +564,7 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           192, // OSC1_VOL
           104, // OSC1_SEMI
-          1, // OSC1_XENV
+          64, // OSC1_XENV
           0, // OSC2_WAVEFORM
           80, // OSC2_VOL
           99, // OSC2_SEMI
@@ -597,12 +597,12 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           160, // OSC1_VOL
           128, // OSC1_SEMI
-          1, // OSC1_XENV
+          64, // OSC1_XENV
           0, // OSC2_WAVEFORM
           160, // OSC2_VOL
           128, // OSC2_SEMI
           0, // OSC2_DETUNE
-          1, // OSC2_XENV
+          64, // OSC2_XENV
           210, // NOISE_VOL
           4, // ENV_ATTACK
           7, // ENV_SUSTAIN
@@ -630,12 +630,12 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           221, // OSC1_VOL
           128, // OSC1_SEMI
-          1, // OSC1_XENV
+          64, // OSC1_XENV
           0, // OSC2_WAVEFORM
           210, // OSC2_VOL
           128, // OSC2_SEMI
           0, // OSC2_DETUNE
-          1, // OSC2_XENV
+          64, // OSC2_XENV
           255, // NOISE_VOL
           4, // ENV_ATTACK
           6, // ENV_SUSTAIN
@@ -668,7 +668,7 @@ gInstrumentPresets = [
           68, // OSC2_VOL
           128, // OSC2_SEMI
           0, // OSC2_DETUNE
-          1, // OSC2_XENV
+          64, // OSC2_XENV
           218, // NOISE_VOL
           4, // ENV_ATTACK
           4, // ENV_SUSTAIN
@@ -729,7 +729,7 @@ gInstrumentPresets = [
           2, // OSC1_WAVEFORM
           40, // OSC1_VOL
           140, // OSC1_SEMI
-          1, // OSC1_XENV
+          64, // OSC1_XENV
           0, // OSC2_WAVEFORM
           0, // OSC2_VOL
           140, // OSC2_SEMI
@@ -795,12 +795,12 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           214, // OSC1_VOL
           104, // OSC1_SEMI
-          1, // OSC1_XENV
+          64, // OSC1_XENV
           0, // OSC2_WAVEFORM
           204, // OSC2_VOL
           104, // OSC2_SEMI
           0, // OSC2_DETUNE
-          1, // OSC2_XENV
+          64, // OSC2_XENV
           229, // NOISE_VOL
           4, // ENV_ATTACK
           40, // ENV_SUSTAIN
@@ -897,12 +897,12 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           255, // OSC1_VOL
           106, // OSC1_SEMI
-          1, // OSC1_XENV
+          64, // OSC1_XENV
           0, // OSC2_WAVEFORM
           255, // OSC2_VOL
           106, // OSC2_SEMI
           0, // OSC2_DETUNE
-          1, // OSC2_XENV
+          64, // OSC2_XENV
           0, // NOISE_VOL
           5, // ENV_ATTACK
           7, // ENV_SUSTAIN

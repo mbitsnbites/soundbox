@@ -128,10 +128,10 @@ var CJammer = function () {
       if (note != undefined) {
         var osc1 = mOscillators[note.instr[0]],
             o1vol = note.instr[1],
-            o1xenv = note.instr[3],
+            o1xenv = note.instr[3]/32,
             osc2 = mOscillators[note.instr[4]],
             o2vol = note.instr[5],
-            o2xenv = note.instr[8],
+            o2xenv = note.instr[8]/32,
             noiseVol = note.instr[9],
             attack = Math.round(note.instr[10] * note.instr[10] * 4 * mRateScale),
             sustain = Math.round(note.instr[11] * note.instr[11] * 4 * mRateScale),
@@ -177,19 +177,11 @@ var CJammer = function () {
           }
 
           // Oscillator 1
-          t = o1f;
-          if (o1xenv) {
-            t *= e * e;
-          }
-          o1t += t;
+          o1t += o1f * Math.pow(e,o1xenv);
           rsample = osc1(o1t) * o1vol;
 
           // Oscillator 2
-          t = o2f;
-          if (o2xenv) {
-              t *= e * e;
-          }
-          o2t += t;
+          o2t += o2f * Math.pow(e,o2xenv);
           rsample += osc2(o2t) * o2vol;
 
           // Noise oscillator
