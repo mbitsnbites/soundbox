@@ -333,6 +333,17 @@ var CJammer = function () {
         return;
       }
     }
+    
+    // Fix for Chrome: Chrome requires AudioContext to be resumed only after
+    // user gestures on the screen.
+    if (typeof mAudioContext != "undefined") {
+      var resumeAudio = function() {
+        if (typeof mAudioContext == "undefined" || mAudioContext == null) return;
+        if (mAudioContext.state == "suspended") mAudioContext.resume();
+        document.removeEventListener("click", resumeAudio);
+      }
+      document.addEventListener("click", resumeAudio);
+    }
 
     // Get actual sample rate (SoundBox is hard-coded to 44100 samples/s).
     mSampleRate = mAudioContext.sampleRate;
