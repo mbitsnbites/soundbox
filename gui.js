@@ -938,7 +938,7 @@ var CGUI = function()
     bin.putULONG(makeFourCC("SBox"));
 
     // Format version
-    bin.putUBYTE(12);
+    bin.putUBYTE(13);
 
     // Compression method
     bin.putUBYTE(compressedData.method);
@@ -960,7 +960,7 @@ var CGUI = function()
     var version = bin.getUBYTE();
 
     // Check if this is a SoundBox song
-    if (signature != makeFourCC("SBox") || (version < 1 || version > 12))
+    if (signature != makeFourCC("SBox") || (version < 1 || version > 13))
       return undefined;
 
     if (version >= 8) {
@@ -1004,7 +1004,7 @@ var CGUI = function()
       // Oscillator 1
       if (version < 6) {
         instr.i[OSC1_SEMI] = bin.getUBYTE();
-        instr.i[OSC1_XENV] = bin.getUBYTE();
+        instr.i[OSC1_XENV] = 64 * bin.getUBYTE();
         instr.i[OSC1_VOL] = bin.getUBYTE();
         instr.i[OSC1_WAVEFORM] = bin.getUBYTE();
       }
@@ -1012,14 +1012,14 @@ var CGUI = function()
         instr.i[OSC1_WAVEFORM] = bin.getUBYTE();
         instr.i[OSC1_VOL] = bin.getUBYTE();
         instr.i[OSC1_SEMI] = bin.getUBYTE();
-        instr.i[OSC1_XENV] = bin.getUBYTE();
+        instr.i[OSC1_XENV] = version < 13 ? 64 * bin.getUBYTE() : bin.getUBYTE();
       }
 
       // Oscillator 2
       if (version < 6) {
         instr.i[OSC2_SEMI] = bin.getUBYTE();
         instr.i[OSC2_DETUNE] = bin.getUBYTE();
-        instr.i[OSC2_XENV] = bin.getUBYTE();
+        instr.i[OSC2_XENV] = 64 * bin.getUBYTE();
         instr.i[OSC2_VOL] = bin.getUBYTE();
         instr.i[OSC2_WAVEFORM] = bin.getUBYTE();
       }
@@ -1028,7 +1028,7 @@ var CGUI = function()
         instr.i[OSC2_VOL] = bin.getUBYTE();
         instr.i[OSC2_SEMI] = bin.getUBYTE();
         instr.i[OSC2_DETUNE] = bin.getUBYTE();
-        instr.i[OSC2_XENV] = bin.getUBYTE();
+        instr.i[OSC2_XENV] = version < 13 ? 64 * bin.getUBYTE() : bin.getUBYTE();
       }
 
       // Noise oscillator
@@ -1207,7 +1207,7 @@ var CGUI = function()
       instr.i[OSC1_SEMI] = 12 * (bin.getUBYTE() - 8) + 128;
       instr.i[OSC1_SEMI] += bin.getUBYTE();
       bin.getUBYTE(); // Skip (detune)
-      instr.i[OSC1_XENV] = bin.getUBYTE();
+      instr.i[OSC1_XENV] = 64 * bin.getUBYTE();
       instr.i[OSC1_VOL] = bin.getUBYTE();
       instr.i[OSC1_WAVEFORM] = bin.getUBYTE();
 
@@ -1215,7 +1215,7 @@ var CGUI = function()
       instr.i[OSC2_SEMI] = 12 * (bin.getUBYTE() - 8) + 128;
       instr.i[OSC2_SEMI] += bin.getUBYTE();
       instr.i[OSC2_DETUNE] = bin.getUBYTE();
-      instr.i[OSC2_XENV] = bin.getUBYTE();
+      instr.i[OSC2_XENV] = 64 * bin.getUBYTE();
       instr.i[OSC2_VOL] = bin.getUBYTE();
       instr.i[OSC2_WAVEFORM] = bin.getUBYTE();
 
@@ -1340,7 +1340,7 @@ var CGUI = function()
     bin.putULONG(makeFourCC("SBxI"));
 
     // Format version
-    bin.putUBYTE(1);
+    bin.putUBYTE(2);
 
     // Compression method
     bin.putUBYTE(compressedData.method);
@@ -1362,7 +1362,7 @@ var CGUI = function()
     var version = bin.getUBYTE();
 
     // Check if this is a SoundBox instrument
-    if (signature != makeFourCC("SBxI") || (version < 1 || version > 1))
+    if (signature != makeFourCC("SBxI") || (version < 1 || version > 2))
       return undefined;
 
     var compressionMethod = bin.getUBYTE();
@@ -1377,14 +1377,16 @@ var CGUI = function()
     instrI[OSC1_WAVEFORM] = bin.getUBYTE();
     instrI[OSC1_VOL] = bin.getUBYTE();
     instrI[OSC1_SEMI] = bin.getUBYTE();
-    instrI[OSC1_XENV] = bin.getUBYTE();
+    // Version 1 only had two binary values for the OSC1_XENV
+    instrI[OSC1_XENV] = version < 2 ? 64 * bin.getUBYTE() : bin.getUBYTE();
 
     // Oscillator 2
     instrI[OSC2_WAVEFORM] = bin.getUBYTE();
     instrI[OSC2_VOL] = bin.getUBYTE();
     instrI[OSC2_SEMI] = bin.getUBYTE();
     instrI[OSC2_DETUNE] = bin.getUBYTE();
-    instrI[OSC2_XENV] = bin.getUBYTE();
+    // Version 1 only had two binary values for the OSC2_XENV
+    instrI[OSC2_XENV] = version < 2 ? 64 * bin.getUBYTE() : bin.getUBYTE();
     
     // Noise oscillator
     instrI[NOISE_VOL] = bin.getUBYTE();
@@ -1812,7 +1814,7 @@ var CGUI = function()
     document.getElementById("osc1_wave_tri").src = instrI[OSC1_WAVEFORM] == 3 ? "gui/wave-tri-sel.png" : "gui/wave-tri.png";
     updateSlider(document.getElementById("osc1_vol"), instrI[OSC1_VOL]);
     updateSlider(document.getElementById("osc1_semi"), instrI[OSC1_SEMI]);
-    updateCheckBox(document.getElementById("osc1_xenv"), instrI[OSC1_XENV]);
+    updateSlider(document.getElementById("osc1_xenv"), instrI[OSC1_XENV]);
 
     // Oscillator 2
     document.getElementById("osc2_wave_sin").src = instrI[OSC2_WAVEFORM] == 0 ? "gui/wave-sin-sel.png" : "gui/wave-sin.png";
@@ -1822,7 +1824,7 @@ var CGUI = function()
     updateSlider(document.getElementById("osc2_vol"), instrI[OSC2_VOL]);
     updateSlider(document.getElementById("osc2_semi"), instrI[OSC2_SEMI]);
     updateSlider(document.getElementById("osc2_det"), instrI[OSC2_DETUNE]);
-    updateCheckBox(document.getElementById("osc2_xenv"), instrI[OSC2_XENV]);
+    updateSlider(document.getElementById("osc2_xenv"), instrI[OSC2_XENV]);
 
     // Noise
     updateSlider(document.getElementById("noise_vol"), instrI[NOISE_VOL]);
@@ -2862,11 +2864,7 @@ var CGUI = function()
 
     // Check which instrument parameter was changed
     var fxCmd = -1;
-    if (o.id === "osc1_xenv")
-      fxCmd = OSC1_XENV;
-    else if (o.id === "osc2_xenv")
-      fxCmd = OSC2_XENV;
-    else if (o.id === "lfo_fxfreq")
+    if (o.id === "lfo_fxfreq")
       fxCmd = LFO_FX_FREQ;
 
     // Update the instrument (toggle boolean)
@@ -3199,9 +3197,11 @@ var CGUI = function()
       var cmdNo = -1;
       if (mActiveSlider.id == "osc1_vol")         cmdNo = OSC1_VOL;
       else if (mActiveSlider.id == "osc1_semi")   cmdNo = OSC1_SEMI;
+      else if (mActiveSlider.id == "osc1_xenv")   cmdNo = OSC1_XENV;
       else if (mActiveSlider.id == "osc2_vol")    cmdNo = OSC2_VOL;
       else if (mActiveSlider.id == "osc2_semi")   cmdNo = OSC2_SEMI;
       else if (mActiveSlider.id == "osc2_det")    cmdNo = OSC2_DETUNE;
+      else if (mActiveSlider.id == "osc2_xenv")   cmdNo = OSC2_XENV;
       else if (mActiveSlider.id == "noise_vol")   cmdNo = NOISE_VOL;
       else if (mActiveSlider.id == "env_att")     cmdNo = ENV_ATTACK;
       else if (mActiveSlider.id == "env_sust")    cmdNo = ENV_SUSTAIN;
@@ -3818,9 +3818,11 @@ var CGUI = function()
     // Set up GUI elements
     document.getElementById("osc1_vol").sliderProps = { min: 0, max: 255 };
     document.getElementById("osc1_semi").sliderProps = { min: 92, max: 164 };
+    document.getElementById("osc1_xenv").sliderProps = { min: 0, max: 255 };
     document.getElementById("osc2_vol").sliderProps = { min: 0, max: 255 };
     document.getElementById("osc2_semi").sliderProps = { min: 92, max: 164 };
     document.getElementById("osc2_det").sliderProps = { min: 0, max: 255, nonLinear: true };
+    document.getElementById("osc2_xenv").sliderProps = { min: 0, max: 255 };
     document.getElementById("noise_vol").sliderProps = { min: 0, max: 255 };
     document.getElementById("env_att").sliderProps = { min: 0, max: 255 };
     document.getElementById("env_sust").sliderProps = { min: 0, max: 255 };
@@ -3967,8 +3969,8 @@ var CGUI = function()
     document.getElementById("osc1_vol").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("osc1_semi").addEventListener("mousedown", sliderMouseDown, false);
     document.getElementById("osc1_semi").addEventListener("touchstart", sliderMouseDown, false);
-    document.getElementById("osc1_xenv").addEventListener("mousedown", boxMouseDown, false);
-    document.getElementById("osc1_xenv").addEventListener("touchstart", boxMouseDown, false);
+    document.getElementById("osc1_xenv").addEventListener("mousedown", sliderMouseDown, false);
+    document.getElementById("osc1_xenv").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("osc2_wave_sin").addEventListener("mousedown", osc2WaveMouseDown, false);
     document.getElementById("osc2_wave_sin").addEventListener("touchstart", osc2WaveMouseDown, false);
     document.getElementById("osc2_wave_sqr").addEventListener("mousedown", osc2WaveMouseDown, false);
@@ -3983,8 +3985,8 @@ var CGUI = function()
     document.getElementById("osc2_semi").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("osc2_det").addEventListener("mousedown", sliderMouseDown, false);
     document.getElementById("osc2_det").addEventListener("touchstart", sliderMouseDown, false);
-    document.getElementById("osc2_xenv").addEventListener("mousedown", boxMouseDown, false);
-    document.getElementById("osc2_xenv").addEventListener("touchstart", boxMouseDown, false);
+    document.getElementById("osc2_xenv").addEventListener("mousedown", sliderMouseDown, false);
+    document.getElementById("osc2_xenv").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("noise_vol").addEventListener("mousedown", sliderMouseDown, false);
     document.getElementById("noise_vol").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("env_att").addEventListener("mousedown", sliderMouseDown, false);
