@@ -1786,6 +1786,9 @@ var CGUI = function()
       pos = Math.sqrt(pos);
     }
     o.style.marginLeft = Math.round(191 * pos) + "px";
+    var valuetips = o.parentElement.getElementsByClassName("valuetip");
+    if (valuetips.length > 0)
+      valuetips[0].innerHTML = x;
   };
 
   var updateCheckBox = function (o, check) {
@@ -3167,6 +3170,9 @@ var CGUI = function()
     mActiveSlider = getEventElement(e);
     unfocusHTMLInputElements();
     e.preventDefault();   
+    var valuetips = mActiveSlider.parentElement.getElementsByClassName("valuetip");
+    if (valuetips.length > 0)
+      valuetips[0].style.visibility = "visible"; 
   };
 
   var mouseMove = function (e) {
@@ -3248,6 +3254,9 @@ var CGUI = function()
   {
     if (mActiveSlider)
     {
+      var valuetips = mActiveSlider.parentElement.getElementsByClassName('valuetip');
+      if (valuetips.length > 0 && !mActiveSlider.parentElement.mouseIsOver)
+        valuetips[0].style.visibility = "hidden"; 
       mActiveSlider = null;
       return false;
     }
@@ -3814,6 +3823,36 @@ var CGUI = function()
 
     // Build the UI tables
     buildSequencerTable();    
+
+    // Add tooltips for each slider
+    var sliders = document.getElementsByClassName('slider');
+    var sliderDivs = Array.prototype.filter.call(sliders, function(e) {
+      return e.nodeName === 'DIV';
+    });
+    for (var i=0; i<sliderDivs.length; i++) {
+      var valuetip = document.createElement("span");
+      valuetip.className = "valuetip";
+      sliderDivs[i].appendChild(valuetip);
+      sliderDivs[i].onmouseenter = function(e) {
+        if (!e) var e = window.event;
+        e.preventDefault();
+        var o = getEventElement(e);
+        o.mouseIsOver = true;
+        var valuetips = o.getElementsByClassName("valuetip");
+        if (valuetips.length > 0) {
+          var delay = setTimeout(function() {
+            if (mActiveSlider == null)
+              valuetips[0].style.visibility = "visible";
+          },500);
+          o.onmouseleave = function() {
+            clearTimeout(delay);
+            o.mouseIsOver = false; 
+            if (mActiveSlider != o.getElementsByTagName("img")[0])
+              valuetips[0].style.visibility = "hidden";
+          };
+        }
+      }
+    }
 
     // Set up GUI elements
     document.getElementById("osc1_vol").sliderProps = { min: 0, max: 255 };
