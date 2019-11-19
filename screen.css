@@ -231,6 +231,20 @@ table.tracks td.selected, table.tracks tr.beat td.selected {
   background: url("gui/slider-bg.png") no-repeat;
   padding: 0;
   margin: 0;
+  position: relative;
+}
+
+.slider .valuetip {
+  visibility: hidden;
+  height: 12px;
+  display: inline-block;
+  padding: inherit;
+  position: absolute;
+  text-align: left;
+  margin-left: 5px;
+  top: 0px;
+  color: #fff;
+  z-index: 1;
 }
 
 .slider img {
