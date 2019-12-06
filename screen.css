@@ -21,6 +21,7 @@
 
 body {
   font-family: sans-serif, arial;
+  color: rgb(216, 216, 216);
   padding: 0;
   margin: 0;
   -webkit-touch-callout: none;
@@ -103,7 +104,7 @@ h1 {
 
 table.ui, table.ui td {
   vertical-align: top;
-  border: 1px solid #333;
+  border: 1px solid rgb(131, 131, 131);
   border-collapse: collapse;
   padding: 4px 4px 8px 8px;
   font-family: "DejaVu Sans Mono",monospace;
@@ -172,7 +173,7 @@ table.tracks {
 }
 
 table.tracks, table.tracks td, table.tracks th {
-  border: 1px solid #333;
+  border: 1px solid rgb(124, 124, 124);
   border-collapse: collapse;
   padding: 0px 2px;
   text-align: center;
@@ -186,11 +187,11 @@ table.tracks th {
 
 table.tracks td {
   color: #dda;
-  background: #447;
+  background: rgb(73, 73, 73);
 }
 
 table.tracks tr.beat td {
-  background: #559;
+  background: rgb(49, 49, 49);
 }
 
 table.tracks th.playpos {
@@ -341,7 +342,7 @@ label.checkbox input {
   width: 600px;
   margin: 100px auto auto auto;
   padding: 30px 10px;
-  background: #fff;
+  background: rgb(51, 49, 49);
   border: 1px solid #555;
   text-align: center;
   border-radius: 6px;
@@ -367,15 +368,15 @@ label.checkbox input {
 /*** Theme: Metal blue ********************************************************/
 
 #guiMaster {
- background: #9ab;
+ background: #222;
 }
 
 table.ui td > table.ui td {
-  background: #89a;
+  background: #222;
 }
 
 body {
-  background: rgb(29,37,45);
+  background: rgb(0, 0, 0);
 }
 
 #cover {
