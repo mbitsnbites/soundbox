@@ -18,7 +18,7 @@ preinstalled on Unix-like systems such as macOS and Linux):
 
 ```bash
 cd path/to/soundbox
-python -m SimpleHTTPServer 8008
+python -m http.server 8008
 ```
 
 Now point your browser to `http://localhost:8008/`.
