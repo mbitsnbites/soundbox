@@ -302,6 +302,18 @@ var CPlayer = function() {
         return mCurrentCol / mSong.numChannels;
     };
 
+    // Create a AudioBuffer from the generated audio data
+    this.createAudioBuffer = function(context) {
+        var buffer = context.createBuffer(2, mMixBuf.length / 2, 44100);
+        for (var i = 0; i < 2; i ++) {
+            var data = buffer.getChannelData(i);
+            for (var j = 0, k = i; j < buffer.length; j ++, k += 2) {
+                data[j] = mMixBuf[k] / 65536;
+            }
+        }
+        return buffer;
+    };
+    
     // Create a WAVE formatted Uint8Array from the generated audio data
     this.createWave = function() {
         // Create WAVE header
