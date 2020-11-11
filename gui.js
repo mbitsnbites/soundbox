@@ -2830,7 +2830,7 @@ var CGUI = function()
     return true;
   };
 
-  var instrCopyMouseDown = function (e) {
+  var instrCopyClick = function (e) {
     if (!e) var e = window.event;
     e.preventDefault();
     
@@ -2840,7 +2840,7 @@ var CGUI = function()
       mInstrCopyBuffer[i] = instr.i[i];    
   };
 
-  var instrPasteMouseDown = function (e) {
+  var instrPasteClick = function (e) {
     if (!e) var e = window.event;
     e.preventDefault();
 
@@ -2853,12 +2853,13 @@ var CGUI = function()
     updateInstrument(true);
   };
   
-  var instrSaveMouseDown = function () {
+  var instrSaveClick = function (e) {
+    if (!e) var e = window.event;
+    e.preventDefault();
+
     var instrI = mSong.songData[mSeq.col()].i;   
     var dataURI = "data:application/octet-stream;base64," + btoa(instrumentToBin(instrI));
     window.open(dataURI);
-    hideDialog();
-    return false;
   };
 
   var boxMouseDown = function (e) {
@@ -4083,9 +4084,9 @@ var CGUI = function()
     document.getElementById("keyboard").addEventListener("mousedown", keyboardMouseDown, false);
     document.getElementById("keyboard").addEventListener("touchstart", keyboardMouseDown, false);
 
-    document.getElementById("instrCopy").onmousedown = instrCopyMouseDown;
-    document.getElementById("instrPaste").onmousedown = instrPasteMouseDown;
-    document.getElementById("instrSave").onmousedown = instrSaveMouseDown;
+    document.getElementById("instrCopy").addEventListener("click", instrCopyClick, false);
+    document.getElementById("instrPaste").addEventListener("click", instrPasteClick, false);
+    document.getElementById("instrSave").addEventListener("click", instrSaveClick, false);
 
     document.getElementById("displaySize").checked = false;
     document.getElementById("displaySize").onchange = displaySizeOnChange;
