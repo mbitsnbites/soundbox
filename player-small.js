@@ -296,11 +296,11 @@ var CPlayer = function() {
 
     // Create a AudioBuffer from the generated audio data
     this.createAudioBuffer = function(context) {
-        var buffer = context.createBuffer(2, mMixBuf.length / 2, 44100);
+        var buffer = context.createBuffer(2, mNumWords / 2, 44100);
         for (var i = 0; i < 2; i ++) {
             var data = buffer.getChannelData(i);
-            for (var j = 0, k = i; j < buffer.length; j ++, k += 2) {
-                data[j] = mMixBuf[k] / 65536;
+            for (var j = i; j < mNumWords; j += 2) {
+                data[j >> 1] = mMixBuf[j] / 65536;
             }
         }
         return buffer;
