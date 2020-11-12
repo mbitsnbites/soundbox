@@ -40,6 +40,7 @@ gInstrumentPresets = [
           5, // ENV_ATTACK
           6, // ENV_SUSTAIN
           58, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -54,7 +55,7 @@ gInstrumentPresets = [
           147, // FX_PAN_AMT
           6, // FX_PAN_FREQ
           121, // FX_DELAY_AMT
-          6 // FX_DELAY_TIME    
+          6 // FX_DELAY_TIME
   ]
   },
   {
@@ -73,6 +74,7 @@ gInstrumentPresets = [
           6, // ENV_ATTACK
           22, // ENV_SUSTAIN
           34, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -106,6 +108,7 @@ gInstrumentPresets = [
           7, // ENV_ATTACK
           5, // ENV_SUSTAIN
           52, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -139,6 +142,7 @@ gInstrumentPresets = [
           2, // ENV_ATTACK
           0, // ENV_SUSTAIN
           60, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -172,6 +176,7 @@ gInstrumentPresets = [
           12, // ENV_ATTACK
           0, // ENV_SUSTAIN
           72, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -205,6 +210,7 @@ gInstrumentPresets = [
           0, // ENV_ATTACK
           6, // ENV_SUSTAIN
           29, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -238,6 +244,7 @@ gInstrumentPresets = [
           0, // ENV_ATTACK
           6, // ENV_SUSTAIN
           49, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -271,6 +278,7 @@ gInstrumentPresets = [
           12, // ENV_ATTACK
           12, // ENV_SUSTAIN
           33, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -307,6 +315,7 @@ gInstrumentPresets = [
           158, // ENV_ATTACK
           119, // ENV_SUSTAIN
           158, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -340,6 +349,7 @@ gInstrumentPresets = [
           107, // ENV_ATTACK
           115, // ENV_SUSTAIN
           138, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -373,6 +383,7 @@ gInstrumentPresets = [
           92, // ENV_ATTACK
           0, // ENV_SUSTAIN
           95, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           3, // LFO_WAVEFORM
@@ -405,7 +416,8 @@ gInstrumentPresets = [
           0, // NOISE_VOL
           47, // ENV_ATTACK
           48, // ENV_SUSTAIN
-          107, // ENV_RELEASE
+          162, // ENV_RELEASE
+          63, // ENV_EXP_DECAY
           124, // ARP_CHORD
           3, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -432,16 +444,17 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           255, // OSC1_VOL
           116, // OSC1_SEMI
-          64, // OSC1_XENV
+          79, // OSC1_XENV
           0, // OSC2_WAVEFORM
           255, // OSC2_VOL
           116, // OSC2_SEMI
           0, // OSC2_DETUNE
-          64, // OSC2_XENV
+          83, // OSC2_XENV
           0, // NOISE_VOL
           4, // ENV_ATTACK
           6, // ENV_SUSTAIN
-          35, // ENV_RELEASE
+          69, // ENV_RELEASE
+          52, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -475,6 +488,7 @@ gInstrumentPresets = [
           4, // ENV_ATTACK
           6, // ENV_SUSTAIN
           35, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -498,16 +512,17 @@ gInstrumentPresets = [
           0, // OSC1_WAVEFORM
           255, // OSC1_VOL
           116, // OSC1_SEMI
-          64, // OSC1_XENV
+          85, // OSC1_XENV
           0, // OSC2_WAVEFORM
           255, // OSC2_VOL
           116, // OSC2_SEMI
           0, // OSC2_DETUNE
-          64, // OSC2_XENV
+          37, // OSC2_XENV
           14, // NOISE_VOL
           4, // ENV_ATTACK
           6, // ENV_SUSTAIN
-          45, // ENV_RELEASE
+          73, // ENV_RELEASE
+          99, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -541,6 +556,7 @@ gInstrumentPresets = [
           4, // ENV_ATTACK
           6, // ENV_SUSTAIN
           35, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -574,6 +590,7 @@ gInstrumentPresets = [
           4, // ENV_ATTACK
           0, // ENV_SUSTAIN
           66, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           3, // LFO_WAVEFORM
@@ -606,7 +623,8 @@ gInstrumentPresets = [
           210, // NOISE_VOL
           4, // ENV_ATTACK
           7, // ENV_SUSTAIN
-          41, // ENV_RELEASE
+          52, // ENV_RELEASE
+          85, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -639,7 +657,8 @@ gInstrumentPresets = [
           255, // NOISE_VOL
           4, // ENV_ATTACK
           6, // ENV_SUSTAIN
-          62, // ENV_RELEASE
+          73, // ENV_RELEASE
+          79, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -647,7 +666,7 @@ gInstrumentPresets = [
           7, // LFO_FREQ
           1, // LFO_FX_FREQ
           3, // FX_FILTER
-          255, // FX_FREQ
+          195, // FX_FREQ
           15, // FX_RESONANCE
           0, // FX_DIST
           32, // FX_DRIVE
@@ -672,7 +691,8 @@ gInstrumentPresets = [
           218, // NOISE_VOL
           4, // ENV_ATTACK
           4, // ENV_SUSTAIN
-          40, // ENV_RELEASE
+          53, // ENV_RELEASE
+          68, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           1, // LFO_WAVEFORM
@@ -702,10 +722,11 @@ gInstrumentPresets = [
           140, // OSC2_SEMI
           0, // OSC2_DETUNE
           0, // OSC2_XENV
-          60, // NOISE_VOL
+          81, // NOISE_VOL
           4, // ENV_ATTACK
           10, // ENV_SUSTAIN
-          34, // ENV_RELEASE
+          47, // ENV_RELEASE
+          55, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -738,7 +759,8 @@ gInstrumentPresets = [
           255, // NOISE_VOL
           5, // ENV_ATTACK
           0, // ENV_SUSTAIN
-          48, // ENV_RELEASE
+          67, // ENV_RELEASE
+          104, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -752,7 +774,7 @@ gInstrumentPresets = [
           32, // FX_DRIVE
           0, // FX_PAN_AMT
           0, // FX_PAN_FREQ
-          71, // FX_DELAY_AMT
+          52, // FX_DELAY_AMT
           1 // FX_DELAY_TIME
     ]
   },
@@ -772,6 +794,7 @@ gInstrumentPresets = [
           0, // ENV_ATTACK
           1, // ENV_SUSTAIN
           59, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -804,7 +827,8 @@ gInstrumentPresets = [
           229, // NOISE_VOL
           4, // ENV_ATTACK
           40, // ENV_SUSTAIN
-          21, // ENV_RELEASE
+          43, // ENV_RELEASE
+          51, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -837,7 +861,8 @@ gInstrumentPresets = [
           127, // NOISE_VOL
           2, // ENV_ATTACK
           2, // ENV_SUSTAIN
-          23, // ENV_RELEASE
+          47, // ENV_RELEASE
+          61, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -874,6 +899,7 @@ gInstrumentPresets = [
           158, // ENV_ATTACK
           158, // ENV_SUSTAIN
           158, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -907,6 +933,7 @@ gInstrumentPresets = [
           5, // ENV_ATTACK
           7, // ENV_SUSTAIN
           164, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           0, // LFO_WAVEFORM
@@ -940,6 +967,7 @@ gInstrumentPresets = [
           158, // ENV_ATTACK
           100, // ENV_SUSTAIN
           158, // ENV_RELEASE
+          0, // ENV_EXP_DECAY
           0, // ARP_CHORD
           0, // ARP_SPEED
           3, // LFO_WAVEFORM

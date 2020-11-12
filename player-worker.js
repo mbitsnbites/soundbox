@@ -63,8 +63,9 @@ var CPlayerWorker = function() {
         sustain = instr.i[11] * instr.i[11] * 4,
         release = instr.i[12] * instr.i[12] * 4,
         releaseInv = 1 / release,
-        arp = instr.i[13],
-        arpInterval = rowLen * Math.pow(2, 2 - instr.i[14]);
+        expDecay = -instr.i[13]/16,
+        arp = instr.i[14],
+        arpInterval = rowLen * Math.pow(2, 2 - instr.i[15]);
 
     var noteBuf = new Int32Array(attack + sustain + release);
 
@@ -91,7 +92,8 @@ var CPlayerWorker = function() {
       if (j < attack) {
         e = j / attack;
       } else if (j >= attack + sustain) {
-        e -= (j - attack - sustain) * releaseInv;
+        e = (j - attack - sustain) * releaseInv;
+        e = (1 - e) * Math.pow(3, expDecay * e);
       }
 
       // Oscillator 1
@@ -190,25 +192,25 @@ var CPlayerWorker = function() {
               instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + patternLen] || 0;
 
               // Clear the note cache since the instrument has changed.
-              if (cmdNo < 16) {
+              if (cmdNo < 17) {
                 noteCache = [];
               }
             }
 
             // Put performance critical instrument properties in local variables
-            var oscLFO = mOscillators[instr.i[15]],
-                lfoAmt = instr.i[16] / 512,
-                lfoFreq = Math.pow(2, instr.i[17] - 9) / rowLen,
-                fxLFO = instr.i[18],
-                fxFilter = instr.i[19],
-                fxFreq = instr.i[20] * 43.23529 * 3.141592 / 44100,
-                q = 1 - instr.i[21] / 255,
-                dist = instr.i[22] * 1e-5,
-                drive = instr.i[23] / 32,
-                panAmt = instr.i[24] / 512,
-                panFreq = 6.283184 * Math.pow(2, instr.i[25] - 9) / rowLen,
-                dlyAmt = instr.i[26] / 255,
-                dly = instr.i[27] * rowLen & ~1;  // Must be an even number
+            var oscLFO = mOscillators[instr.i[16]],
+                lfoAmt = instr.i[17] / 512,
+                lfoFreq = Math.pow(2, instr.i[18] - 9) / rowLen,
+                fxLFO = instr.i[19],
+                fxFilter = instr.i[20],
+                fxFreq = instr.i[21] * 43.23529 * 3.141592 / 44100,
+                q = 1 - instr.i[22] / 255,
+                dist = instr.i[23] * 1e-5,
+                drive = instr.i[24] / 32,
+                panAmt = instr.i[25] / 512,
+                panFreq = 6.283184 * Math.pow(2, instr.i[26] - 9) / rowLen,
+                dlyAmt = instr.i[27] / 255,
+                dly = instr.i[28] * rowLen & ~1;  // Must be an even number
 
             // Calculate start sample number for this row in the pattern
             rowStartSample = ((p - this.firstRow) * patternLen + row) * rowLen;

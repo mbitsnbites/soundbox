@@ -720,24 +720,25 @@ var CGUI = function()
       ENV_ATTACK = 10,
       ENV_SUSTAIN = 11,
       ENV_RELEASE = 12,
+      ENV_EXP_DECAY = 13,
 
-      ARP_CHORD = 13,
-      ARP_SPEED = 14,
+      ARP_CHORD = 14,
+      ARP_SPEED = 15,
 
-      LFO_WAVEFORM = 15,
-      LFO_AMT = 16,
-      LFO_FREQ = 17,
-      LFO_FX_FREQ = 18,
+      LFO_WAVEFORM = 16,
+      LFO_AMT = 17,
+      LFO_FREQ = 18,
+      LFO_FX_FREQ = 19,
 
-      FX_FILTER = 19,
-      FX_FREQ = 20,
-      FX_RESONANCE = 21,
-      FX_DIST = 22,
-      FX_DRIVE = 23,
-      FX_PAN_AMT = 24,
-      FX_PAN_FREQ = 25,
-      FX_DELAY_AMT = 26,
-      FX_DELAY_TIME = 27;
+      FX_FILTER = 20,
+      FX_FREQ = 21,
+      FX_RESONANCE = 22,
+      FX_DIST = 23,
+      FX_DRIVE = 24,
+      FX_PAN_AMT = 25,
+      FX_PAN_FREQ = 26,
+      FX_DELAY_AMT = 27,
+      FX_DELAY_TIME = 28;
 
   var makeEmptyChannel = function (patternLen) {
     instr = {};
@@ -828,6 +829,7 @@ var CGUI = function()
     bin.putUBYTE(instrI[ENV_ATTACK]);
     bin.putUBYTE(instrI[ENV_SUSTAIN]);
     bin.putUBYTE(instrI[ENV_RELEASE]);
+    bin.putUBYTE(instrI[ENV_EXP_DECAY]);
 
     // Arpeggio
     bin.putUBYTE(instrI[ARP_CHORD]);
@@ -938,7 +940,7 @@ var CGUI = function()
     bin.putULONG(makeFourCC("SBox"));
 
     // Format version
-    bin.putUBYTE(13);
+    bin.putUBYTE(14);
 
     // Compression method
     bin.putUBYTE(compressedData.method);
@@ -960,7 +962,7 @@ var CGUI = function()
     var version = bin.getUBYTE();
 
     // Check if this is a SoundBox song
-    if (signature != makeFourCC("SBox") || (version < 1 || version > 13))
+    if (signature != makeFourCC("SBox") || (version < 1 || version > 14))
       return undefined;
 
     if (version >= 8) {
@@ -1045,6 +1047,7 @@ var CGUI = function()
         instr.i[ENV_SUSTAIN] = bin.getUBYTE();
         instr.i[ENV_RELEASE] = bin.getUBYTE();
       }
+      instr.i[ENV_EXP_DECAY] = version < 14 ? 0 : bin.getUBYTE();
 
       // Arpeggio
       if (version < 11) {
@@ -1140,6 +1143,9 @@ var CGUI = function()
             // We inserted two new commands in version 11
             if (version < 11 && fxCmd >= 14)
               fxCmd += 2;
+            // We inserted ENV_EXP_DECAY in version 14
+            if (version < 14 && fxCmd >= 14)
+              fxCmd += 1;
             col.f[k] = fxCmd;
           }
           for (k = 0; k < song.patternLen; k++)
@@ -1230,6 +1236,7 @@ var CGUI = function()
       instr.i[ENV_SUSTAIN] = Math.round(Math.sqrt(bin.getULONG()) / 2);
       instr.i[ENV_RELEASE] = Math.round(Math.sqrt(bin.getULONG()) / 2);
       master = bin.getUBYTE(); // env_master
+      instr.i[ENV_EXP_DECAY] = 0;
 
       // Effects
       instr.i[FX_FILTER] = bin.getUBYTE();
@@ -1340,7 +1347,7 @@ var CGUI = function()
     bin.putULONG(makeFourCC("SBxI"));
 
     // Format version
-    bin.putUBYTE(2);
+    bin.putUBYTE(3);
 
     // Compression method
     bin.putUBYTE(compressedData.method);
@@ -1362,7 +1369,7 @@ var CGUI = function()
     var version = bin.getUBYTE();
 
     // Check if this is a SoundBox instrument
-    if (signature != makeFourCC("SBxI") || (version < 1 || version > 2))
+    if (signature != makeFourCC("SBxI") || (version < 1 || version > 3))
       return undefined;
 
     var compressionMethod = bin.getUBYTE();
@@ -1395,6 +1402,7 @@ var CGUI = function()
     instrI[ENV_ATTACK] = bin.getUBYTE();
     instrI[ENV_SUSTAIN] = bin.getUBYTE();
     instrI[ENV_RELEASE] = bin.getUBYTE();
+    instrI[ENV_EXP_DECAY] = version < 3 ? 0 : bin.getUBYTE();
     
     // Arpeggio
     instrI[ARP_CHORD] = bin.getUBYTE();
@@ -1416,7 +1424,7 @@ var CGUI = function()
     instrI[FX_PAN_FREQ] = bin.getUBYTE();
     instrI[FX_DELAY_AMT] = bin.getUBYTE();
     instrI[FX_DELAY_TIME] = bin.getUBYTE();
-      
+
     return instrI;
   };
 
@@ -1467,6 +1475,7 @@ var CGUI = function()
       jsData += "          " + instr.i[ENV_ATTACK] + ", // ENV_ATTACK\n";
       jsData += "          " + instr.i[ENV_SUSTAIN] + ", // ENV_SUSTAIN\n";
       jsData += "          " + instr.i[ENV_RELEASE] + ", // ENV_RELEASE\n";
+      jsData += "          " + instr.i[ENV_EXP_DECAY] + ", // ENV_EXP_DECAY\n";
       jsData += "          " + instr.i[ARP_CHORD] + ", // ARP_CHORD\n";
       jsData += "          " + instr.i[ARP_SPEED] + ", // ARP_SPEED\n";
       jsData += "          " + instr.i[LFO_WAVEFORM] + ", // LFO_WAVEFORM\n";
@@ -1836,6 +1845,7 @@ var CGUI = function()
     updateSlider(document.getElementById("env_att"), instrI[ENV_ATTACK]);
     updateSlider(document.getElementById("env_sust"), instrI[ENV_SUSTAIN]);
     updateSlider(document.getElementById("env_rel"), instrI[ENV_RELEASE]);
+    updateSlider(document.getElementById("env_decay"), instrI[ENV_EXP_DECAY]);
 
     // Arpeggio
     updateSlider(document.getElementById("arp_note1"), instrI[ARP_CHORD] >> 4);
@@ -2510,7 +2520,8 @@ var CGUI = function()
           // Get envelope profile for this channel
           var env_a = mSong.songData[i].i[ENV_ATTACK],
               env_s = mSong.songData[i].i[ENV_SUSTAIN],
-              env_r = mSong.songData[i].i[ENV_RELEASE];
+              env_r = mSong.songData[i].i[ENV_RELEASE],
+              env_d = mSong.songData[i].i[ENV_EXP_DECAY];  // TODO(m): Use this
           env_a = env_a * env_a * 4;
           env_r = env_s * env_s * 4 + env_r * env_r * 4;
           var env_tot = env_a + env_r;
@@ -3213,6 +3224,7 @@ var CGUI = function()
       else if (mActiveSlider.id == "env_att")     cmdNo = ENV_ATTACK;
       else if (mActiveSlider.id == "env_sust")    cmdNo = ENV_SUSTAIN;
       else if (mActiveSlider.id == "env_rel")     cmdNo = ENV_RELEASE;
+      else if (mActiveSlider.id == "env_decay")   cmdNo = ENV_EXP_DECAY;
       else if (mActiveSlider.id == "arp_note1")   cmdNo = ARP_CHORD;
       else if (mActiveSlider.id == "arp_note2")   cmdNo = ARP_CHORD;
       else if (mActiveSlider.id == "arp_speed")   cmdNo = ARP_SPEED;
@@ -3867,6 +3879,7 @@ var CGUI = function()
     document.getElementById("env_att").sliderProps = { min: 0, max: 255 };
     document.getElementById("env_sust").sliderProps = { min: 0, max: 255 };
     document.getElementById("env_rel").sliderProps = { min: 0, max: 255 };
+    document.getElementById("env_decay").sliderProps = { min: 0, max: 255 };
     document.getElementById("arp_note1").sliderProps = { min: 0, max: 12 };
     document.getElementById("arp_note2").sliderProps = { min: 0, max: 12 };
     document.getElementById("arp_speed").sliderProps = { min: 0, max: 7 };
@@ -4035,6 +4048,8 @@ var CGUI = function()
     document.getElementById("env_sust").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("env_rel").addEventListener("mousedown", sliderMouseDown, false);
     document.getElementById("env_rel").addEventListener("touchstart", sliderMouseDown, false);
+    document.getElementById("env_decay").addEventListener("mousedown", sliderMouseDown, false);
+    document.getElementById("env_decay").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("arp_note1").addEventListener("mousedown", sliderMouseDown, false);
     document.getElementById("arp_note1").addEventListener("touchstart", sliderMouseDown, false);
     document.getElementById("arp_note2").addEventListener("mousedown", sliderMouseDown, false);

@@ -136,8 +136,9 @@ var CJammer = function () {
             attack = Math.round(note.instr[10] * note.instr[10] * 4 * mRateScale),
             sustain = Math.round(note.instr[11] * note.instr[11] * 4 * mRateScale),
             release = Math.round(note.instr[12] * note.instr[12] * 4 * mRateScale),
+            expDecay = -note.instr[13]/16,
             releaseInv = 1 / release,
-            arpInterval = mRowLen * Math.pow(2, 2 - note.instr[14]);
+            arpInterval = mRowLen * Math.pow(2, 2 - note.instr[15]);
 
         // Note frequencies (defined later) and arpeggio
         var o1f, o2f;
@@ -173,7 +174,8 @@ var CJammer = function () {
           if (j < attack) {
             e = j / attack;
           } else if (j >= attack + sustain) {
-            e -= (j - attack - sustain) * releaseInv;
+            e = (j - attack - sustain) * releaseInv;
+            e = (1 - e) * Math.pow(3, expDecay * e);
           }
 
           // Oscillator 1
@@ -211,19 +213,19 @@ var CJammer = function () {
     var lsample, high, dlyRead, dlyMask = MAX_DELAY - 1;
 
     // Put performance critical instrument properties in local variables
-    var oscLFO = mOscillators[mInstr[15]],
-        lfoAmt = mInstr[16] / 512,
-        lfoFreq = Math.pow(2, mInstr[17] - 9) / mRowLen,
-        fxLFO = mInstr[18],
-        fxFilter = mInstr[19],
-        fxFreq = mInstr[20] * 43.23529 * 3.141592 / mSampleRate,
-        q = 1 - mInstr[21] / 255,
-        dist = mInstr[22] * 1e-5 * 32767,
-        drive = mInstr[23] / 32,
-        panAmt = mInstr[24] / 512,
-        panFreq = 6.283184 * Math.pow(2, mInstr[25] - 9) / mRowLen,
-        dlyAmt = mInstr[26] / 255,
-        dly = (mInstr[27] * mRowLen) >> 1;
+    var oscLFO = mOscillators[mInstr[16]],
+        lfoAmt = mInstr[17] / 512,
+        lfoFreq = Math.pow(2, mInstr[18] - 9) / mRowLen,
+        fxLFO = mInstr[19],
+        fxFilter = mInstr[20],
+        fxFreq = mInstr[21] * 43.23529 * 3.141592 / mSampleRate,
+        q = 1 - mInstr[22] / 255,
+        dist = mInstr[23] * 1e-5 * 32767,
+        drive = mInstr[24] / 32,
+        panAmt = mInstr[25] / 512,
+        panFreq = 6.283184 * Math.pow(2, mInstr[26] - 9) / mRowLen,
+        dlyAmt = mInstr[27] / 255,
+        dly = (mInstr[28] * mRowLen) >> 1;
 
     // Limit the delay to the delay buffer size.
     if (dly >= MAX_DELAY) {
@@ -394,16 +396,16 @@ var CJammer = function () {
     var note = {
       startT: t,
       env: 0,
-      arp: mInstr[13],
+      arp: mInstr[14],
       arpSamples: 0,
       o1t: 0,
       o2t: 0,
       n: n,
-      instr: new Array(15)
+      instr: new Array(mInstr.length)
     };
 
-    // Copy (snapshot) the oscillator/env/arp part of the current instrument.
-    for (var i = 0; i < 15; ++i) {
+    // Copy (snapshot) the current instrument.
+    for (var i = 0; i < mInstr.length; ++i) {
       note.instr[i] = mInstr[i];
     }
 
