@@ -370,14 +370,14 @@ var CTableEditor = function() {
     mCol1 = col;
     mRow1 = row;
     self.update();
-    self.scrollIntoView(col,row);
+    self.scrollIntoView(row);
   }
 
   this.setSelectionCorner2 = function(col,row) {
     mCol2 = col;
     mRow2 = row;
     self.update();
-    self.scrollIntoView(col,row);
+    self.scrollIntoView(row);
   }
 
   this.copy = function() {
