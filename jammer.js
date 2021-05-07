@@ -58,7 +58,7 @@ var CJammer = function () {
 
   // Oscillators.
   var osc_sin = function (value) {
-    return Math.sin(value * 6.283184);
+    return Math.sin(value * 6.283184)+(Math.random()-0.5)*0.01;
   };
 
   var osc_saw = function (value) {
