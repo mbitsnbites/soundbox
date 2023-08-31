@@ -1,3 +1,5 @@
+## ⚠️ This repository has moved to: https://gitlab.com/mbitsnbites/soundbox
+
 # SoundBox
 
 SoundBox is a tool for composing synthetic music, in your browser. Its design
